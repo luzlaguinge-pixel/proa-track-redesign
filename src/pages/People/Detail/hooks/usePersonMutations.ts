@@ -1,27 +1,33 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+
+import { useAuth } from '../../../../providers/AuthContext';
 import {
   assignMaterial,
   markRecovered,
   requestConfirmation,
   returnMaterial,
 } from '../../../Inventory/Detail/services';
+import { type Person } from '../../../Inventory/Detail/types';
 import { materialsKeys } from '../../../Inventory/List/hooks/useGetMaterials';
+import { type Material } from '../../../Inventory/List/types';
+
 import { personKeys } from './useGetPerson';
-import { useAuth } from '../../../../providers/AuthContext';
-import type { Material } from '../../../Inventory/List/types';
-import type { Person } from '../../../Inventory/Detail/types';
 
 const autorFrom = (user: { firstName: string; lastName: string } | null) =>
   user ? `${user.firstName} ${user.lastName}`.trim() : 'Usuario';
 
-export const usePersonMutations = (person: { id: string; nombre: string } | null) => {
+export const usePersonMutations = (
+  person: { id: string; nombre: string } | null,
+) => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
 
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: materialsKeys.all() });
     if (person) {
-      queryClient.invalidateQueries({ queryKey: personKeys.materials(person.nombre) });
+      queryClient.invalidateQueries({
+        queryKey: personKeys.materials(person.nombre),
+      });
     }
   };
 
@@ -78,7 +84,12 @@ export const usePersonMutations = (person: { id: string; nombre: string } | null
       const autor = autorFrom(user);
       return Promise.all(
         materials.map(m =>
-          markRecovered({ materialId: m.id, comentario: '', quedaOk: true, autor }),
+          markRecovered({
+            materialId: m.id,
+            comentario: '',
+            quedaOk: true,
+            autor,
+          }),
         ),
       );
     },

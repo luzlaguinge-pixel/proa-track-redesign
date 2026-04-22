@@ -1,21 +1,24 @@
-import Stack from '@material-hu/mui/Stack';
-import Button from '@material-hu/components/design-system/Buttons/Button';
-import { useDialogLayer } from '@material-hu/components/layers/Dialogs';
-import { useDrawerLayer } from '@material-hu/components/layers/Drawers';
-import { useMenuLayer } from '@material-hu/components/layers/Menus';
 import {
   IconBell,
+  IconCircleCheck,
   IconDotsVertical,
   IconMailbox,
-  IconCircleCheck,
   IconUserMinus,
   IconUserPlus,
 } from '@material-hu/icons/tabler';
 import IconButton from '@material-hu/mui/IconButton';
+import Stack from '@material-hu/mui/Stack';
+
+import Button from '@material-hu/components/design-system/Buttons/Button';
+import { useDialogLayer } from '@material-hu/components/layers/Dialogs';
+import { useDrawerLayer } from '@material-hu/components/layers/Drawers';
+import { useMenuLayer } from '@material-hu/components/layers/Menus';
+
+import { type Material } from '../../../../Inventory/List/types';
 import { getAllMaterials } from '../../../../Inventory/store';
-import type { Material } from '../../../../Inventory/List/types';
-import type { PersonDetail } from '../../types';
 import { usePersonMutations } from '../../hooks/usePersonMutations';
+import { type PersonDetail } from '../../types';
+
 import AssignMaterialDrawer from './AssignMaterialDrawer';
 import BulkActionDialog from './BulkActionDialog';
 
@@ -57,31 +60,39 @@ const PersonActions = ({ person, materials }: PersonActionsProps) => {
     const configs = {
       notificar: {
         title: 'Notificar al responsable',
-        description: 'Se le enviará una notificación a la persona para que confirme si sigue teniendo los materiales.',
+        description:
+          'Se le enviará una notificación a la persona para que confirme si sigue teniendo los materiales.',
         primaryLabel: 'Notificar',
         primaryColor: 'primary' as const,
-        action: () => notifyAll.mutateAsync(materials).then(() => closeDialog()),
+        action: () =>
+          notifyAll.mutateAsync(materials).then(() => closeDialog()),
       },
       devolucion: {
         title: 'Solicitar devolución',
-        description: 'Se le enviará una notificación pidiendo que devuelva todos sus materiales.',
+        description:
+          'Se le enviará una notificación pidiendo que devuelva todos sus materiales.',
         primaryLabel: 'Solicitar devolución',
         primaryColor: 'primary' as const,
-        action: () => requestReturnAll.mutateAsync(materials).then(() => closeDialog()),
+        action: () =>
+          requestReturnAll.mutateAsync(materials).then(() => closeDialog()),
       },
       recuperados: {
         title: 'Materiales recuperados',
-        description: 'Se registrará la devolución de todos los materiales de esta persona.',
+        description:
+          'Se registrará la devolución de todos los materiales de esta persona.',
         primaryLabel: 'Marcar como recuperados',
         primaryColor: 'primary' as const,
-        action: () => recoverAll.mutateAsync(materials).then(() => closeDialog()),
+        action: () =>
+          recoverAll.mutateAsync(materials).then(() => closeDialog()),
       },
       baja: {
         title: 'Dar de baja',
         description: hasMaterials
           ? 'Esta persona todavía tiene materiales asignados. Primero marcalos como recuperados antes de dar de baja.'
           : 'Se registrará la baja de esta persona. Esta acción no puede deshacerse.',
-        primaryLabel: hasMaterials ? 'Marcar materiales como recuperados' : 'Dar de baja',
+        primaryLabel: hasMaterials
+          ? 'Marcar materiales como recuperados'
+          : 'Dar de baja',
         primaryColor: 'error' as const,
         action: hasMaterials
           ? () => recoverAll.mutateAsync(materials).then(() => closeDialog())
@@ -109,10 +120,30 @@ const PersonActions = ({ person, materials }: PersonActionsProps) => {
     openMenu({
       anchorEl: event.currentTarget,
       items: [
-        { id: 'notificar', title: 'Notificar', icon: IconBell, onSelect: () => openBulk('notificar') },
-        { id: 'devolucion', title: 'Solicitar devolución', icon: IconMailbox, onSelect: () => openBulk('devolucion') },
-        { id: 'recuperados', title: 'Materiales recuperados', icon: IconCircleCheck, onSelect: () => openBulk('recuperados') },
-        { id: 'baja', title: 'Dar de baja', icon: IconUserMinus, onSelect: () => openBulk('baja') },
+        {
+          id: 'notificar',
+          title: 'Notificar',
+          icon: IconBell,
+          onSelect: () => openBulk('notificar'),
+        },
+        {
+          id: 'devolucion',
+          title: 'Solicitar devolución',
+          icon: IconMailbox,
+          onSelect: () => openBulk('devolucion'),
+        },
+        {
+          id: 'recuperados',
+          title: 'Materiales recuperados',
+          icon: IconCircleCheck,
+          onSelect: () => openBulk('recuperados'),
+        },
+        {
+          id: 'baja',
+          title: 'Dar de baja',
+          icon: IconUserMinus,
+          onSelect: () => openBulk('baja'),
+        },
       ],
     });
   };
@@ -127,7 +158,11 @@ const PersonActions = ({ person, materials }: PersonActionsProps) => {
       >
         Asignar material
       </Button>
-      <IconButton size="small" onClick={handleMoreClick} aria-label="Más acciones">
+      <IconButton
+        size="small"
+        onClick={handleMoreClick}
+        aria-label="Más acciones"
+      >
         <IconDotsVertical size={20} />
       </IconButton>
     </Stack>

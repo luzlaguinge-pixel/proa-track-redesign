@@ -10,7 +10,13 @@ type StatCardProps = {
   showTrend?: boolean;
 };
 
-export const StatCard = ({ label, value, subtitle, color, showTrend }: StatCardProps) => {
+export const StatCard = ({
+  label,
+  value,
+  subtitle,
+  color,
+  showTrend,
+}: StatCardProps) => {
   const valueColor =
     color === 'error' && value > 0
       ? 'error.main'
@@ -30,19 +36,31 @@ export const StatCard = ({ label, value, subtitle, color, showTrend }: StatCardP
       }}
     >
       <Stack gap={0.5}>
-        <Typography variant="h4" sx={{ fontWeight: 700, color: valueColor }}>
+        <Typography
+          variant="h4"
+          sx={{ fontWeight: 700, color: valueColor }}
+        >
           {value}
         </Typography>
-        <Typography variant="body2" color="text.secondary">
+        <Typography
+          variant="body2"
+          color="text.secondary"
+        >
           {label}
         </Typography>
         {subtitle && (
-          <Typography variant="caption" color="text.secondary">
+          <Typography
+            variant="caption"
+            color="text.secondary"
+          >
             {subtitle}
           </Typography>
         )}
         {showTrend && (
-          <Typography variant="caption" color="text.disabled">
+          <Typography
+            variant="caption"
+            color="text.disabled"
+          >
             — vs. mes pasado
           </Typography>
         )}

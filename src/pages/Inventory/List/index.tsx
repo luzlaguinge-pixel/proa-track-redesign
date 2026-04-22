@@ -7,13 +7,14 @@ import Title from '@material-hu/components/design-system/Title';
 import { useDrawerLayer } from '@material-hu/components/layers/Drawers';
 
 import { DashboardLayout } from '../../../layouts/DashboardLayout';
+
 import CreateMaterialDrawer from './components/CreateMaterialDrawer';
 import MaterialsFilters from './components/MaterialsFilters';
 import MaterialsTable from './components/MaterialsTable';
 import { useCreateMaterial } from './hooks/useCreateMaterial';
 import { useGetMaterials } from './hooks/useGetMaterials';
 import { useMaterialsFilters } from './hooks/useMaterialsFilters';
-import type { CreateMaterialInput } from './services';
+import { type CreateMaterialInput } from './services';
 
 const InventoryList = () => {
   const { materials, isLoading } = useGetMaterials();

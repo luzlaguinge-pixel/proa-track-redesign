@@ -3,9 +3,8 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { IconAlertTriangle, IconArrowLeft } from '@material-hu/icons/tabler';
 import Stack from '@material-hu/mui/Stack';
 
-import Button from '@material-hu/components/design-system/Buttons/Button';
-
 import StateCard from '@material-hu/components/composed-components/StateCard';
+import Button from '@material-hu/components/design-system/Buttons/Button';
 
 import { DashboardLayout } from '../../../layouts/DashboardLayout';
 

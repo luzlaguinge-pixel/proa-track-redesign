@@ -57,7 +57,17 @@ export const updateMaterial = (
 };
 
 export const createMaterial = (
-  data: Omit<Material, 'id' | 'estado' | 'responsableNombre' | 'responsableDni' | 'responsableTelefono' | 'comodatoFirmado' | 'fechaActualizacion' | 'historial'>,
+  data: Omit<
+    Material,
+    | 'id'
+    | 'estado'
+    | 'responsableNombre'
+    | 'responsableDni'
+    | 'responsableTelefono'
+    | 'comodatoFirmado'
+    | 'fechaActualizacion'
+    | 'historial'
+  >,
 ): Material => {
   const list = load();
   const newMaterial: Material = {

@@ -1,6 +1,8 @@
 import Stack from '@material-hu/mui/Stack';
+
 import Button from '@material-hu/components/design-system/Buttons/Button';
-import type { Country } from '../../hooks/useCountryFilter';
+
+import { type Country } from '../../hooks/useCountryFilter';
 
 const OPTIONS: { value: Country; label: string }[] = [
   { value: 'todos', label: 'Todos' },

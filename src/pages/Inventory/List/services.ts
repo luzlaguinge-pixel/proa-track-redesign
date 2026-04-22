@@ -1,6 +1,12 @@
 import { createMaterial, getAllMaterials } from '../store';
 
-import type { Material, MaterialDueño, MaterialEstadoFisico, MaterialPais, MaterialTipo } from './types';
+import {
+  type Material,
+  type MaterialDueño,
+  type MaterialEstadoFisico,
+  type MaterialPais,
+  type MaterialTipo,
+} from './types';
 
 export const getMaterials = async (): Promise<Material[]> => {
   return getAllMaterials();
@@ -19,6 +25,8 @@ export type CreateMaterialInput = {
   observaciones: string | null;
 };
 
-export const createMaterialService = async (input: CreateMaterialInput): Promise<Material> => {
+export const createMaterialService = async (
+  input: CreateMaterialInput,
+): Promise<Material> => {
   return createMaterial(input);
 };

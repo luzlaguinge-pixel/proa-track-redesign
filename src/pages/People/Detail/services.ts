@@ -1,18 +1,26 @@
 import db from '../../../../mock/db.json';
-import { getAllMaterials } from '../../Inventory/store';
 import { TIPO_LABEL } from '../../Inventory/List/constants';
-import type { HistorialEvento, Material } from '../../Inventory/List/types';
-import type { PersonDetail } from './types';
+import {
+  type HistorialEvento,
+  type Material,
+} from '../../Inventory/List/types';
+import { getAllMaterials } from '../../Inventory/store';
+
+import { type PersonDetail } from './types';
 
 type RawPerson = { id: string; nombre: string; dni: string; telefono: string };
 const rawPersons = (db as { persons: RawPerson[] }).persons;
 
-export const getPersonById = async (id: string): Promise<PersonDetail | null> => {
+export const getPersonById = async (
+  id: string,
+): Promise<PersonDetail | null> => {
   const found = rawPersons.find(p => p.id === id);
   return found ?? null;
 };
 
-export const getPersonMaterials = async (nombre: string): Promise<Material[]> => {
+export const getPersonMaterials = async (
+  nombre: string,
+): Promise<Material[]> => {
   return getAllMaterials().filter(m => m.responsableNombre === nombre);
 };
 
@@ -39,7 +47,11 @@ export const getPersonHistory = async (
     if (everAssigned) {
       const label = `${TIPO_LABEL[material.tipo]}${material.detalle ? ` · ${material.detalle}` : ''}`;
       for (const event of material.historial) {
-        events.push({ ...event, materialLabel: label, materialId: material.id });
+        events.push({
+          ...event,
+          materialLabel: label,
+          materialId: material.id,
+        });
       }
     }
   }

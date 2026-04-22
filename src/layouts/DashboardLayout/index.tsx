@@ -1,7 +1,12 @@
 import { type ReactNode, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
-import { IconBox, IconHome, IconUsers } from '@material-hu/icons/tabler';
+import {
+  IconBox,
+  IconHome,
+  IconTag,
+  IconUsers,
+} from '@material-hu/icons/tabler';
 import Stack from '@material-hu/mui/Stack';
 
 import Button from '@material-hu/components/design-system/Buttons/Button';
@@ -33,6 +38,12 @@ const SECTIONS: NavSectionProps[] = [
         title: 'Personas',
         path: '/people',
         icon: <IconUsers />,
+      },
+      {
+        key: 'catalog',
+        title: 'Catálogo',
+        path: '/catalog',
+        icon: <IconTag />,
       },
     ],
   },

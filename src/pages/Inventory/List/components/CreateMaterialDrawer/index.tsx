@@ -6,30 +6,28 @@ import Drawer from '@material-hu/components/design-system/Drawer';
 import Autocomplete from '@material-hu/components/design-system/Inputs/Autocomplete';
 import InputClassic from '@material-hu/components/design-system/Inputs/Classic';
 
+import { DUEÑO_LABEL, TIPO_LABEL } from '../../constants';
+import { type CreateMaterialInput } from '../../services';
 import {
-  DUEÑO_LABEL,
-  TIPO_LABEL,
-} from '../../constants';
-import type {
-  MaterialDueño,
-  MaterialEstadoFisico,
-  MaterialPais,
-  MaterialTipo,
+  type MaterialDueño,
+  type MaterialEstadoFisico,
+  type MaterialPais,
+  type MaterialTipo,
 } from '../../types';
-import type { CreateMaterialInput } from '../../services';
 
-const TIPO_OPTIONS = (Object.entries(TIPO_LABEL) as [MaterialTipo, string][]).map(
-  ([value, label]) => ({ label, value }),
-);
+const TIPO_OPTIONS = (
+  Object.entries(TIPO_LABEL) as [MaterialTipo, string][]
+).map(([value, label]) => ({ label, value }));
 
-const DUEÑO_OPTIONS = (Object.entries(DUEÑO_LABEL) as [MaterialDueño, string][]).map(
-  ([value, label]) => ({ label, value }),
-);
+const DUEÑO_OPTIONS = (
+  Object.entries(DUEÑO_LABEL) as [MaterialDueño, string][]
+).map(([value, label]) => ({ label, value }));
 
-const ESTADO_FISICO_OPTIONS: { label: string; value: MaterialEstadoFisico }[] = [
-  { label: 'OK', value: 'ok' },
-  { label: 'Dañado', value: 'dañado' },
-];
+const ESTADO_FISICO_OPTIONS: { label: string; value: MaterialEstadoFisico }[] =
+  [
+    { label: 'OK', value: 'ok' },
+    { label: 'Dañado', value: 'dañado' },
+  ];
 
 const PAIS_OPTIONS: { label: string; value: MaterialPais }[] = [
   { label: 'Argentina', value: 'AR' },
@@ -46,7 +44,10 @@ type CreateMaterialDrawerProps = {
 
 type FormErrors = Partial<Record<keyof CreateMaterialInput, string>>;
 
-const CreateMaterialDrawer = ({ onClose, onSubmit }: CreateMaterialDrawerProps) => {
+const CreateMaterialDrawer = ({
+  onClose,
+  onSubmit,
+}: CreateMaterialDrawerProps) => {
   const [tipo, setTipo] = useState<MaterialTipo | null>(null);
   const [detalle, setDetalle] = useState('');
   const [estadoFisico, setEstadoFisico] = useState<MaterialEstadoFisico>('ok');
@@ -71,7 +72,8 @@ const CreateMaterialDrawer = ({ onClose, onSubmit }: CreateMaterialDrawerProps) 
     if (!plaza.trim()) next.plaza = 'Requerido';
     if (!pais) next.pais = 'Requerido';
     const cantidadNum = parseInt(cantidad, 10);
-    if (!cantidad || isNaN(cantidadNum) || cantidadNum < 1) next.cantidad = 'Debe ser mayor a 0';
+    if (!cantidad || isNaN(cantidadNum) || cantidadNum < 1)
+      next.cantidad = 'Debe ser mayor a 0';
     setErrors(next);
     return Object.keys(next).length === 0;
   };
@@ -89,7 +91,8 @@ const CreateMaterialDrawer = ({ onClose, onSubmit }: CreateMaterialDrawerProps) 
         cantidad: parseInt(cantidad, 10),
         plaza: plaza.trim(),
         pais: pais!,
-        lineaTelefonica: showLinea && lineaTelefonica.trim() ? lineaTelefonica.trim() : null,
+        lineaTelefonica:
+          showLinea && lineaTelefonica.trim() ? lineaTelefonica.trim() : null,
         observaciones: observaciones.trim() || null,
       });
     } finally {
@@ -133,7 +136,10 @@ const CreateMaterialDrawer = ({ onClose, onSubmit }: CreateMaterialDrawerProps) 
           label="Detalle"
           placeholder="Ej: CON CIERRE, 32GB..."
           value={detalle}
-          onChange={v => { setDetalle(v); clearError('detalle'); }}
+          onChange={v => {
+            setDetalle(v);
+            clearError('detalle');
+          }}
           error={!!errors.detalle}
           errorText={errors.detalle}
           fullWidth
@@ -142,7 +148,9 @@ const CreateMaterialDrawer = ({ onClose, onSubmit }: CreateMaterialDrawerProps) 
           label="Estado físico"
           placeholder="Seleccioná el estado..."
           options={ESTADO_FISICO_OPTIONS}
-          value={ESTADO_FISICO_OPTIONS.find(o => o.value === estadoFisico) ?? null}
+          value={
+            ESTADO_FISICO_OPTIONS.find(o => o.value === estadoFisico) ?? null
+          }
           onChange={opt => {
             if (opt) setEstadoFisico(opt.value as MaterialEstadoFisico);
           }}
@@ -163,7 +171,10 @@ const CreateMaterialDrawer = ({ onClose, onSubmit }: CreateMaterialDrawerProps) 
           label="OSC"
           placeholder="Nombre de la organización..."
           value={osc}
-          onChange={v => { setOsc(v); clearError('osc'); }}
+          onChange={v => {
+            setOsc(v);
+            clearError('osc');
+          }}
           error={!!errors.osc}
           errorText={errors.osc}
           fullWidth
@@ -172,7 +183,10 @@ const CreateMaterialDrawer = ({ onClose, onSubmit }: CreateMaterialDrawerProps) 
           label="Plaza"
           placeholder="Ej: Catamarca Foc..."
           value={plaza}
-          onChange={v => { setPlaza(v); clearError('plaza'); }}
+          onChange={v => {
+            setPlaza(v);
+            clearError('plaza');
+          }}
           error={!!errors.plaza}
           errorText={errors.plaza}
           fullWidth
@@ -193,7 +207,10 @@ const CreateMaterialDrawer = ({ onClose, onSubmit }: CreateMaterialDrawerProps) 
           label="Cantidad"
           placeholder="1"
           value={cantidad}
-          onChange={v => { setCantidad(v); clearError('cantidad'); }}
+          onChange={v => {
+            setCantidad(v);
+            clearError('cantidad');
+          }}
           error={!!errors.cantidad}
           errorText={errors.cantidad}
           fullWidth

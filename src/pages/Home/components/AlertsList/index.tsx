@@ -1,10 +1,3 @@
-import Box from '@material-hu/mui/Box';
-import Divider from '@material-hu/mui/Divider';
-import Stack from '@material-hu/mui/Stack';
-import Typography from '@material-hu/mui/Typography';
-import StateCard from '@material-hu/components/composed-components/StateCard';
-import Pills from '@material-hu/components/design-system/Pills';
-import type { PillsProps } from '@material-hu/components/design-system/Pills/types';
 import {
   IconBell,
   IconCircleCheck,
@@ -12,9 +5,18 @@ import {
   IconTool,
   IconUserMinus,
   IconUserX,
+  type TablerIcon,
 } from '@material-hu/icons/tabler';
-import type { TablerIcon } from '@material-hu/icons/tabler';
-import type { AlertItem, AlertTipo } from '../../hooks/useDashboardStats';
+import Box from '@material-hu/mui/Box';
+import Divider from '@material-hu/mui/Divider';
+import Stack from '@material-hu/mui/Stack';
+import Typography from '@material-hu/mui/Typography';
+
+import StateCard from '@material-hu/components/composed-components/StateCard';
+import Pills from '@material-hu/components/design-system/Pills';
+import { type PillsProps } from '@material-hu/components/design-system/Pills/types';
+
+import { type AlertItem, type AlertTipo } from '../../hooks/useDashboardStats';
 
 type AlertsListProps = {
   alertas: AlertItem[];
@@ -31,8 +33,16 @@ const ICON_CONFIG: Record<AlertTipo, IconConfig> = {
   perdido: { Icon: IconUserX, bgcolor: 'error.50', color: 'error.main' },
   reparacion: { Icon: IconTool, bgcolor: 'warning.50', color: 'warning.main' },
   linea: { Icon: IconDeviceMobile, bgcolor: 'info.50', color: 'info.main' },
-  baja_pendiente: { Icon: IconUserMinus, bgcolor: 'error.50', color: 'error.main' },
-  confirmacion_vencida: { Icon: IconBell, bgcolor: 'warning.50', color: 'warning.main' },
+  baja_pendiente: {
+    Icon: IconUserMinus,
+    bgcolor: 'error.50',
+    color: 'error.main',
+  },
+  confirmacion_vencida: {
+    Icon: IconBell,
+    bgcolor: 'warning.50',
+    color: 'warning.main',
+  },
 };
 
 const PILL_TYPE: Record<AlertTipo, PillsProps['type']> = {
@@ -74,7 +84,9 @@ export const AlertsList = ({ alertas, onAlertClick }: AlertsListProps) => {
               role="button"
               aria-label={alerta.label}
             >
-              <Stack sx={{ flexDirection: 'row', gap: 2, alignItems: 'center' }}>
+              <Stack
+                sx={{ flexDirection: 'row', gap: 2, alignItems: 'center' }}
+              >
                 <Box
                   sx={{
                     width: 36,
@@ -91,16 +103,28 @@ export const AlertsList = ({ alertas, onAlertClick }: AlertsListProps) => {
                   <Icon size={18} />
                 </Box>
                 <Stack sx={{ flex: 1, gap: 0, minWidth: 0 }}>
-                  <Typography variant="body2" sx={{ fontWeight: 600 }} noWrap>
+                  <Typography
+                    variant="body2"
+                    sx={{ fontWeight: 600 }}
+                    noWrap
+                  >
                     {alerta.label}
                   </Typography>
                   {alerta.sublabel && (
-                    <Typography variant="caption" color="text.secondary" noWrap>
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      noWrap
+                    >
                       {alerta.sublabel}
                     </Typography>
                   )}
                 </Stack>
-                <Pills label={alerta.motivo} type={pillType} size="small" />
+                <Pills
+                  label={alerta.motivo}
+                  type={pillType}
+                  size="small"
+                />
               </Stack>
             </Box>
             {index < alertas.length - 1 && <Divider />}

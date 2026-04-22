@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { createMaterialService, type CreateMaterialInput } from '../services';
+import { type CreateMaterialInput, createMaterialService } from '../services';
+
 import { materialsKeys } from './useGetMaterials';
 
 export const useCreateMaterial = () => {
