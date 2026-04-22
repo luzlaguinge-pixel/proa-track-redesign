@@ -1,4 +1,4 @@
-export type PersonRow = {
+export type TeamMember = {
   id: string;
   nombre: string;
   dni: string;
@@ -6,6 +6,5 @@ export type PersonRow = {
   email: string;
   puesto: string;
   pais: 'AR' | 'GT' | 'UY';
-  jefeDirectoNombre: string | null;
   materialesCount: number;
 };

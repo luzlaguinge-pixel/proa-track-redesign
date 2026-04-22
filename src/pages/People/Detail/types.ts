@@ -3,4 +3,8 @@ export type PersonDetail = {
   nombre: string;
   dni: string;
   telefono: string;
+  email: string;
+  puesto: string;
+  pais: 'AR' | 'GT' | 'UY';
+  jefeDirectoNombre: string | null;
 };

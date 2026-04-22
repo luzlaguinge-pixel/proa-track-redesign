@@ -6,6 +6,7 @@ import {
   IconBox,
   IconHome,
   IconTag,
+  IconUsersGroup,
   IconUsers,
 } from '@material-hu/icons/tabler';
 import Stack from '@material-hu/mui/Stack';
@@ -51,6 +52,12 @@ const SECTIONS: NavSectionProps[] = [
         title: 'Movimientos',
         path: '/movements',
         icon: <IconArrowsExchange />,
+      },
+      {
+        key: 'my-team',
+        title: 'Mi equipo',
+        path: '/my-team',
+        icon: <IconUsersGroup />,
       },
     ],
   },

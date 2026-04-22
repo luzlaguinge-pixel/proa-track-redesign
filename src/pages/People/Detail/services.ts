@@ -8,7 +8,16 @@ import { getAllMaterials } from '../../Inventory/store';
 
 import { type PersonDetail } from './types';
 
-type RawPerson = { id: string; nombre: string; dni: string; telefono: string };
+type RawPerson = {
+  id: string;
+  nombre: string;
+  dni: string;
+  telefono: string;
+  email: string;
+  puesto: string;
+  pais: 'AR' | 'GT' | 'UY';
+  jefeDirectoNombre: string | null;
+};
 const rawPersons = (db as { persons: RawPerson[] }).persons;
 
 export const getPersonById = async (
