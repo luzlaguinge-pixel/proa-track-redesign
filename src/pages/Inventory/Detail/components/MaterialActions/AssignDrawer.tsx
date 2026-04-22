@@ -36,19 +36,27 @@ const AssignDrawer = ({
   const [selectedPersonId, setSelectedPersonId] = useState<string | null>(
     currentPerson?.id ?? null,
   );
+  const [inputValue, setInputValue] = useState('');
   const [comodato, setComodato] = useState(material.comodatoFirmado);
   const [observacion, setObservacion] = useState('');
   const [personError, setPersonError] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  const options = persons.map(p => ({
+  const allOptions = persons.map(p => ({
     label: p.nombre,
     value: p.id,
     description: p.dni ? `DNI ${p.dni}` : undefined,
   }));
 
+  const options = inputValue.trim()
+    ? allOptions.filter(o =>
+        o.label.toLowerCase().includes(inputValue.toLowerCase()) ||
+        (o.description ?? '').toLowerCase().includes(inputValue.toLowerCase()),
+      )
+    : allOptions.slice(0, 50);
+
   const selectedOption =
-    options.find(o => o.value === selectedPersonId) ?? null;
+    allOptions.find(o => o.value === selectedPersonId) ?? null;
 
   const handleSubmit = async () => {
     if (!selectedPersonId) {
@@ -84,6 +92,9 @@ const AssignDrawer = ({
           placeholder="Buscar persona..."
           options={options}
           value={selectedOption}
+          inputValue={inputValue}
+          onInputChange={(_e, val) => setInputValue(val)}
+          isServerFiltered
           onChange={value => {
             setSelectedPersonId(value ? String(value.value) : null);
             setPersonError(false);
