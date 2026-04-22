@@ -8569,5 +8569,403 @@
       "observaciones": "IMEI 352031111115183 · Línea Proa SI",
       "fechaActualizacion": "2026-04-22"
     }
+  ],
+  "persons": [
+    {
+      "id": "p_001",
+      "nombre": "Abril Guerrero",
+      "dni": "",
+      "telefono": ""
+    },
+    {
+      "id": "p_002",
+      "nombre": "Agostina Carnevale",
+      "dni": "",
+      "telefono": ""
+    },
+    {
+      "id": "p_003",
+      "nombre": "Agus Sotelo",
+      "dni": "",
+      "telefono": "54 9 11 7036-7362"
+    },
+    {
+      "id": "p_004",
+      "nombre": "Anahi Miranda",
+      "dni": "",
+      "telefono": ""
+    },
+    {
+      "id": "p_005",
+      "nombre": "Antonella Villegas",
+      "dni": "45024039",
+      "telefono": "2617189492"
+    },
+    {
+      "id": "p_006",
+      "nombre": "Ayelen Jalil",
+      "dni": "41299991",
+      "telefono": "3517558154"
+    },
+    {
+      "id": "p_007",
+      "nombre": "Aylen Vazquez",
+      "dni": "42565027",
+      "telefono": "2995277411"
+    },
+    {
+      "id": "p_008",
+      "nombre": "Bernardette Rodriguez",
+      "dni": "",
+      "telefono": ""
+    },
+    {
+      "id": "p_009",
+      "nombre": "Camila Manrique",
+      "dni": "44138862",
+      "telefono": "2612492326"
+    },
+    {
+      "id": "p_010",
+      "nombre": "Candela Ficarra",
+      "dni": "42403203",
+      "telefono": "2616924786"
+    },
+    {
+      "id": "p_011",
+      "nombre": "Celeste Picazo",
+      "dni": "46404514",
+      "telefono": "2995037906"
+    },
+    {
+      "id": "p_012",
+      "nombre": "Cielo Arevalo",
+      "dni": "42396932",
+      "telefono": "1139573064"
+    },
+    {
+      "id": "p_013",
+      "nombre": "Claudia Puca",
+      "dni": "",
+      "telefono": "3512009878"
+    },
+    {
+      "id": "p_014",
+      "nombre": "Daiana Moreno",
+      "dni": "45717216",
+      "telefono": "2612084307"
+    },
+    {
+      "id": "p_015",
+      "nombre": "ES STOCK",
+      "dni": "",
+      "telefono": ""
+    },
+    {
+      "id": "p_016",
+      "nombre": "Eliana Alma",
+      "dni": "33542721",
+      "telefono": "2615928453"
+    },
+    {
+      "id": "p_017",
+      "nombre": "Emilia Espina",
+      "dni": "",
+      "telefono": ""
+    },
+    {
+      "id": "p_018",
+      "nombre": "Emmanuel Martinez",
+      "dni": "33834771",
+      "telefono": "11 4087-2640"
+    },
+    {
+      "id": "p_019",
+      "nombre": "FRIDA RIVAS",
+      "dni": "46397696",
+      "telefono": "2605 68-1589"
+    },
+    {
+      "id": "p_020",
+      "nombre": "Facundo Guarachi",
+      "dni": "",
+      "telefono": ""
+    },
+    {
+      "id": "p_021",
+      "nombre": "Fernada Arroyo",
+      "dni": "",
+      "telefono": ""
+    },
+    {
+      "id": "p_022",
+      "nombre": "Fernanda Daniela Arroyo",
+      "dni": "36753176",
+      "telefono": "299 504-6120"
+    },
+    {
+      "id": "p_023",
+      "nombre": "Gabriela Izquierdo",
+      "dni": "",
+      "telefono": "11 2452-3741"
+    },
+    {
+      "id": "p_024",
+      "nombre": "Gabriela Lopez",
+      "dni": "95973178",
+      "telefono": "2612526109"
+    },
+    {
+      "id": "p_025",
+      "nombre": "Gioliana Mancuso",
+      "dni": "",
+      "telefono": ""
+    },
+    {
+      "id": "p_026",
+      "nombre": "Giovanna Mazzuca",
+      "dni": "",
+      "telefono": ""
+    },
+    {
+      "id": "p_027",
+      "nombre": "Giuliana Mancuso",
+      "dni": "",
+      "telefono": ""
+    },
+    {
+      "id": "p_028",
+      "nombre": "HAYLEN DI MARZO",
+      "dni": "",
+      "telefono": ""
+    },
+    {
+      "id": "p_029",
+      "nombre": "Ingrso nuevo",
+      "dni": "",
+      "telefono": ""
+    },
+    {
+      "id": "p_030",
+      "nombre": "Isabela Suden",
+      "dni": "43941339",
+      "telefono": "2613457545"
+    },
+    {
+      "id": "p_031",
+      "nombre": "Ivana Leiva",
+      "dni": "",
+      "telefono": ""
+    },
+    {
+      "id": "p_032",
+      "nombre": "Joan Albano",
+      "dni": "",
+      "telefono": ""
+    },
+    {
+      "id": "p_033",
+      "nombre": "Jose P.",
+      "dni": "40514447",
+      "telefono": ""
+    },
+    {
+      "id": "p_034",
+      "nombre": "Josefina C.",
+      "dni": "",
+      "telefono": "2268 40-9528"
+    },
+    {
+      "id": "p_035",
+      "nombre": "Julieta Romero",
+      "dni": "",
+      "telefono": ""
+    },
+    {
+      "id": "p_036",
+      "nombre": "LUCIANA PEREZ",
+      "dni": "",
+      "telefono": ""
+    },
+    {
+      "id": "p_037",
+      "nombre": "Luciano Sanchez",
+      "dni": "43486411",
+      "telefono": "2615363796"
+    },
+    {
+      "id": "p_038",
+      "nombre": "Lucila Sanchez",
+      "dni": "",
+      "telefono": "3515175497"
+    },
+    {
+      "id": "p_039",
+      "nombre": "Ludmila fortini",
+      "dni": "",
+      "telefono": ""
+    },
+    {
+      "id": "p_040",
+      "nombre": "MELANIE AGUERO",
+      "dni": "42632950",
+      "telefono": "2646277227"
+    },
+    {
+      "id": "p_041",
+      "nombre": "MELISA ANDRADA",
+      "dni": "35509710",
+      "telefono": ""
+    },
+    {
+      "id": "p_042",
+      "nombre": "Magali Meloni",
+      "dni": "",
+      "telefono": ""
+    },
+    {
+      "id": "p_043",
+      "nombre": "Marcela Núñez",
+      "dni": "",
+      "telefono": "3512572310"
+    },
+    {
+      "id": "p_044",
+      "nombre": "Maria Jose",
+      "dni": "42525303",
+      "telefono": "3417460091"
+    },
+    {
+      "id": "p_045",
+      "nombre": "Maria de los Angeles Galeano",
+      "dni": "",
+      "telefono": ""
+    },
+    {
+      "id": "p_046",
+      "nombre": "Mariana Vazquez",
+      "dni": "33834771",
+      "telefono": "54 9 11 2451-8190"
+    },
+    {
+      "id": "p_047",
+      "nombre": "Maru Alva",
+      "dni": "-",
+      "telefono": ""
+    },
+    {
+      "id": "p_048",
+      "nombre": "Mayra Caceres",
+      "dni": "",
+      "telefono": ""
+    },
+    {
+      "id": "p_049",
+      "nombre": "Mica M.",
+      "dni": "39889564",
+      "telefono": ""
+    },
+    {
+      "id": "p_050",
+      "nombre": "Micaela Mamani",
+      "dni": "",
+      "telefono": "3512033228"
+    },
+    {
+      "id": "p_051",
+      "nombre": "Milagros Argarañaz",
+      "dni": "",
+      "telefono": ""
+    },
+    {
+      "id": "p_052",
+      "nombre": "Milagros Moreno",
+      "dni": "44908659",
+      "telefono": "2615135581"
+    },
+    {
+      "id": "p_053",
+      "nombre": "Miriam Balmaceda",
+      "dni": "40561082",
+      "telefono": "2615135378"
+    },
+    {
+      "id": "p_054",
+      "nombre": "RETIRA MELI ANDRADA",
+      "dni": "",
+      "telefono": ""
+    },
+    {
+      "id": "p_055",
+      "nombre": "ROCIO BLANCO",
+      "dni": "",
+      "telefono": ""
+    },
+    {
+      "id": "p_056",
+      "nombre": "Rocio Barrionuevo",
+      "dni": "43290837",
+      "telefono": "3512418355"
+    },
+    {
+      "id": "p_057",
+      "nombre": "Rocio Vera",
+      "dni": "44437518",
+      "telefono": "2616240062"
+    },
+    {
+      "id": "p_058",
+      "nombre": "Rocío Gamarra",
+      "dni": "",
+      "telefono": ""
+    },
+    {
+      "id": "p_059",
+      "nombre": "Tomas Ponce",
+      "dni": "33981906",
+      "telefono": "2994582436"
+    },
+    {
+      "id": "p_060",
+      "nombre": "Valeria Garcia",
+      "dni": "42029889",
+      "telefono": "2617194418"
+    },
+    {
+      "id": "p_061",
+      "nombre": "Yadira Victoria",
+      "dni": "45137580",
+      "telefono": "2617763689"
+    },
+    {
+      "id": "p_062",
+      "nombre": "Yamila Sepulveda",
+      "dni": "39523114",
+      "telefono": "2994648184"
+    },
+    {
+      "id": "p_063",
+      "nombre": "maru A",
+      "dni": "40.783.822",
+      "telefono": ""
+    },
+    {
+      "id": "p_064",
+      "nombre": "maru t",
+      "dni": "37302048",
+      "telefono": ""
+    },
+    {
+      "id": "p_065",
+      "nombre": "mica m",
+      "dni": "40.783.825",
+      "telefono": ""
+    },
+    {
+      "id": "p_066",
+      "nombre": "michel vasmulaky",
+      "dni": "40.783.818",
+      "telefono": ""
+    }
   ]
 }

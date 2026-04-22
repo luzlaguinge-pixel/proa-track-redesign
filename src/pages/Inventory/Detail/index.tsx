@@ -1,0 +1,51 @@
+import { useParams } from 'react-router-dom';
+
+import Stack from '@material-hu/mui/Stack';
+
+import StateCard from '@material-hu/components/composed-components/StateCard';
+import { IconAlertTriangle } from '@material-hu/icons/tabler';
+
+import { DashboardLayout } from '../../../layouts/DashboardLayout';
+import MaterialHeader from './components/MaterialHeader';
+import MaterialMetadata from './components/MaterialMetadata';
+import { useGetMaterial } from './hooks/useGetMaterial';
+
+const InventoryDetail = () => {
+  const { id } = useParams<{ id: string }>();
+  const { material, isLoading } = useGetMaterial(id);
+
+  if (isLoading) {
+    return <DashboardLayout />;
+  }
+
+  if (!material) {
+    return (
+      <DashboardLayout>
+        <StateCard
+          slotProps={{
+            title: {
+              title: 'Material no encontrado',
+              description: 'El material que buscás no existe o fue eliminado.',
+              variant: 'M',
+            },
+            avatar: {
+              Icon: IconAlertTriangle,
+              color: 'default',
+            },
+          }}
+        />
+      </DashboardLayout>
+    );
+  }
+
+  return (
+    <DashboardLayout>
+      <Stack sx={{ gap: 4 }}>
+        <MaterialHeader material={material} />
+        <MaterialMetadata material={material} />
+      </Stack>
+    </DashboardLayout>
+  );
+};
+
+export default InventoryDetail;

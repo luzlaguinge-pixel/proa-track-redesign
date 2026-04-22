@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import Stack from '@material-hu/mui/Stack';
 
@@ -24,6 +25,7 @@ type MaterialsTableProps = {
 };
 
 const MaterialsTable = ({ materials }: MaterialsTableProps) => {
+  const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(25);
 
@@ -52,7 +54,11 @@ const MaterialsTable = ({ materials }: MaterialsTableProps) => {
             {paginated.map(material => {
               const estado = ESTADO_CONFIG[material.estado];
               return (
-                <TableRow key={material.id}>
+                <TableRow
+                  key={material.id}
+                  onClick={() => navigate(`/inventory/${material.id}`)}
+                  sx={{ cursor: 'pointer' }}
+                >
                   <TableCell>{TIPO_LABEL[material.tipo]}</TableCell>
                   <TableCell>{material.detalle || '—'}</TableCell>
                   <TableCell>
