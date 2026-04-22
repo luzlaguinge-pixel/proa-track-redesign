@@ -19,6 +19,7 @@ const InventoryDetail = lazy(() => import('./pages/Inventory/Detail'));
 const PeopleList = lazy(() => import('./pages/People/List'));
 const PeopleDetail = lazy(() => import('./pages/People/Detail'));
 const CatalogList = lazy(() => import('./pages/Catalog/List'));
+const MovementsList = lazy(() => import('./pages/Movements/List'));
 
 function ProtectedRoute({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();
@@ -96,6 +97,14 @@ const App = () => {
                         element={
                           <ProtectedRoute>
                             <CatalogList />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/movements"
+                        element={
+                          <ProtectedRoute>
+                            <MovementsList />
                           </ProtectedRoute>
                         }
                       />

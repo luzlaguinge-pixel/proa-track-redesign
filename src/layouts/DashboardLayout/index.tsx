@@ -2,6 +2,7 @@ import { type ReactNode, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
 import {
+  IconArrowsExchange,
   IconBox,
   IconHome,
   IconTag,
@@ -44,6 +45,12 @@ const SECTIONS: NavSectionProps[] = [
         title: 'Catálogo',
         path: '/catalog',
         icon: <IconTag />,
+      },
+      {
+        key: 'movements',
+        title: 'Movimientos',
+        path: '/movements',
+        icon: <IconArrowsExchange />,
       },
     ],
   },
