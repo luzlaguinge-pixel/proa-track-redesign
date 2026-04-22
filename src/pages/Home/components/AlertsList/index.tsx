@@ -2,31 +2,55 @@ import Box from '@material-hu/mui/Box';
 import Divider from '@material-hu/mui/Divider';
 import Stack from '@material-hu/mui/Stack';
 import Typography from '@material-hu/mui/Typography';
-
 import StateCard from '@material-hu/components/composed-components/StateCard';
-import { IconCircleCheck, IconDeviceMobile, IconTool, IconUserX } from '@material-hu/icons/tabler';
-
-import { type AlertItem } from '../../hooks/useDashboardStats';
+import Pills from '@material-hu/components/design-system/Pills';
+import type { PillsProps } from '@material-hu/components/design-system/Pills/types';
+import {
+  IconBell,
+  IconCircleCheck,
+  IconDeviceMobile,
+  IconTool,
+  IconUserMinus,
+  IconUserX,
+} from '@material-hu/icons/tabler';
+import type { TablerIcon } from '@material-hu/icons/tabler';
+import type { AlertItem, AlertTipo } from '../../hooks/useDashboardStats';
 
 type AlertsListProps = {
   alertas: AlertItem[];
-  onAlertClick: (alertaId: string) => void;
+  onAlertClick: (linkTo: string) => void;
 };
 
-const iconConfig = {
-  perdido: { bgcolor: 'error.50', color: 'error.main', Icon: IconUserX },
-  reparacion: { bgcolor: 'warning.50', color: 'warning.main', Icon: IconTool },
-  linea: { bgcolor: 'info.50', color: 'info.main', Icon: IconDeviceMobile },
+type IconConfig = {
+  Icon: TablerIcon;
+  bgcolor: string;
+  color: string;
+};
+
+const ICON_CONFIG: Record<AlertTipo, IconConfig> = {
+  perdido: { Icon: IconUserX, bgcolor: 'error.50', color: 'error.main' },
+  reparacion: { Icon: IconTool, bgcolor: 'warning.50', color: 'warning.main' },
+  linea: { Icon: IconDeviceMobile, bgcolor: 'info.50', color: 'info.main' },
+  baja_pendiente: { Icon: IconUserMinus, bgcolor: 'error.50', color: 'error.main' },
+  confirmacion_vencida: { Icon: IconBell, bgcolor: 'warning.50', color: 'warning.main' },
+};
+
+const PILL_TYPE: Record<AlertTipo, PillsProps['type']> = {
+  perdido: 'error',
+  reparacion: 'warning',
+  linea: 'info',
+  baja_pendiente: 'error',
+  confirmacion_vencida: 'warning',
 };
 
 export const AlertsList = ({ alertas, onAlertClick }: AlertsListProps) => {
   if (alertas.length === 0) {
     return (
       <StateCard
-        title="Todo en orden"
-        description="No hay materiales que requieran atención en este momento."
         Icon={IconCircleCheck}
         color="success"
+        title="Todo en orden"
+        description="No hay materiales que requieran atención."
       />
     );
   }
@@ -34,7 +58,8 @@ export const AlertsList = ({ alertas, onAlertClick }: AlertsListProps) => {
   return (
     <Stack>
       {alertas.map((alerta, index) => {
-        const { bgcolor, color, Icon } = iconConfig[alerta.tipo];
+        const { Icon, bgcolor, color } = ICON_CONFIG[alerta.tipo];
+        const pillType = PILL_TYPE[alerta.tipo];
         return (
           <Box key={alerta.id}>
             <Box
@@ -45,9 +70,11 @@ export const AlertsList = ({ alertas, onAlertClick }: AlertsListProps) => {
                 p: 1,
                 mx: -1,
               }}
-              onClick={() => onAlertClick(alerta.id)}
+              onClick={() => onAlertClick(alerta.linkTo)}
+              role="button"
+              aria-label={alerta.label}
             >
-              <Stack flexDirection="row" gap={2} alignItems="center">
+              <Stack sx={{ flexDirection: 'row', gap: 2, alignItems: 'center' }}>
                 <Box
                   sx={{
                     width: 36,
@@ -63,14 +90,17 @@ export const AlertsList = ({ alertas, onAlertClick }: AlertsListProps) => {
                 >
                   <Icon size={18} />
                 </Box>
-                <Box sx={{ flex: 1 }}>
-                  <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                <Stack sx={{ flex: 1, gap: 0, minWidth: 0 }}>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }} noWrap>
                     {alerta.label}
                   </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {alerta.motivo}
-                  </Typography>
-                </Box>
+                  {alerta.sublabel && (
+                    <Typography variant="caption" color="text.secondary" noWrap>
+                      {alerta.sublabel}
+                    </Typography>
+                  )}
+                </Stack>
+                <Pills label={alerta.motivo} type={pillType} size="small" />
               </Stack>
             </Box>
             {index < alertas.length - 1 && <Divider />}

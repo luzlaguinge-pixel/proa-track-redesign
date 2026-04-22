@@ -1,7 +1,9 @@
-import { useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
-import { IconAlertTriangle } from '@material-hu/icons/tabler';
+import { IconAlertTriangle, IconArrowLeft } from '@material-hu/icons/tabler';
 import Stack from '@material-hu/mui/Stack';
+
+import Button from '@material-hu/components/design-system/Buttons/Button';
 
 import StateCard from '@material-hu/components/composed-components/StateCard';
 
@@ -16,6 +18,9 @@ import { useGetMaterial } from './hooks/useGetMaterial';
 
 const InventoryDetail = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const canGoBack = location.key !== 'default';
   const { material, isLoading } = useGetMaterial(id);
 
   if (isLoading) {
@@ -45,6 +50,17 @@ const InventoryDetail = () => {
   return (
     <DashboardLayout>
       <Stack sx={{ gap: 4 }}>
+        {canGoBack && (
+          <Button
+            variant="tertiary"
+            size="small"
+            startIcon={<IconArrowLeft size={16} />}
+            onClick={() => navigate(-1)}
+            sx={{ alignSelf: 'flex-start' }}
+          >
+            Volver
+          </Button>
+        )}
         <MaterialHeader
           material={material}
           actions={<MaterialActions material={material} />}
