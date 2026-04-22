@@ -195,3 +195,33 @@ export const requestConfirmation = async (
     ],
   }));
 };
+
+export type ReturnMaterialInput = {
+  materialId: string;
+  comentario: string;
+  autor: string;
+};
+
+export const returnMaterial = async (
+  input: ReturnMaterialInput,
+): Promise<Material | null> => {
+  const { materialId, comentario, autor } = input;
+  return updateMaterial(materialId, current => ({
+    ...current,
+    responsableNombre: null,
+    responsableDni: null,
+    responsableTelefono: null,
+    comodatoFirmado: false,
+    estado: 'sin_uso',
+    fechaActualizacion: today(),
+    historial: [
+      newEvent({
+        tipo: 'devolucion',
+        autor,
+        titulo: 'Material devuelto',
+        descripcion: comentario.trim() || undefined,
+      }),
+      ...current.historial,
+    ],
+  }));
+};

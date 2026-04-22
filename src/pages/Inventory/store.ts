@@ -56,6 +56,27 @@ export const updateMaterial = (
   return { ...list[idx] };
 };
 
+export const createMaterial = (
+  data: Omit<Material, 'id' | 'estado' | 'responsableNombre' | 'responsableDni' | 'responsableTelefono' | 'comodatoFirmado' | 'fechaActualizacion' | 'historial'>,
+): Material => {
+  const list = load();
+  const newMaterial: Material = {
+    ...data,
+    id: `mat_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+    estado: 'sin_uso',
+    responsableNombre: null,
+    responsableDni: null,
+    responsableTelefono: null,
+    comodatoFirmado: false,
+    fechaActualizacion: new Date().toISOString().slice(0, 10),
+    historial: [],
+  };
+  list.push(newMaterial);
+  cache = list;
+  persist();
+  return { ...newMaterial };
+};
+
 export const resetStore = () => {
   cache = seedMaterials();
   persist();
