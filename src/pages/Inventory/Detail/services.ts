@@ -93,6 +93,82 @@ export const reportMaterial = async (
   });
 };
 
+export type SendToRepairInput = {
+  materialId: string;
+  taller: string;
+  autor: string;
+};
+
+export const sendToRepair = async (
+  input: SendToRepairInput,
+): Promise<Material | null> => {
+  const { materialId, taller, autor } = input;
+  return updateMaterial(materialId, current => ({
+    ...current,
+    estado: 'en_reparacion',
+    fechaActualizacion: today(),
+    historial: [
+      newEvent({
+        tipo: 'enviado_reparacion',
+        autor,
+        titulo: 'Enviado a reparación',
+        descripcion: taller.trim() || undefined,
+      }),
+      ...current.historial,
+    ],
+  }));
+};
+
+export type MarkRecoveredInput = {
+  materialId: string;
+  comentario: string;
+  quedaOk: boolean;
+  autor: string;
+};
+
+export const markRecovered = async (
+  input: MarkRecoveredInput,
+): Promise<Material | null> => {
+  const { materialId, comentario, quedaOk, autor } = input;
+  return updateMaterial(materialId, current => {
+    const comeFrom =
+      current.estado === 'perdida'
+        ? 'perdida'
+        : current.estado === 'en_reparacion'
+          ? 'reparacion'
+          : 'otro';
+    const wasRepaired = comeFrom === 'reparacion';
+    const titulo =
+      comeFrom === 'perdida'
+        ? 'Material recuperado'
+        : wasRepaired
+          ? 'Material recuperado de reparación'
+          : 'Material recuperado';
+    const descParts: string[] = [];
+    if (wasRepaired) {
+      descParts.push(
+        quedaOk ? 'Quedó en buen estado' : 'Sigue con daños',
+      );
+    }
+    if (comentario.trim()) descParts.push(comentario.trim());
+    return {
+      ...current,
+      estado: current.responsableNombre ? 'en_uso' : 'sin_uso',
+      estadoFisico: wasRepaired && quedaOk ? 'ok' : current.estadoFisico,
+      fechaActualizacion: today(),
+      historial: [
+        newEvent({
+          tipo: 'recuperado',
+          autor,
+          titulo,
+          descripcion: descParts.length ? descParts.join(' · ') : undefined,
+        }),
+        ...current.historial,
+      ],
+    };
+  });
+};
+
 export type ConfirmInput = {
   materialId: string;
   kind: 'devolucion' | 'notificar';

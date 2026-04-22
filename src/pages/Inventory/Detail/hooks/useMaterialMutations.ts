@@ -4,11 +4,15 @@ import { useAuth } from '../../../../providers/AuthContext';
 import { materialsKeys } from '../../List/hooks/useGetMaterials';
 import {
   assignMaterial,
+  markRecovered,
   reportMaterial,
   requestConfirmation,
+  sendToRepair,
   type AssignInput,
   type ConfirmInput,
+  type MarkRecoveredInput,
   type ReportInput,
+  type SendToRepairInput,
 } from '../services';
 
 const autorFrom = (user: { firstName: string; lastName: string } | null) =>
@@ -40,5 +44,17 @@ export const useMaterialMutations = (materialId: string) => {
     onSuccess: invalidate,
   });
 
-  return { assign, report, confirm };
+  const repair = useMutation({
+    mutationFn: (input: Omit<SendToRepairInput, 'autor' | 'materialId'>) =>
+      sendToRepair({ ...input, materialId, autor: autorFrom(user) }),
+    onSuccess: invalidate,
+  });
+
+  const recover = useMutation({
+    mutationFn: (input: Omit<MarkRecoveredInput, 'autor' | 'materialId'>) =>
+      markRecovered({ ...input, materialId, autor: autorFrom(user) }),
+    onSuccess: invalidate,
+  });
+
+  return { assign, report, confirm, repair, recover };
 };

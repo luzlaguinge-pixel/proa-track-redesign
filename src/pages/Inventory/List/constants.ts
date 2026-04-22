@@ -23,6 +23,7 @@ export const ESTADO_CONFIG: Record<
   en_uso: { label: 'EN USO', type: 'success' },
   sin_uso: { label: 'SIN USO', type: 'neutral' },
   perdida: { label: 'PERDIDA', type: 'error' },
+  en_reparacion: { label: 'EN REPARACIÓN', type: 'warning' },
 };
 
 export const DUEÑO_LABEL: Record<MaterialDueño, string> = {

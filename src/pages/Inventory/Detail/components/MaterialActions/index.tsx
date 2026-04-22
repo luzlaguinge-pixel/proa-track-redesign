@@ -8,8 +8,10 @@ import { useMenuLayer } from '@material-hu/components/layers/Menus';
 import {
   IconAlertTriangle,
   IconBell,
+  IconCircleCheck,
   IconDotsVertical,
   IconMailbox,
+  IconTool,
   IconUserPlus,
   IconUserX,
 } from '@material-hu/icons/tabler';
@@ -20,7 +22,9 @@ import { useMaterialMutations } from '../../hooks/useMaterialMutations';
 import type { Person } from '../../types';
 import AssignDrawer from './AssignDrawer';
 import ConfirmDialog from './ConfirmDialog';
+import MarkRecoveredDialog from './MarkRecoveredDialog';
 import ReportDialog from './ReportDialog';
+import SendToRepairDialog from './SendToRepairDialog';
 
 type MaterialActionsProps = {
   material: Material;
@@ -32,9 +36,15 @@ const MaterialActions = ({ material }: MaterialActionsProps) => {
   const { openDrawer, closeDrawer } = useDrawerLayer();
   const { openDialog, closeDialog } = useDialogLayer();
   const { openMenu } = useMenuLayer();
-  const { assign, report, confirm } = useMaterialMutations(material.id);
+  const { assign, report, confirm, repair, recover } = useMaterialMutations(
+    material.id,
+  );
 
   const hasResponsable = !!material.responsableNombre;
+  const canSendToRepair =
+    material.estadoFisico === 'dañado' && material.estado !== 'en_reparacion';
+  const canMarkRecovered =
+    material.estado === 'perdida' || material.estado === 'en_reparacion';
 
   const handleAssign = async (input: {
     personId: string;
@@ -58,6 +68,19 @@ const MaterialActions = ({ material }: MaterialActionsProps) => {
 
   const handleConfirm = async (kind: 'devolucion' | 'notificar') => {
     await confirm.mutateAsync({ kind });
+    closeDialog();
+  };
+
+  const handleSendToRepair = async (taller: string) => {
+    await repair.mutateAsync({ taller });
+    closeDialog();
+  };
+
+  const handleMarkRecovered = async (input: {
+    comentario: string;
+    quedaOk: boolean;
+  }) => {
+    await recover.mutateAsync(input);
     closeDialog();
   };
 
@@ -101,6 +124,30 @@ const MaterialActions = ({ material }: MaterialActionsProps) => {
     });
   };
 
+  const openSendToRepair = () => {
+    openDialog({
+      content: (
+        <SendToRepairDialog
+          material={material}
+          onClose={() => closeDialog()}
+          onSubmit={handleSendToRepair}
+        />
+      ),
+    });
+  };
+
+  const openMarkRecovered = () => {
+    openDialog({
+      content: (
+        <MarkRecoveredDialog
+          material={material}
+          onClose={() => closeDialog()}
+          onSubmit={handleMarkRecovered}
+        />
+      ),
+    });
+  };
+
   const handleMoreClick = (event: React.MouseEvent<HTMLElement>) => {
     const items = [
       ...(hasResponsable
@@ -116,6 +163,26 @@ const MaterialActions = ({ material }: MaterialActionsProps) => {
               title: 'Notificar al responsable',
               icon: IconBell,
               onSelect: () => openConfirm('notificar'),
+            },
+          ]
+        : []),
+      ...(canMarkRecovered
+        ? [
+            {
+              id: 'recuperado',
+              title: 'Marcar como recuperado',
+              icon: IconCircleCheck,
+              onSelect: openMarkRecovered,
+            },
+          ]
+        : []),
+      ...(canSendToRepair
+        ? [
+            {
+              id: 'reparacion',
+              title: 'Enviar a reparación',
+              icon: IconTool,
+              onSelect: openSendToRepair,
             },
           ]
         : []),

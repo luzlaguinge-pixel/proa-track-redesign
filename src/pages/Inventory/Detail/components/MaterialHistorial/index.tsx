@@ -6,8 +6,10 @@ import Typography from '@material-hu/mui/Typography';
 import {
   IconAlertTriangle,
   IconBell,
+  IconCircleCheck,
   IconClockHour3,
   IconMailbox,
+  IconTool,
   IconUserCheck,
   IconUserPlus,
   IconUserX,
@@ -24,6 +26,8 @@ const ICONS: Record<HistorialEventoTipo, TablerIcon> = {
   notificacion: IconBell,
   marcado_perdido: IconUserX,
   marcado_dañado: IconAlertTriangle,
+  enviado_reparacion: IconTool,
+  recuperado: IconCircleCheck,
 };
 
 const ICON_BG: Record<HistorialEventoTipo, string> = {
@@ -34,6 +38,8 @@ const ICON_BG: Record<HistorialEventoTipo, string> = {
   notificacion: 'warning.50',
   marcado_perdido: 'error.50',
   marcado_dañado: 'error.50',
+  enviado_reparacion: 'warning.50',
+  recuperado: 'success.50',
 };
 
 const ICON_COLOR: Record<HistorialEventoTipo, string> = {
@@ -44,6 +50,8 @@ const ICON_COLOR: Record<HistorialEventoTipo, string> = {
   notificacion: 'warning.main',
   marcado_perdido: 'error.main',
   marcado_dañado: 'error.main',
+  enviado_reparacion: 'warning.main',
+  recuperado: 'success.main',
 };
 
 const formatDateTime = (iso: string) => {

@@ -11,7 +11,7 @@ export type MaterialTipo =
   | 'banner'
   | 'otro';
 
-export type MaterialEstado = 'en_uso' | 'sin_uso' | 'perdida';
+export type MaterialEstado = 'en_uso' | 'sin_uso' | 'perdida' | 'en_reparacion';
 
 export type MaterialEstadoFisico = 'ok' | 'dañado';
 
@@ -26,7 +26,9 @@ export type HistorialEventoTipo =
   | 'solicitud_devolucion'
   | 'notificacion'
   | 'marcado_perdido'
-  | 'marcado_dañado';
+  | 'marcado_dañado'
+  | 'enviado_reparacion'
+  | 'recuperado';
 
 export type HistorialEvento = {
   id: string;
