@@ -8,6 +8,7 @@ import { IconAlertTriangle } from '@material-hu/icons/tabler';
 import { DashboardLayout } from '../../../layouts/DashboardLayout';
 import MaterialHeader from './components/MaterialHeader';
 import MaterialMetadata from './components/MaterialMetadata';
+import MaterialResponsable from './components/MaterialResponsable';
 import { useGetMaterial } from './hooks/useGetMaterial';
 
 const InventoryDetail = () => {
@@ -42,6 +43,7 @@ const InventoryDetail = () => {
     <DashboardLayout>
       <Stack sx={{ gap: 4 }}>
         <MaterialHeader material={material} />
+        <MaterialResponsable material={material} />
         <MaterialMetadata material={material} />
       </Stack>
     </DashboardLayout>
