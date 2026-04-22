@@ -4,7 +4,7 @@ import Paper from '@material-hu/mui/Paper';
 import Stack from '@material-hu/mui/Stack';
 import Typography from '@material-hu/mui/Typography';
 
-import type { Material, MaterialPais } from '../../../List/types';
+import { type Material, type MaterialPais } from '../../../List/types';
 
 const PAIS_LABEL: Record<MaterialPais, string> = {
   AR: 'Argentina',
@@ -45,7 +45,11 @@ const Section = ({ title, items }: { title: string; items: Item[] }) => (
     <Box
       sx={{
         display: 'grid',
-        gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
+        gridTemplateColumns: {
+          xs: '1fr',
+          sm: 'repeat(2, 1fr)',
+          md: 'repeat(3, 1fr)',
+        },
         rowGap: 2.5,
         columnGap: 4,
       }}

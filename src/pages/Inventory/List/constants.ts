@@ -1,6 +1,10 @@
-import type { PillsProps } from '@material-hu/components/design-system/Pills/types';
+import { type PillsProps } from '@material-hu/components/design-system/Pills/types';
 
-import type { MaterialDueño, MaterialEstado, MaterialTipo } from './types';
+import {
+  type MaterialDueño,
+  type MaterialEstado,
+  type MaterialTipo,
+} from './types';
 
 export const TIPO_LABEL: Record<MaterialTipo, string> = {
   pechera: 'Pechera',

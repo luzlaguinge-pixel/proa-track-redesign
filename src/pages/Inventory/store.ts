@@ -1,6 +1,6 @@
 import db from '../../../mock/db.json';
 
-import type { Material } from './List/types';
+import { type Material } from './List/types';
 
 const STORAGE_KEY = 'proa-track:materials';
 

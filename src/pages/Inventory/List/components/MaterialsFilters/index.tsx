@@ -5,8 +5,12 @@ import Search from '@material-hu/components/design-system/Inputs/Search';
 import Select from '@material-hu/components/design-system/Inputs/Select';
 
 import { DUEÑO_LABEL, ESTADO_CONFIG, TIPO_LABEL } from '../../constants';
-import type { Filters } from '../../hooks/useMaterialsFilters';
-import type { MaterialDueño, MaterialEstado, MaterialTipo } from '../../types';
+import { type Filters } from '../../hooks/useMaterialsFilters';
+import {
+  type MaterialDueño,
+  type MaterialEstado,
+  type MaterialTipo,
+} from '../../types';
 
 type MaterialsFiltersProps = {
   filters: Filters;

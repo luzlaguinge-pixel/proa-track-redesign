@@ -1,7 +1,7 @@
 import { type ReactNode, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
-import { IconBox, IconHome } from '@material-hu/icons/tabler';
+import { IconBox, IconHome, IconUsers } from '@material-hu/icons/tabler';
 import Stack from '@material-hu/mui/Stack';
 
 import Button from '@material-hu/components/design-system/Buttons/Button';
@@ -13,8 +13,8 @@ import {
 } from '@material-hu/components/design-system/Sidebar/constants';
 import { type NavSectionProps } from '@material-hu/components/design-system/Sidebar/types';
 
-import { useAuth } from '../../providers/AuthContext';
 import humandLogo from '../../assets/humand.svg';
+import { useAuth } from '../../providers/AuthContext';
 
 const SECTIONS: NavSectionProps[] = [
   {
@@ -27,6 +27,12 @@ const SECTIONS: NavSectionProps[] = [
         title: 'Inventario',
         path: '/inventory',
         icon: <IconBox />,
+      },
+      {
+        key: 'people',
+        title: 'Personas',
+        path: '/people',
+        icon: <IconUsers />,
       },
     ],
   },

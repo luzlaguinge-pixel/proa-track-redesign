@@ -1,19 +1,24 @@
+import { IconUser, IconUserOff } from '@material-hu/icons/tabler';
 import Box from '@material-hu/mui/Box';
 import Paper from '@material-hu/mui/Paper';
 import Stack from '@material-hu/mui/Stack';
 import Typography from '@material-hu/mui/Typography';
 
 import Pills from '@material-hu/components/design-system/Pills';
-import { IconUser, IconUserOff } from '@material-hu/icons/tabler';
 
-import type { Material } from '../../../List/types';
+import { type Material } from '../../../List/types';
 
 type MaterialResponsableProps = {
   material: Material;
 };
 
 const MaterialResponsable = ({ material }: MaterialResponsableProps) => {
-  const { responsableNombre, responsableDni, responsableTelefono, comodatoFirmado } = material;
+  const {
+    responsableNombre,
+    responsableDni,
+    responsableTelefono,
+    comodatoFirmado,
+  } = material;
 
   return (
     <Paper
@@ -99,7 +104,9 @@ const MaterialResponsable = ({ material }: MaterialResponsableProps) => {
                 >
                   Teléfono
                 </Typography>
-                <Typography variant="body1">{responsableTelefono || '—'}</Typography>
+                <Typography variant="body1">
+                  {responsableTelefono || '—'}
+                </Typography>
               </Stack>
             </Box>
           </Stack>

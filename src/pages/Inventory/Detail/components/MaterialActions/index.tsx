@@ -1,10 +1,3 @@
-import IconButton from '@material-hu/mui/IconButton';
-import Stack from '@material-hu/mui/Stack';
-
-import Button from '@material-hu/components/design-system/Buttons/Button';
-import { useDialogLayer } from '@material-hu/components/layers/Dialogs';
-import { useDrawerLayer } from '@material-hu/components/layers/Drawers';
-import { useMenuLayer } from '@material-hu/components/layers/Menus';
 import {
   IconAlertTriangle,
   IconBell,
@@ -15,11 +8,19 @@ import {
   IconUserPlus,
   IconUserX,
 } from '@material-hu/icons/tabler';
+import IconButton from '@material-hu/mui/IconButton';
+import Stack from '@material-hu/mui/Stack';
+
+import Button from '@material-hu/components/design-system/Buttons/Button';
+import { useDialogLayer } from '@material-hu/components/layers/Dialogs';
+import { useDrawerLayer } from '@material-hu/components/layers/Drawers';
+import { useMenuLayer } from '@material-hu/components/layers/Menus';
 
 import db from '../../../../../../mock/db.json';
-import type { Material } from '../../../List/types';
+import { type Material } from '../../../List/types';
 import { useMaterialMutations } from '../../hooks/useMaterialMutations';
-import type { Person } from '../../types';
+import { type Person } from '../../types';
+
 import AssignDrawer from './AssignDrawer';
 import ConfirmDialog from './ConfirmDialog';
 import MarkRecoveredDialog from './MarkRecoveredDialog';

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 
 import Stack from '@material-hu/mui/Stack';
 
+import Pagination from '@material-hu/components/design-system/Inputs/Pagination';
 import Pills from '@material-hu/components/design-system/Pills';
 import Table from '@material-hu/components/design-system/Table';
 import TableBody from '@material-hu/components/design-system/Table/components/TableBody';
@@ -10,7 +11,6 @@ import TableCell from '@material-hu/components/design-system/Table/components/Ta
 import TableContainer from '@material-hu/components/design-system/Table/components/TableContainer';
 import TableHead from '@material-hu/components/design-system/Table/components/TableHead';
 import TableRow from '@material-hu/components/design-system/Table/components/TableRow';
-import Pagination from '@material-hu/components/design-system/Inputs/Pagination';
 
 import {
   DUEÑO_LABEL,
@@ -18,7 +18,7 @@ import {
   PAGE_LIMIT_OPTIONS,
   TIPO_LABEL,
 } from '../../constants';
-import type { Material } from '../../types';
+import { type Material } from '../../types';
 
 type MaterialsTableProps = {
   materials: Material[];

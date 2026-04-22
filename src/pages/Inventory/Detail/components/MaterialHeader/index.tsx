@@ -1,15 +1,19 @@
-import type { ReactNode } from 'react';
+import { type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+import { IconArrowLeft } from '@material-hu/icons/tabler';
 import Stack from '@material-hu/mui/Stack';
 import Typography from '@material-hu/mui/Typography';
 
 import Button from '@material-hu/components/design-system/Buttons/Button';
 import Pills from '@material-hu/components/design-system/Pills';
-import { IconArrowLeft } from '@material-hu/icons/tabler';
 
-import { DUEÑO_LABEL, ESTADO_CONFIG, TIPO_LABEL } from '../../../List/constants';
-import type { Material } from '../../../List/types';
+import {
+  DUEÑO_LABEL,
+  ESTADO_CONFIG,
+  TIPO_LABEL,
+} from '../../../List/constants';
+import { type Material } from '../../../List/types';
 
 type MaterialHeaderProps = {
   material: Material;

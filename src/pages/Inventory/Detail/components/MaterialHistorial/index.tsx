@@ -1,8 +1,3 @@
-import Box from '@material-hu/mui/Box';
-import Paper from '@material-hu/mui/Paper';
-import Stack from '@material-hu/mui/Stack';
-import Typography from '@material-hu/mui/Typography';
-
 import {
   IconAlertTriangle,
   IconBell,
@@ -15,8 +10,12 @@ import {
   IconUserX,
   type TablerIcon,
 } from '@material-hu/icons/tabler';
+import Box from '@material-hu/mui/Box';
+import Paper from '@material-hu/mui/Paper';
+import Stack from '@material-hu/mui/Stack';
+import Typography from '@material-hu/mui/Typography';
 
-import type { HistorialEventoTipo, Material } from '../../../List/types';
+import { type HistorialEventoTipo, type Material } from '../../../List/types';
 
 const ICONS: Record<HistorialEventoTipo, TablerIcon> = {
   asignacion: IconUserPlus,
@@ -131,7 +130,11 @@ const MaterialHistorial = ({ material }: MaterialHistorialProps) => {
               return (
                 <Stack
                   key={event.id}
-                  sx={{ flexDirection: 'row', gap: 2, alignItems: 'flex-start' }}
+                  sx={{
+                    flexDirection: 'row',
+                    gap: 2,
+                    alignItems: 'flex-start',
+                  }}
                 >
                   <Box
                     sx={{

@@ -6,7 +6,7 @@ import Typography from '@material-hu/mui/Typography';
 import Button from '@material-hu/components/design-system/Buttons/Button';
 import Dialog from '@material-hu/components/design-system/Dialog';
 
-import type { Material } from '../../../List/types';
+import { type Material } from '../../../List/types';
 
 type ConfirmKind = 'devolucion' | 'notificar';
 
@@ -17,7 +17,10 @@ type ConfirmDialogProps = {
   onSubmit: () => Promise<void> | void;
 };
 
-const COPY: Record<ConfirmKind, { title: string; description: string; primary: string }> = {
+const COPY: Record<
+  ConfirmKind,
+  { title: string; description: string; primary: string }
+> = {
   devolucion: {
     title: 'Solicitar devolución',
     description:
@@ -32,7 +35,12 @@ const COPY: Record<ConfirmKind, { title: string; description: string; primary: s
   },
 };
 
-const ConfirmDialog = ({ kind, material, onClose, onSubmit }: ConfirmDialogProps) => {
+const ConfirmDialog = ({
+  kind,
+  material,
+  onClose,
+  onSubmit,
+}: ConfirmDialogProps) => {
   const copy = COPY[kind];
   const [submitting, setSubmitting] = useState(false);
 
@@ -67,7 +75,9 @@ const ConfirmDialog = ({ kind, material, onClose, onSubmit }: ConfirmDialogProps
         </Stack>
       </Dialog.Body>
       <Dialog.Footer>
-        <Stack sx={{ flexDirection: 'row', justifyContent: 'flex-end', gap: 1 }}>
+        <Stack
+          sx={{ flexDirection: 'row', justifyContent: 'flex-end', gap: 1 }}
+        >
           <Button
             variant="tertiary"
             onClick={onClose}

@@ -1,11 +1,12 @@
 import { useParams } from 'react-router-dom';
 
+import { IconAlertTriangle } from '@material-hu/icons/tabler';
 import Stack from '@material-hu/mui/Stack';
 
 import StateCard from '@material-hu/components/composed-components/StateCard';
-import { IconAlertTriangle } from '@material-hu/icons/tabler';
 
 import { DashboardLayout } from '../../../layouts/DashboardLayout';
+
 import MaterialActions from './components/MaterialActions';
 import MaterialHeader from './components/MaterialHeader';
 import MaterialHistorial from './components/MaterialHistorial';

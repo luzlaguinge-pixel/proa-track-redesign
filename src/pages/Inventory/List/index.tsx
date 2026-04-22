@@ -1,11 +1,12 @@
+import { IconInfoCircle, IconPlus } from '@material-hu/icons/tabler';
 import Stack from '@material-hu/mui/Stack';
 
-import Button from '@material-hu/components/design-system/Buttons/Button';
 import StateCard from '@material-hu/components/composed-components/StateCard';
+import Button from '@material-hu/components/design-system/Buttons/Button';
 import Title from '@material-hu/components/design-system/Title';
-import { IconInfoCircle, IconPlus } from '@material-hu/icons/tabler';
 
 import { DashboardLayout } from '../../../layouts/DashboardLayout';
+
 import MaterialsFilters from './components/MaterialsFilters';
 import MaterialsTable from './components/MaterialsTable';
 import { useGetMaterials } from './hooks/useGetMaterials';
@@ -26,7 +27,8 @@ const InventoryList = () => {
   const handleCreate = () => {};
 
   const hasNoMaterials = !isLoading && materials.length === 0;
-  const hasNoResults = !isLoading && materials.length > 0 && filtered.length === 0;
+  const hasNoResults =
+    !isLoading && materials.length > 0 && filtered.length === 0;
 
   return (
     <DashboardLayout>
@@ -83,8 +85,7 @@ const InventoryList = () => {
                 slotProps={{
                   title: {
                     title: 'Sin resultados',
-                    description:
-                      'Probá ajustando los filtros o la búsqueda.',
+                    description: 'Probá ajustando los filtros o la búsqueda.',
                     variant: 'M',
                   },
                   avatar: {

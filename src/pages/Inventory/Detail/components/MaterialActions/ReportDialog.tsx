@@ -7,7 +7,7 @@ import Button from '@material-hu/components/design-system/Buttons/Button';
 import Dialog from '@material-hu/components/design-system/Dialog';
 import InputClassic from '@material-hu/components/design-system/Inputs/Classic';
 
-import type { Material } from '../../../List/types';
+import { type Material } from '../../../List/types';
 
 type ReportKind = 'perdido' | 'dañado';
 
@@ -18,7 +18,10 @@ type ReportDialogProps = {
   onSubmit: (motivo: string) => Promise<void> | void;
 };
 
-const COPY: Record<ReportKind, { title: string; intro: string; primary: string }> = {
+const COPY: Record<
+  ReportKind,
+  { title: string; intro: string; primary: string }
+> = {
   perdido: {
     title: 'Marcar como perdido',
     intro: 'Se le notificará al admin y al líder para iniciar el seguimiento.',
@@ -31,7 +34,12 @@ const COPY: Record<ReportKind, { title: string; intro: string; primary: string }
   },
 };
 
-const ReportDialog = ({ kind, material, onClose, onSubmit }: ReportDialogProps) => {
+const ReportDialog = ({
+  kind,
+  material,
+  onClose,
+  onSubmit,
+}: ReportDialogProps) => {
   const copy = COPY[kind];
   const [motivo, setMotivo] = useState('');
   const [error, setError] = useState(false);
@@ -66,7 +74,9 @@ const ReportDialog = ({ kind, material, onClose, onSubmit }: ReportDialogProps) 
           </Typography>
           <Typography variant="body2">
             <strong>{material.osc || '—'}</strong> · {material.plaza}
-            {material.responsableNombre ? ` · ${material.responsableNombre}` : ''}
+            {material.responsableNombre
+              ? ` · ${material.responsableNombre}`
+              : ''}
           </Typography>
           <InputClassic
             label="Motivo"
@@ -86,7 +96,9 @@ const ReportDialog = ({ kind, material, onClose, onSubmit }: ReportDialogProps) 
         </Stack>
       </Dialog.Body>
       <Dialog.Footer>
-        <Stack sx={{ flexDirection: 'row', justifyContent: 'flex-end', gap: 1 }}>
+        <Stack
+          sx={{ flexDirection: 'row', justifyContent: 'flex-end', gap: 1 }}
+        >
           <Button
             variant="tertiary"
             onClick={onClose}

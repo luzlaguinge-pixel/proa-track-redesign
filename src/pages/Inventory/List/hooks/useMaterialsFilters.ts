@@ -1,10 +1,10 @@
 import { useMemo, useState } from 'react';
 
-import type {
-  Material,
-  MaterialDueño,
-  MaterialEstado,
-  MaterialTipo,
+import {
+  type Material,
+  type MaterialDueño,
+  type MaterialEstado,
+  type MaterialTipo,
 } from '../types';
 
 export type Filters = {
@@ -29,8 +29,7 @@ export const useMaterialsFilters = (materials: Material[]) => {
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
 
   const oscOptions = useMemo(
-    () =>
-      Array.from(new Set(materials.map(m => m.osc).filter(Boolean))).sort(),
+    () => Array.from(new Set(materials.map(m => m.osc).filter(Boolean))).sort(),
     [materials],
   );
 

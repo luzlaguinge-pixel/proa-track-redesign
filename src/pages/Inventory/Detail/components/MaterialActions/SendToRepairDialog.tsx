@@ -7,7 +7,7 @@ import Button from '@material-hu/components/design-system/Buttons/Button';
 import Dialog from '@material-hu/components/design-system/Dialog';
 import InputClassic from '@material-hu/components/design-system/Inputs/Classic';
 
-import type { Material } from '../../../List/types';
+import { type Material } from '../../../List/types';
 
 type SendToRepairDialogProps = {
   material: Material;
@@ -63,7 +63,9 @@ const SendToRepairDialog = ({
         </Stack>
       </Dialog.Body>
       <Dialog.Footer>
-        <Stack sx={{ flexDirection: 'row', justifyContent: 'flex-end', gap: 1 }}>
+        <Stack
+          sx={{ flexDirection: 'row', justifyContent: 'flex-end', gap: 1 }}
+        >
           <Button
             variant="tertiary"
             onClick={onClose}

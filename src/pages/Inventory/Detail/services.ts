@@ -1,7 +1,7 @@
+import { type HistorialEvento, type Material } from '../List/types';
 import { getMaterialById, updateMaterial } from '../store';
 
-import type { HistorialEvento, Material } from '../List/types';
-import type { Person } from './types';
+import { type Person } from './types';
 
 export const getMaterial = async (id: string): Promise<Material | null> => {
   return getMaterialById(id);
@@ -146,9 +146,7 @@ export const markRecovered = async (
           : 'Material recuperado';
     const descParts: string[] = [];
     if (wasRepaired) {
-      descParts.push(
-        quedaOk ? 'Quedó en buen estado' : 'Sigue con daños',
-      );
+      descParts.push(quedaOk ? 'Quedó en buen estado' : 'Sigue con daños');
     }
     if (comentario.trim()) descParts.push(comentario.trim());
     return {

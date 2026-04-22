@@ -8,8 +8,8 @@ import Autocomplete from '@material-hu/components/design-system/Inputs/Autocompl
 import InputClassic from '@material-hu/components/design-system/Inputs/Classic';
 import Toggle from '@material-hu/components/design-system/Toggle';
 
-import type { Material } from '../../../List/types';
-import type { Person } from '../../types';
+import { type Material } from '../../../List/types';
+import { type Person } from '../../types';
 
 type AssignDrawerProps = {
   material: Material;
@@ -22,9 +22,16 @@ type AssignDrawerProps = {
   }) => Promise<void> | void;
 };
 
-const AssignDrawer = ({ material, persons, onClose, onSubmit }: AssignDrawerProps) => {
+const AssignDrawer = ({
+  material,
+  persons,
+  onClose,
+  onSubmit,
+}: AssignDrawerProps) => {
   const hasResponsable = !!material.responsableNombre;
-  const currentPerson = persons.find(p => p.nombre === material.responsableNombre);
+  const currentPerson = persons.find(
+    p => p.nombre === material.responsableNombre,
+  );
 
   const [selectedPersonId, setSelectedPersonId] = useState<string | null>(
     currentPerson?.id ?? null,
@@ -40,7 +47,8 @@ const AssignDrawer = ({ material, persons, onClose, onSubmit }: AssignDrawerProp
     description: p.dni ? `DNI ${p.dni}` : undefined,
   }));
 
-  const selectedOption = options.find(o => o.value === selectedPersonId) ?? null;
+  const selectedOption =
+    options.find(o => o.value === selectedPersonId) ?? null;
 
   const handleSubmit = async () => {
     if (!selectedPersonId) {
