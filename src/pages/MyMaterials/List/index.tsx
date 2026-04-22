@@ -20,6 +20,7 @@ import {
   TIPO_LABEL,
 } from '../../Inventory/List/constants';
 
+import MaterialRowActions from './components/MaterialRowActions';
 import { DEMO_CAPTADOR_NOMBRE } from './services';
 import { useMyMaterials } from './hooks/useMyMaterials';
 
@@ -67,6 +68,7 @@ const MyMaterialsList = () => {
                   <TableCell headerCell>OSC</TableCell>
                   <TableCell headerCell>Plaza</TableCell>
                   <TableCell headerCell>Comodato</TableCell>
+                  <TableCell headerCell />
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -75,11 +77,20 @@ const MyMaterialsList = () => {
                   return (
                     <TableRow
                       key={material.id}
-                      onClick={() => navigate(`/inventory/${material.id}`)}
-                      sx={{ cursor: 'pointer' }}
+                      sx={{ cursor: 'default' }}
                     >
-                      <TableCell>{TIPO_LABEL[material.tipo]}</TableCell>
-                      <TableCell>{material.detalle || '—'}</TableCell>
+                      <TableCell
+                        onClick={() => navigate(`/inventory/${material.id}`)}
+                        sx={{ cursor: 'pointer' }}
+                      >
+                        {TIPO_LABEL[material.tipo]}
+                      </TableCell>
+                      <TableCell
+                        onClick={() => navigate(`/inventory/${material.id}`)}
+                        sx={{ cursor: 'pointer' }}
+                      >
+                        {material.detalle || '—'}
+                      </TableCell>
                       <TableCell>
                         <Pills label={estado.label} type={estado.type} size="small" />
                       </TableCell>
@@ -94,6 +105,9 @@ const MyMaterialsList = () => {
                         ) : (
                           <Typography variant="caption" color="text.disabled">Pendiente</Typography>
                         )}
+                      </TableCell>
+                      <TableCell>
+                        <MaterialRowActions material={material} />
                       </TableCell>
                     </TableRow>
                   );
