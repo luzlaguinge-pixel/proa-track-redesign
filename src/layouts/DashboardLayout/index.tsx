@@ -1,9 +1,10 @@
 import { type ReactNode, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
-import { IconHome } from '@material-hu/icons/tabler';
+import { IconBox, IconHome } from '@material-hu/icons/tabler';
 import Stack from '@material-hu/mui/Stack';
 
+import Button from '@material-hu/components/design-system/Buttons/Button';
 import HomeHeader from '@material-hu/components/design-system/Header/Home';
 import Sidebar from '@material-hu/components/design-system/Sidebar';
 import {
@@ -12,6 +13,7 @@ import {
 } from '@material-hu/components/design-system/Sidebar/constants';
 import { type NavSectionProps } from '@material-hu/components/design-system/Sidebar/types';
 
+import { useAuth } from '../../providers/AuthContext';
 import humandLogo from '../../assets/humand.svg';
 
 const SECTIONS: NavSectionProps[] = [
@@ -20,6 +22,12 @@ const SECTIONS: NavSectionProps[] = [
     title: 'Main',
     items: [
       { key: 'home', title: 'Home', path: '/', icon: <IconHome /> },
+      {
+        key: 'inventory',
+        title: 'Inventario',
+        path: '/inventory',
+        icon: <IconBox />,
+      },
     ],
   },
 ];
@@ -31,8 +39,14 @@ type DashboardLayoutProps = {
 export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const { pathname } = useLocation();
+  const { user, logout } = useAuth();
 
   const sidebarWidth = isCollapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_WIDTH;
+
+  const avatarInitial =
+    user?.firstName?.[0]?.toUpperCase() ??
+    user?.email?.[0]?.toUpperCase() ??
+    'U';
 
   return (
     <Stack sx={{ minHeight: '100vh' }}>
@@ -43,8 +57,17 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         hideNotificationsButton
         hideSupportButton
         isAdmin={false}
-        avatarProps={{ text: 'U' }}
-        avatarPopoverContent={null}
+        avatarProps={{ text: avatarInitial }}
+        avatarPopoverContent={
+          <Stack sx={{ p: 2, minWidth: 180 }}>
+            <Button
+              onClick={() => logout()}
+              variant="text"
+            >
+              Cerrar sesión
+            </Button>
+          </Stack>
+        }
         onOpenLanguageMenu={() => {}}
         supportButtonProps={{ href: '#' }}
         sx={{
