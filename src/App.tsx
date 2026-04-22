@@ -11,6 +11,7 @@ import { MenuLayerProvider } from '@material-hu/components/layers/Menus';
 
 import { HomePage } from './pages/Home';
 import { AuthProvider, useAuth } from './providers/AuthContext';
+import { ProfileProvider } from './providers/ProfileContext';
 import './i18n';
 
 const LoginPage = lazy(() => import('./pages/Auth/Login'));
@@ -46,6 +47,7 @@ const App = () => {
           <DialogLayerProvider>
             <DrawerLayerProvider>
               <BrowserRouter>
+                <ProfileProvider>
                 <AuthProvider>
                   <Suspense fallback={null}>
                     <Routes>
@@ -120,6 +122,7 @@ const App = () => {
                     </Routes>
                   </Suspense>
                 </AuthProvider>
+                </ProfileProvider>
               </BrowserRouter>
             </DrawerLayerProvider>
           </DialogLayerProvider>
