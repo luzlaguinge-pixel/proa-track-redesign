@@ -19,6 +19,24 @@ export type MaterialDueño = 'proa' | 'cliente';
 
 export type MaterialPais = 'AR' | 'UY' | 'GT';
 
+export type HistorialEventoTipo =
+  | 'asignacion'
+  | 'reasignacion'
+  | 'devolucion'
+  | 'solicitud_devolucion'
+  | 'notificacion'
+  | 'marcado_perdido'
+  | 'marcado_dañado';
+
+export type HistorialEvento = {
+  id: string;
+  tipo: HistorialEventoTipo;
+  fecha: string;
+  autor: string;
+  titulo: string;
+  descripcion?: string;
+};
+
 export type Material = {
   id: string;
   tipo: MaterialTipo;
@@ -37,4 +55,5 @@ export type Material = {
   lineaTelefonica: string | null;
   observaciones: string | null;
   fechaActualizacion: string;
+  historial: HistorialEvento[];
 };

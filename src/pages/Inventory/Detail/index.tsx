@@ -6,7 +6,9 @@ import StateCard from '@material-hu/components/composed-components/StateCard';
 import { IconAlertTriangle } from '@material-hu/icons/tabler';
 
 import { DashboardLayout } from '../../../layouts/DashboardLayout';
+import MaterialActions from './components/MaterialActions';
 import MaterialHeader from './components/MaterialHeader';
+import MaterialHistorial from './components/MaterialHistorial';
 import MaterialMetadata from './components/MaterialMetadata';
 import MaterialResponsable from './components/MaterialResponsable';
 import { useGetMaterial } from './hooks/useGetMaterial';
@@ -42,9 +44,13 @@ const InventoryDetail = () => {
   return (
     <DashboardLayout>
       <Stack sx={{ gap: 4 }}>
-        <MaterialHeader material={material} />
+        <MaterialHeader
+          material={material}
+          actions={<MaterialActions material={material} />}
+        />
         <MaterialResponsable material={material} />
         <MaterialMetadata material={material} />
+        <MaterialHistorial material={material} />
       </Stack>
     </DashboardLayout>
   );
