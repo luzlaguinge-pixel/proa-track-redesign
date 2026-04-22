@@ -8,6 +8,7 @@ import Typography from '@material-hu/mui/Typography';
 import Button from '@material-hu/components/design-system/Buttons/Button';
 import Pills from '@material-hu/components/design-system/Pills';
 
+import { useProfile } from '../../../../../providers/ProfileContext';
 import {
   DUEÑO_LABEL,
   ESTADO_CONFIG,
@@ -22,20 +23,31 @@ type MaterialHeaderProps = {
 
 const MaterialHeader = ({ material, actions }: MaterialHeaderProps) => {
   const navigate = useNavigate();
+  const { perfil } = useProfile();
   const estado = ESTADO_CONFIG[material.estado];
   const subtitle = [material.osc, material.plaza].filter(Boolean).join(' · ');
+
+  const handleBackClick = () => {
+    if (perfil === 'navegante') {
+      navigate('/my-materials');
+    } else {
+      navigate('/inventory');
+    }
+  };
 
   return (
     <Stack sx={{ gap: 3 }}>
       <Stack sx={{ alignItems: 'flex-start' }}>
-        <Button
-          variant="ghost"
-          size="small"
-          startIcon={<IconArrowLeft size={16} />}
-          onClick={() => navigate('/inventory')}
-        >
-          Volver a inventario
-        </Button>
+        {perfil !== 'navegante' && (
+          <Button
+            variant="ghost"
+            size="small"
+            startIcon={<IconArrowLeft size={16} />}
+            onClick={handleBackClick}
+          >
+            Volver a inventario
+          </Button>
+        )}
       </Stack>
       <Stack
         sx={{
