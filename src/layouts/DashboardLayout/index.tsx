@@ -32,8 +32,8 @@ const PERFIL_LABEL: Record<Perfil, string> = {
   captador: 'Captador',
 };
 
-const ADMIN_NAV_KEYS = new Set(['home', 'inventory', 'people', 'catalog', 'movements']);
-const LIDER_NAV_KEYS = new Set(['home', 'my-team', 'team-inventory']);
+const ADMIN_NAV_KEYS = new Set(['home', 'inventory', 'people', 'catalog', 'movements', 'my-materials']);
+const LIDER_NAV_KEYS = new Set(['home', 'my-team', 'team-inventory', 'my-materials']);
 const CAPTADOR_NAV_KEYS = new Set(['home', 'my-materials']);
 
 const ALL_ITEMS = [
