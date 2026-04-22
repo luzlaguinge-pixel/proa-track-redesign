@@ -5,7 +5,7 @@ import { type Material } from '../../Inventory/List/types';
 type RawPerson = { id: string; nombre: string; dni: string };
 
 // TODO: replace with actual logged-in user lookup via auth session
-export const DEMO_CAPTADOR_NOMBRE = 'Karen Daniela Ramirez';
+export const DEMO_CAPTADOR_NOMBRE = 'Luz Laguinge';
 
 const rawPersons = (db as { persons: RawPerson[] }).persons;
 

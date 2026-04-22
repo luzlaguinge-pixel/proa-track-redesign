@@ -8572,6 +8572,16 @@
   ],
   "persons": [
     {
+      "id": "p_luz",
+      "nombre": "Luz Laguinge",
+      "dni": "",
+      "telefono": "",
+      "email": "luz.laguinge@humand.co",
+      "puesto": "Humand",
+      "pais": "AR",
+      "jefeDirectoNombre": null
+    },
+    {
       "id": "p_001",
       "nombre": "Bernardette De Lourdes Rodriguez Villarroel",
       "dni": "19124945",

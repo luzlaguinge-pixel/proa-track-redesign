@@ -95,6 +95,7 @@ const AssignDrawer = ({
           inputValue={inputValue}
           onInputChange={(_e, val) => setInputValue(val)}
           isServerFiltered
+          virtualized
           onChange={value => {
             setSelectedPersonId(value ? String(value.value) : null);
             setPersonError(false);
