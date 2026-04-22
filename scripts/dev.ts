@@ -33,7 +33,7 @@ async function main() {
 
   if (hasApiRoutes()) {
     console.log(`\n▶  Starting vercel dev on port ${PORT}...\n`)
-    const child = spawn('npx', ['vercel', 'dev', '--listen', String(PORT)], {
+    const child = spawn('npx', ['vercel', 'dev', '--listen', String(PORT), '--yes'], {
       stdio: 'inherit',
       env: { ...process.env },
     })

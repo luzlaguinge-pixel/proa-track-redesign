@@ -23,6 +23,7 @@
     "dotenv": "^17.4.2",
     "hu-translations": "npm:@humanddev/hu-translations@latest",
     "i18next": "^21.3.1",
+    "jose": "^6.2.2",
     "material-hu": "npm:@humanddev/material-hu@latest",
     "qs": "^6.15.1",
     "react": "^18.2.0",
