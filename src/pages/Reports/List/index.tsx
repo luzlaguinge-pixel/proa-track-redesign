@@ -1,12 +1,17 @@
+import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 
-import { IconArrowsExchange, IconBox, IconCalendarCheck, IconCircleCheck, IconClock } from '@material-hu/icons/tabler';
+import { IconArrowsExchange, IconBox, IconCalendarCheck, IconCircleCheck, IconClock, IconX } from '@material-hu/icons/tabler';
 import LinearProgress from '@material-hu/mui/LinearProgress';
 import Paper from '@material-hu/mui/Paper';
 import Stack from '@material-hu/mui/Stack';
 import Typography from '@material-hu/mui/Typography';
+import MenuItem from '@material-hu/mui/MenuItem';
+import Select from '@material-hu/mui/Select';
 
 import Title from '@material-hu/components/design-system/Title';
+import Button from '@material-hu/components/design-system/Buttons/Button';
+import InputClassic from '@material-hu/components/design-system/Inputs/Classic';
 
 import { DashboardLayout } from '../../../layouts/DashboardLayout';
 import {
@@ -16,19 +21,114 @@ import {
   getMaterialStats,
   getSolicitudStats,
   type BreakdownItem,
+  type ReportFilters,
 } from './services';
 
 const ReportsList = () => {
-  const { data: matStats } = useQuery({ queryKey: ['reports-materials'], queryFn: getMaterialStats });
-  const { data: confStats } = useQuery({ queryKey: ['reports-confirmaciones'], queryFn: getConfirmacionStats });
-  const { data: solStats } = useQuery({ queryKey: ['reports-solicitudes'], queryFn: getSolicitudStats });
-  const { data: byOsc = [] } = useQuery({ queryKey: ['reports-osc'], queryFn: getMaterialsByOsc });
-  const { data: byPlaza = [] } = useQuery({ queryKey: ['reports-plaza'], queryFn: getMaterialsByPlaza });
+  const [filters, setFilters] = useState<ReportFilters>({});
+
+  const { data: matStats } = useQuery({
+    queryKey: ['reports-materials', filters],
+    queryFn: () => getMaterialStats(filters),
+  });
+  const { data: confStats } = useQuery({
+    queryKey: ['reports-confirmaciones', filters],
+    queryFn: () => getConfirmacionStats(filters),
+  });
+  const { data: solStats } = useQuery({
+    queryKey: ['reports-solicitudes', filters],
+    queryFn: () => getSolicitudStats(filters),
+  });
+  const { data: byOsc = [] } = useQuery({
+    queryKey: ['reports-osc', filters],
+    queryFn: () => getMaterialsByOsc(filters),
+  });
+  const { data: byPlaza = [] } = useQuery({
+    queryKey: ['reports-plaza', filters],
+    queryFn: () => getMaterialsByPlaza(filters),
+  });
+
+  const hasActiveFilters = useMemo(() => {
+    return Object.values(filters).some(v => v !== undefined && v !== '');
+  }, [filters]);
+
+  const handleClearFilters = () => {
+    setFilters({});
+  };
 
   return (
     <DashboardLayout>
       <Stack sx={{ gap: 4 }}>
         <Title title="Reportes" description="Resumen del estado actual del inventario." variant="L" />
+
+        {/* ── Filters ── */}
+        <Paper variant="outlined" sx={{ p: 3, borderRadius: 2 }}>
+          <Stack sx={{ gap: 2 }}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>Filtros</Typography>
+            <Stack sx={{ gap: 2, flexDirection: 'row', flexWrap: 'wrap', alignItems: 'flex-end' }}>
+              <Stack sx={{ flex: '1 1 140px', minWidth: 140 }}>
+                <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500, mb: 0.5 }}>
+                  Fecha inicio
+                </Typography>
+                <InputClassic
+                  type="date"
+                  value={filters.dateStart || ''}
+                  onChange={(e) => setFilters(prev => ({ ...prev, dateStart: e || undefined }))}
+                  fullWidth
+                />
+              </Stack>
+              <Stack sx={{ flex: '1 1 140px', minWidth: 140 }}>
+                <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500, mb: 0.5 }}>
+                  Fecha fin
+                </Typography>
+                <InputClassic
+                  type="date"
+                  value={filters.dateEnd || ''}
+                  onChange={(e) => setFilters(prev => ({ ...prev, dateEnd: e || undefined }))}
+                  fullWidth
+                />
+              </Stack>
+              <Stack sx={{ flex: '1 1 140px', minWidth: 140 }}>
+                <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500, mb: 0.5 }}>
+                  Estado
+                </Typography>
+                <Select
+                  size="small"
+                  value={filters.estado || ''}
+                  onChange={(e) => setFilters(prev => ({ ...prev, estado: e.target.value || undefined }))}
+                  fullWidth
+                >
+                  <MenuItem value="">Todos</MenuItem>
+                  <MenuItem value="en_uso">En uso</MenuItem>
+                  <MenuItem value="sin_uso">Sin uso</MenuItem>
+                  <MenuItem value="perdida">Perdida</MenuItem>
+                  <MenuItem value="en_reparacion">En reparación</MenuItem>
+                </Select>
+              </Stack>
+              <Stack sx={{ flex: '1 1 140px', minWidth: 140 }}>
+                <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500, mb: 0.5 }}>
+                  Ubicación
+                </Typography>
+                <InputClassic
+                  placeholder="Filtrar por plaza..."
+                  value={filters.ubicacion || ''}
+                  onChange={(e) => setFilters(prev => ({ ...prev, ubicacion: e || undefined }))}
+                  fullWidth
+                />
+              </Stack>
+              {hasActiveFilters && (
+                <Button
+                  variant="tertiary"
+                  size="small"
+                  onClick={handleClearFilters}
+                  startIcon={<IconX size={16} />}
+                >
+                  Limpiar
+                </Button>
+              )}
+            </Stack>
+          </Stack>
+        </Paper>
 
         {/* ── Materiales ── */}
         <Stack sx={{ gap: 2 }}>

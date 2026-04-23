@@ -4,7 +4,7 @@
     {
       "name": "dev",
       "runtimeExecutable": "bun",
-      "runtimeArgs": ["dev"],
+      "runtimeArgs": ["run", "dev"],
       "port": 3000
     }
   ]

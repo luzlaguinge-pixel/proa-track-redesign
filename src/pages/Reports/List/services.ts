@@ -25,14 +25,39 @@ export type SolicitudStats = {
 
 export type BreakdownItem = { label: string; count: number };
 
+export type ReportFilters = {
+  dateStart?: string;
+  dateEnd?: string;
+  estado?: string;
+  ubicacion?: string;
+  tipoActividad?: string;
+  equipo?: string;
+};
+
 const esMismoMes = (fecha: string): boolean => {
   const d = new Date(fecha);
   const now = new Date();
   return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
 };
 
-export const getMaterialStats = (): MaterialStats => {
-  const materials = getAllMaterials();
+const isWithinDateRange = (fecha: string, start?: string, end?: string): boolean => {
+  if (!start && !end) return true;
+  const d = new Date(fecha);
+  if (start && d < new Date(start)) return false;
+  if (end && d > new Date(end)) return false;
+  return true;
+};
+
+export const getMaterialStats = (filters?: ReportFilters): MaterialStats => {
+  let materials = getAllMaterials();
+
+  if (filters?.ubicacion) {
+    materials = materials.filter(m => m.plaza === filters.ubicacion);
+  }
+  if (filters?.estado) {
+    materials = materials.filter(m => m.estado === filters.estado);
+  }
+
   return {
     total: materials.length,
     enUso: materials.filter(m => m.estado === 'en_uso').length,
@@ -42,13 +67,20 @@ export const getMaterialStats = (): MaterialStats => {
   };
 };
 
-export const getConfirmacionStats = (): ConfirmacionStats => {
-  const enUso = getAllMaterials().filter(m => m.estado === 'en_uso');
-  const confirmadosIds = new Set(
-    getAllConfirmaciones()
-      .filter(c => esMismoMes(c.fecha))
-      .map(c => c.materialId),
-  );
+export const getConfirmacionStats = (filters?: ReportFilters): ConfirmacionStats => {
+  let enUso = getAllMaterials().filter(m => m.estado === 'en_uso');
+
+  if (filters?.ubicacion) {
+    enUso = enUso.filter(m => m.plaza === filters.ubicacion);
+  }
+
+  let confirmaciones = getAllConfirmaciones().filter(c => esMismoMes(c.fecha));
+
+  if (filters?.dateStart || filters?.dateEnd) {
+    confirmaciones = confirmaciones.filter(c => isWithinDateRange(c.fecha, filters.dateStart, filters.dateEnd));
+  }
+
+  const confirmadosIds = new Set(confirmaciones.map(c => c.materialId));
   const confirmados = enUso.filter(m => confirmadosIds.has(m.id)).length;
   const total = enUso.length;
   return {
@@ -59,8 +91,13 @@ export const getConfirmacionStats = (): ConfirmacionStats => {
   };
 };
 
-export const getSolicitudStats = (): SolicitudStats => {
-  const s = getAllSolicitudes();
+export const getSolicitudStats = (filters?: ReportFilters): SolicitudStats => {
+  let s = getAllSolicitudes();
+
+  if (filters?.dateStart || filters?.dateEnd) {
+    s = s.filter(x => isWithinDateRange(x.fecha, filters.dateStart, filters.dateEnd));
+  }
+
   return {
     pendientes: s.filter(x => x.estado === 'pendiente').length,
     aprobadas: s.filter(x => x.estado === 'aprobada').length,
@@ -68,9 +105,15 @@ export const getSolicitudStats = (): SolicitudStats => {
   };
 };
 
-export const getMaterialsByOsc = (): BreakdownItem[] => {
+export const getMaterialsByOsc = (filters?: ReportFilters): BreakdownItem[] => {
+  let materials = getAllMaterials().filter(m => m.estado === 'en_uso');
+
+  if (filters?.ubicacion) {
+    materials = materials.filter(m => m.plaza === filters.ubicacion);
+  }
+
   const byOsc: Record<string, number> = {};
-  for (const m of getAllMaterials().filter(m => m.estado === 'en_uso')) {
+  for (const m of materials) {
     const key = m.osc || 'Sin OSC';
     byOsc[key] = (byOsc[key] ?? 0) + 1;
   }
@@ -80,9 +123,15 @@ export const getMaterialsByOsc = (): BreakdownItem[] => {
     .slice(0, 10);
 };
 
-export const getMaterialsByPlaza = (): BreakdownItem[] => {
+export const getMaterialsByPlaza = (filters?: ReportFilters): BreakdownItem[] => {
+  let materials = getAllMaterials().filter(m => m.estado === 'en_uso');
+
+  if (filters?.estado) {
+    materials = materials.filter(m => m.estado === filters.estado);
+  }
+
   const byPlaza: Record<string, number> = {};
-  for (const m of getAllMaterials().filter(m => m.estado === 'en_uso')) {
+  for (const m of materials) {
     const key = m.plaza || 'Sin plaza';
     byPlaza[key] = (byPlaza[key] ?? 0) + 1;
   }
