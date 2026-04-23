@@ -76,7 +76,7 @@ const ConfirmationList = () => {
                   Pendientes de confirmar ({pendientes.length})
                 </Typography>
                 <TableContainer sx={{ overflowX: 'auto' }}>
-                  <Table sx={{ minWidth: 480 }}>
+                  <Table sx={{ minWidth: 550 }}>
                     <TableHead>
                       <TableRow headerRow>
                         <TableCell headerCell>Tipo</TableCell>
@@ -118,7 +118,7 @@ const ConfirmationList = () => {
                   Confirmados este mes ({confirmados.length})
                 </Typography>
                 <TableContainer sx={{ overflowX: 'auto' }}>
-                  <Table sx={{ minWidth: 480 }}>
+                  <Table sx={{ minWidth: 600 }}>
                     <TableHead>
                       <TableRow headerRow>
                         <TableCell headerCell>Tipo</TableCell>

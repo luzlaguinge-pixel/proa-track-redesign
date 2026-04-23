@@ -113,7 +113,8 @@ const RoleManagement = () => {
                     border: '1px solid',
                     borderColor: 'divider',
                     borderRadius: '8px 8px 0 0',
-                    minWidth: 520,
+                    minWidth: 500,
+                    overflowX: 'auto',
                   }}
                 >
                   <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ flex: 1 }}>NOMBRE</Typography>
@@ -138,7 +139,8 @@ const RoleManagement = () => {
                         border: '1px solid',
                         borderTop: 'none',
                         borderColor: 'divider',
-                        minWidth: 520,
+                        minWidth: 500,
+                        overflowX: 'auto',
                         ...(idx === people.length - 1 && { borderRadius: '0 0 8px 8px' }),
                       }}
                     >

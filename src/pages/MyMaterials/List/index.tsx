@@ -59,7 +59,7 @@ const MyMaterialsList = () => {
           />
         ) : (
           <TableContainer sx={{ overflowX: 'auto' }}>
-            <Table sx={{ minWidth: 750 }}>
+            <Table sx={{ minWidth: 800 }}>
               <TableHead>
                 <TableRow headerRow>
                   <TableCell headerCell>Tipo</TableCell>

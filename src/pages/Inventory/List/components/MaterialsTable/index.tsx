@@ -169,7 +169,7 @@ const MaterialsTable = ({ materials, selectable = false }: MaterialsTableProps) 
           <Typography variant="body2" fontWeight={600} sx={{ color: 'inherit' }}>
             {selectedCount} {selectedCount === 1 ? 'material seleccionado' : 'materiales seleccionados'}
           </Typography>
-          <Stack sx={{ flexDirection: 'row', gap: 1, alignItems: 'center' }}>
+          <Stack sx={{ flexDirection: 'row', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
             {hasAssignedSelected && (
               <Button
                 variant="secondary"

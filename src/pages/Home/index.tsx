@@ -83,7 +83,7 @@ export const HomePage = () => {
             description="Resumen general del inventario y alertas activas."
             variant="L"
           />
-          <Stack sx={{ flexDirection: 'row', gap: 1, flexShrink: 0 }}>
+          <Stack sx={{ flexDirection: 'row', gap: 1, flexWrap: 'wrap' }}>
             <Button
               variant="primary"
               size="large"

@@ -87,7 +87,7 @@ const InventoryList = () => {
             description="Todos los materiales que entregamos a los equipos en campo."
             variant="L"
           />
-          <Stack sx={{ flexDirection: 'row', gap: 1, flexShrink: 0 }}>
+          <Stack sx={{ flexDirection: 'row', gap: 1, flexWrap: 'wrap' }}>
             <Button
               variant="secondary"
               size="large"
