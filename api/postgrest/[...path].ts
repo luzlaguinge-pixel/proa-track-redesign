@@ -51,8 +51,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(503).json({ error: 'PostgREST proxy configuration error — check your environment variables' })
   }
 
-  if (req.method !== 'GET') {
-    return res.status(405).json({ error: 'Only GET requests are supported' })
+  if (!['GET', 'POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method!)) {
+    return res.status(405).json({ error: 'Method not allowed' })
   }
 
   const segments = (req.query.path ?? req.query['...path']) as string | string[] | undefined
@@ -75,16 +75,34 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (clientAccept) {
     forwardHeaders['Accept'] = Array.isArray(clientAccept) ? clientAccept[0] : clientAccept
   }
+  if (req.method !== 'GET' && req.headers['content-type']) {
+    forwardHeaders['Content-Type'] = req.headers['content-type']
+  }
 
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
       const token = await getToken()
       forwardHeaders['Authorization'] = `Bearer ${token}`
 
-      const upstream = await axios.get(targetUrl.toString(), {
+      const axiosConfig = {
         headers: forwardHeaders,
         validateStatus: () => true,
-      })
+      }
+
+      let upstream
+      if (req.method === 'GET') {
+        upstream = await axios.get(targetUrl.toString(), axiosConfig)
+      } else if (req.method === 'POST') {
+        upstream = await axios.post(targetUrl.toString(), req.body, axiosConfig)
+      } else if (req.method === 'PUT') {
+        upstream = await axios.put(targetUrl.toString(), req.body, axiosConfig)
+      } else if (req.method === 'PATCH') {
+        upstream = await axios.patch(targetUrl.toString(), req.body, axiosConfig)
+      } else if (req.method === 'DELETE') {
+        upstream = await axios.delete(targetUrl.toString(), axiosConfig)
+      } else {
+        return res.status(405).json({ error: 'Method not allowed' })
+      }
 
       if (upstream.status === 401 && attempt === 0) {
         cachedToken = null
