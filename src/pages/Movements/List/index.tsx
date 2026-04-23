@@ -87,6 +87,8 @@ const MovementsList = () => {
             flexDirection: 'row',
             justifyContent: 'space-between',
             alignItems: 'flex-start',
+            flexWrap: 'wrap',
+            gap: 2,
           }}
         >
           <Title
@@ -186,8 +188,8 @@ const MovementsList = () => {
               variant="outlined"
               sx={{ borderRadius: 2, overflow: 'hidden' }}
             >
-              <TableContainer>
-                <Table>
+              <TableContainer sx={{ overflowX: 'auto' }}>
+                <Table sx={{ minWidth: 750 }}>
                   <TableHead>
                     <TableRow headerRow>
                       <TableCell headerCell>Fecha</TableCell>

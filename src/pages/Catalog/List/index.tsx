@@ -127,6 +127,8 @@ const CatalogList = () => {
             flexDirection: 'row',
             justifyContent: 'space-between',
             alignItems: 'flex-start',
+            flexWrap: 'wrap',
+            gap: 2,
           }}
         >
           <Title
@@ -139,6 +141,7 @@ const CatalogList = () => {
             size="large"
             startIcon={<IconPlus size={20} />}
             onClick={openCreate}
+            sx={{ flexShrink: 0 }}
           >
             Nuevo tipo
           </Button>
@@ -163,8 +166,8 @@ const CatalogList = () => {
                 variant="outlined"
                 sx={{ borderRadius: 2, overflow: 'hidden' }}
               >
-                <TableContainer>
-                  <Table>
+                <TableContainer sx={{ overflowX: 'auto' }}>
+                  <Table sx={{ minWidth: 520 }}>
                     <TableHead>
                       <TableRow headerRow>
                         <TableCell headerCell>Tipo</TableCell>

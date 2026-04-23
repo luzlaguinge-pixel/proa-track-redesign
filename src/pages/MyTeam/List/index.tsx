@@ -20,8 +20,8 @@ import TableHead from '@material-hu/components/design-system/Table/components/Ta
 import TableRow from '@material-hu/components/design-system/Table/components/TableRow';
 import Title from '@material-hu/components/design-system/Title';
 
+import { useAuth } from '../../../providers/AuthContext';
 import { DashboardLayout } from '../../../layouts/DashboardLayout';
-import { DEMO_LEADER_NOMBRE } from './services';
 import { useMyTeam } from './hooks/useMyTeam';
 
 const PAIS_LABEL: Record<string, string> = {
@@ -32,7 +32,9 @@ const PAIS_LABEL: Record<string, string> = {
 
 const MyTeamList = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { members, total, isLoading, search, setSearch } = useMyTeam();
+  const leaderNombre = user ? `${user.firstName} ${user.lastName}`.trim() : '';
 
   if (isLoading) return <DashboardLayout><div /></DashboardLayout>;
 
@@ -42,7 +44,7 @@ const MyTeamList = () => {
         <Stack sx={{ gap: 1 }}>
           <Title
             title="Mi equipo"
-            description={`Equipo de ${DEMO_LEADER_NOMBRE} · ${total} personas`}
+            description={`Equipo de ${leaderNombre} · ${total} personas`}
             variant="L"
           />
         </Stack>
@@ -68,8 +70,8 @@ const MyTeamList = () => {
             }}
           />
         ) : (
-          <TableContainer>
-            <Table>
+          <TableContainer sx={{ overflowX: 'auto' }}>
+            <Table sx={{ minWidth: 650 }}>
               <TableHead>
                 <TableRow headerRow>
                   <TableCell headerCell>Persona</TableCell>

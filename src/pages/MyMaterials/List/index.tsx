@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 
-import { IconCircleCheck, IconInfoCircle } from '@material-hu/icons/tabler';
+import { IconCircleCheck, IconClock, IconInfoCircle } from '@material-hu/icons/tabler';
 import Stack from '@material-hu/mui/Stack';
 import Typography from '@material-hu/mui/Typography';
 
@@ -58,8 +58,8 @@ const MyMaterialsList = () => {
             }}
           />
         ) : (
-          <TableContainer>
-            <Table>
+          <TableContainer sx={{ overflowX: 'auto' }}>
+            <Table sx={{ minWidth: 750 }}>
               <TableHead>
                 <TableRow headerRow>
                   <TableCell headerCell>Tipo</TableCell>
@@ -68,6 +68,7 @@ const MyMaterialsList = () => {
                   <TableCell headerCell>OSC</TableCell>
                   <TableCell headerCell>Plaza</TableCell>
                   <TableCell headerCell>Comodato</TableCell>
+                  <TableCell headerCell>Confirmación</TableCell>
                   <TableCell headerCell />
                 </TableRow>
               </TableHead>
@@ -104,6 +105,23 @@ const MyMaterialsList = () => {
                           </Stack>
                         ) : (
                           <Typography variant="caption" color="text.disabled">Pendiente</Typography>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {material.confirmadaEsteMes ? (
+                          <Stack sx={{ flexDirection: 'row', gap: 0.5, alignItems: 'center', color: 'success.main' }}>
+                            <IconCircleCheck size={16} />
+                            <Typography variant="caption">
+                              {material.ultimaConfirmacion
+                                ? new Date(material.ultimaConfirmacion.fecha).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' })
+                                : 'Confirmado'}
+                            </Typography>
+                          </Stack>
+                        ) : (
+                          <Stack sx={{ flexDirection: 'row', gap: 0.5, alignItems: 'center', color: 'warning.main' }}>
+                            <IconClock size={16} />
+                            <Typography variant="caption">Pendiente</Typography>
+                          </Stack>
                         )}
                       </TableCell>
                       <TableCell>

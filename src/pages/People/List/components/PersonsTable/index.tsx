@@ -17,8 +17,8 @@ const PersonsTable = ({ persons }: PersonsTableProps) => {
   const navigate = useNavigate();
 
   return (
-    <TableContainer>
-      <Table>
+    <TableContainer sx={{ overflowX: 'auto' }}>
+      <Table sx={{ minWidth: 480 }}>
         <TableHead>
           <TableRow headerRow>
             <TableCell headerCell>Nombre</TableCell>
