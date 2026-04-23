@@ -35,9 +35,7 @@ const RoleManagement = () => {
   const queryClient = useQueryClient();
   const [snackbar, setSnackbar] = useState('');
   const [roles, setRoles] = useState<Record<string, Perfil>>(() => getAllStoredRoles());
-  const [teamSelection, setTeamSelection] = useState<Set<string>>(
-    () => new Set(user ? getTeamForLeader(user.employeeInternalId) : []),
-  );
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedCoordinadorDni, setSelectedCoordinadorDni] = useState<string>('');
   const [coordinadorTeamSelection, setCoordinadorTeamSelection] = useState<Set<string>>(new Set());
 
@@ -72,19 +70,11 @@ const RoleManagement = () => {
     setSnackbar('Rol actualizado correctamente.');
   };
 
-  const handleToggleTeamMember = (dni: string) => {
-    setTeamSelection(prev => {
-      const next = new Set(prev);
-      if (next.has(dni)) next.delete(dni);
-      else next.add(dni);
-      return next;
-    });
-  };
 
-  const handleSaveTeam = () => {
-    if (!user) return;
-    setTeamForLeader(user.employeeInternalId, Array.from(teamSelection));
-    setSnackbar('Equipo guardado correctamente.');
+  const handleOpenCreateTeamDrawer = () => {
+    setSelectedCoordinadorDni('');
+    setCoordinadorTeamSelection(new Set());
+    setDrawerOpen(true);
   };
 
   const handleSelectCoordinador = (coordinadorDni: string) => {
@@ -105,6 +95,7 @@ const RoleManagement = () => {
     if (!selectedCoordinadorDni) return;
     setTeamForLeader(selectedCoordinadorDni, Array.from(coordinadorTeamSelection));
     setSnackbar('Equipo del coordinador/a guardado correctamente.');
+    setDrawerOpen(false);
   };
 
   const navegantes = people.filter(p => getEffectiveRole(p.dni) === 'navegante');
@@ -212,16 +203,52 @@ const RoleManagement = () => {
           </Stack>
         )}
 
-        {/* Admin section: assign teams to coordinators */}
-        {perfil === 'admin' && coordinadores.length > 0 && (
+        {/* Assign teams to coordinators */}
+        {coordinadores.length > 0 && (
           <Stack sx={{ gap: 3 }}>
-            <Title
-              title="Equipos de coordinadores/as regionales"
-              description="Asignà navegantes a los equipos de los coordinadores/as regionales."
-              variant="M"
-            />
+            <Stack sx={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <Title
+                title="Equipos de coordinadores/as regionales"
+                description="Asignà los navegantes que conforman el equipo de cada coordinador/a regional."
+                variant={perfil === 'coordinador' ? 'L' : 'M'}
+              />
+              <Button
+                variant="primary"
+                size="medium"
+                onClick={handleOpenCreateTeamDrawer}
+              >
+                Crear equipo
+              </Button>
+            </Stack>
+          </Stack>
+        )}
 
-            <Stack sx={{ gap: 2 }}>
+        {/* Create/Edit team drawer */}
+        {drawerOpen && coordinadores.length > 0 && (
+          <Stack
+            sx={{
+              position: 'fixed',
+              top: 0,
+              right: 0,
+              height: '100%',
+              width: { xs: '100%', sm: 480 },
+              bgcolor: 'background.paper',
+              boxShadow: 3,
+              zIndex: 1300,
+              display: 'flex',
+              flexDirection: 'column',
+            }}
+          >
+            <Stack sx={{ p: 3, gap: 3, flex: 1, overflowY: 'auto' }}>
+              <Stack sx={{ gap: 1 }}>
+                <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                  Crear equipo
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Seleccioná un coordinador/a regional y los navegantes que conforman su equipo.
+                </Typography>
+              </Stack>
+
               <Stack sx={{ gap: 1 }}>
                 <Typography variant="body2" fontWeight={500} color="text.secondary">
                   Seleccionar coordinador/a regional
@@ -240,88 +267,65 @@ const RoleManagement = () => {
                 </Stack>
               </Stack>
 
-              {selectedCoordinador && (
-                <Stack sx={{ gap: 2 }}>
-                  <Stack sx={{ gap: 1 }}>
-                    <Typography variant="body2" fontWeight={500}>
-                      Equipo de {selectedCoordinador.nombre}
+              {selectedCoordinadorDni && (
+                <Stack sx={{ gap: 1 }}>
+                  <Typography variant="body2" fontWeight={500}>
+                    Equipo de {selectedCoordinador?.nombre}
+                  </Typography>
+                  {navegantes.length === 0 ? (
+                    <Typography variant="caption" color="text.secondary">
+                      No hay navegantes disponibles
                     </Typography>
-                    {navegantes.length === 0 ? (
-                      <Typography variant="caption" color="text.secondary">
-                        No hay navegantes disponibles
-                      </Typography>
-                    ) : (
-                      <Stack sx={{ flexWrap: 'wrap', flexDirection: 'row', gap: 1 }}>
-                        {navegantes.map(person => {
-                          const selected = coordinadorTeamSelection.has(person.dni);
-                          return (
-                            <Chip
-                              key={person.id}
-                              label={person.nombre}
-                              onClick={() => handleToggleCoordinadorTeamMember(person.dni)}
-                              color={selected ? 'primary' : 'default'}
-                              variant={selected ? 'filled' : 'outlined'}
-                              sx={{ cursor: 'pointer' }}
-                            />
-                          );
-                        })}
-                      </Stack>
-                    )}
-                  </Stack>
-                  <Button
-                    variant="primary"
-                    size="medium"
-                    onClick={handleSaveCoordinadorTeam}
-                    sx={{ alignSelf: 'flex-start' }}
-                  >
-                    Guardar equipo
-                  </Button>
+                  ) : (
+                    <Stack sx={{ flexWrap: 'wrap', flexDirection: 'row', gap: 1 }}>
+                      {navegantes.map(person => {
+                        const selected = coordinadorTeamSelection.has(person.dni);
+                        return (
+                          <Chip
+                            key={person.id}
+                            label={person.nombre}
+                            onClick={() => handleToggleCoordinadorTeamMember(person.dni)}
+                            color={selected ? 'primary' : 'default'}
+                            variant={selected ? 'filled' : 'outlined'}
+                            sx={{ cursor: 'pointer' }}
+                          />
+                        );
+                      })}
+                    </Stack>
+                  )}
                 </Stack>
               )}
+            </Stack>
+
+            <Stack
+              sx={{
+                flexDirection: 'row',
+                gap: 1,
+                justifyContent: 'flex-end',
+                p: 3,
+                borderTop: '1px solid',
+                borderColor: 'divider',
+              }}
+            >
+              <Button
+                variant="tertiary"
+                size="medium"
+                onClick={() => setDrawerOpen(false)}
+              >
+                Cancelar
+              </Button>
+              <Button
+                variant="primary"
+                size="medium"
+                onClick={handleSaveCoordinadorTeam}
+                disabled={!selectedCoordinadorDni}
+              >
+                Guardar equipo
+              </Button>
             </Stack>
           </Stack>
         )}
 
-        {/* Coordinator section: build their team */}
-        <Stack sx={{ gap: 3 }}>
-          <Stack sx={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 2 }}>
-            <Title
-              title="Mi equipo"
-              description="Seleccioná los navegantes que conforman tu equipo."
-              variant={perfil === 'coordinador' ? 'L' : 'M'}
-            />
-            <Button variant="primary" size="large" startIcon={<IconUsersGroup size={18} />} onClick={handleSaveTeam} sx={{ flexShrink: 0 }}>
-              Guardar equipo
-            </Button>
-          </Stack>
-
-          {isLoading ? (
-            <Typography color="text.secondary">Cargando navegantes...</Typography>
-          ) : navegantes.length === 0 ? (
-            <StateCard
-              slotProps={{
-                title: { title: 'No hay navegantes disponibles', description: 'Primero asigná el rol de Navegante a algunos usuarios.', variant: 'M' },
-                avatar: { Icon: IconUsersGroup, color: 'default' },
-              }}
-            />
-          ) : (
-            <Stack sx={{ flexWrap: 'wrap', flexDirection: 'row', gap: 1 }}>
-              {navegantes.map(person => {
-                const selected = teamSelection.has(person.dni);
-                return (
-                  <Chip
-                    key={person.id}
-                    label={person.nombre}
-                    onClick={() => handleToggleTeamMember(person.dni)}
-                    color={selected ? 'primary' : 'default'}
-                    variant={selected ? 'filled' : 'outlined'}
-                    sx={{ cursor: 'pointer' }}
-                  />
-                );
-              })}
-            </Stack>
-          )}
-        </Stack>
 
       </Stack>
 
