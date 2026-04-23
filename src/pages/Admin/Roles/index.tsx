@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 
-import { IconShield, IconUsersGroup } from '@material-hu/icons/tabler';
+import { IconShield } from '@material-hu/icons/tabler';
 import Alert from '@material-hu/mui/Alert';
 import Chip from '@material-hu/mui/Chip';
 import MenuItem from '@material-hu/mui/MenuItem';
@@ -12,14 +12,16 @@ import Typography from '@material-hu/mui/Typography';
 import StateCard from '@material-hu/components/composed-components/StateCard';
 import Button from '@material-hu/components/design-system/Buttons/Button';
 import Title from '@material-hu/components/design-system/Title';
+import InputClassic from '@material-hu/components/design-system/Inputs/Classic';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { DashboardLayout } from '../../../layouts/DashboardLayout';
 import { useAuth } from '../../../providers/AuthContext';
 import { type Perfil, useProfile } from '../../../providers/ProfileContext';
 import { getActivePeople } from '../../../services/people';
-import { getAllStoredRoles, getRoleForId, SEED_ADMINS } from '../../../stores/roleStore';
+import { getAllStoredRoles, SEED_ADMINS } from '../../../stores/roleStore';
 import { getTeamForLeader, setTeamForLeader } from '../../../stores/teamStore';
+import { SendNotificationDrawer } from './components/SendNotificationDrawer';
 
 const ROLE_LABELS: Record<Perfil, string> = {
   admin: 'Admin',
@@ -34,15 +36,32 @@ const RoleManagement = () => {
   const { perfil, assignRole } = useProfile();
   const queryClient = useQueryClient();
   const [snackbar, setSnackbar] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
   const [roles, setRoles] = useState<Record<string, Perfil>>(() => getAllStoredRoles());
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedCoordinadorDni, setSelectedCoordinadorDni] = useState<string>('');
   const [coordinadorTeamSelection, setCoordinadorTeamSelection] = useState<Set<string>>(new Set());
+  const [notificationDrawerOpen, setNotificationDrawerOpen] = useState(false);
 
-  const { data: people = [], isLoading } = useQuery({
+  const { data: rawPeople = [], isLoading } = useQuery({
     queryKey: ['people-for-roles'],
     queryFn: getActivePeople,
   });
+
+  const people = useMemo(() => {
+    if (!user || !user.employeeInternalId) return rawPeople;
+    const exists = rawPeople.some(p => p.dni === user.employeeInternalId);
+    if (exists) return rawPeople;
+    return [
+      {
+        id: String(user.id),
+        nombre: `${user.firstName} ${user.lastName}`.trim(),
+        dni: user.employeeInternalId,
+        email: user.email,
+      },
+      ...rawPeople,
+    ];
+  }, [rawPeople, user]);
 
   if (perfil !== 'admin' && perfil !== 'coordinador') {
     return (
@@ -98,6 +117,15 @@ const RoleManagement = () => {
     setDrawerOpen(false);
   };
 
+  const filteredPeople = useMemo(() => {
+    if (!searchTerm.trim()) return people;
+    const q = searchTerm.toLowerCase();
+    return people.filter(p =>
+      p.nombre.toLowerCase().includes(q) ||
+      p.dni.toLowerCase().includes(q)
+    );
+  }, [searchTerm, people]);
+
   const navegantes = people.filter(p => getEffectiveRole(p.dni) === 'navegante');
   const coordinadores = people.filter(p => getEffectiveRole(p.dni) === 'coordinador');
   const selectedCoordinador = coordinadores.find(c => c.dni === selectedCoordinadorDni);
@@ -118,7 +146,15 @@ const RoleManagement = () => {
             {isLoading ? (
               <Typography color="text.secondary">Cargando personas...</Typography>
             ) : (
-              <Stack sx={{ overflowX: 'auto' }}>
+              <Stack sx={{ gap: 3 }}>
+                <InputClassic
+                  placeholder="Buscar por nombre o DNI..."
+                  value={searchTerm}
+                  onChange={setSearchTerm}
+                  fullWidth
+                />
+
+                <Stack sx={{ overflowX: 'auto' }}>
                 <Stack
                   sx={{
                     flexDirection: 'row',
@@ -137,7 +173,7 @@ const RoleManagement = () => {
                   <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ width: 160 }}>ROL</Typography>
                 </Stack>
 
-                {people.map((person, idx) => {
+                {filteredPeople.map((person, idx) => {
                   const currentRole = getEffectiveRole(person.dni);
                   const locked = SEED_ADMINS.has(person.dni);
                   const isCurrentUser = user?.employeeInternalId === person.dni;
@@ -198,6 +234,7 @@ const RoleManagement = () => {
                     </Stack>
                   );
                 })}
+                </Stack>
               </Stack>
             )}
           </Stack>
@@ -212,13 +249,24 @@ const RoleManagement = () => {
                 description="Asignà los navegantes que conforman el equipo de cada coordinador/a regional."
                 variant={perfil === 'coordinador' ? 'L' : 'M'}
               />
-              <Button
-                variant="primary"
-                size="medium"
-                onClick={handleOpenCreateTeamDrawer}
-              >
-                Crear equipo
-              </Button>
+              <Stack sx={{ flexDirection: 'row', gap: 2 }}>
+                {perfil === 'admin' && (
+                  <Button
+                    variant="secondary"
+                    size="medium"
+                    onClick={() => setNotificationDrawerOpen(true)}
+                  >
+                    Enviar notificación
+                  </Button>
+                )}
+                <Button
+                  variant="primary"
+                  size="medium"
+                  onClick={handleOpenCreateTeamDrawer}
+                >
+                  Crear equipo
+                </Button>
+              </Stack>
             </Stack>
           </Stack>
         )}
@@ -326,19 +374,30 @@ const RoleManagement = () => {
           </Stack>
         )}
 
+        {/* Send notification drawer */}
+        <SendNotificationDrawer
+          open={notificationDrawerOpen}
+          onClose={() => setNotificationDrawerOpen(false)}
+          people={people}
+          onSuccess={(message) => {
+            setSnackbar(message);
+            setNotificationDrawerOpen(false);
+          }}
+          onError={(message) => setSnackbar(message)}
+        />
 
+        <Snackbar
+          open={!!snackbar}
+          onClose={() => setSnackbar('')}
+          autoHideDuration={3000}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        >
+          <Alert severity="success" onClose={() => setSnackbar('')}>
+            {snackbar}
+          </Alert>
+        </Snackbar>
       </Stack>
 
-      <Snackbar
-        open={!!snackbar}
-        onClose={() => setSnackbar('')}
-        autoHideDuration={3000}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-      >
-        <Alert severity="success" onClose={() => setSnackbar('')}>
-          {snackbar}
-        </Alert>
-      </Snackbar>
     </DashboardLayout>
   );
 };

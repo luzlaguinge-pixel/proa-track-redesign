@@ -38,6 +38,7 @@ import { useAuth } from '../../providers/AuthContext';
 import { type Perfil, useProfile } from '../../providers/ProfileContext';
 import { NotificationsMenu } from '../../pages/Notifications/NotificationsMenu';
 import { getNotificacionesCaptador, getNotificacionesLiderAdmin } from '../../pages/Notifications/List/services';
+import NotificationPermissionBanner from '../../pages/Notifications/components/NotificationPermissionBanner';
 
 const PERFIL_LABEL: Record<Perfil, string> = {
   admin: 'Admin',
@@ -264,6 +265,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             bgcolor: 'new.background.layout.default',
           }}
         >
+          <NotificationPermissionBanner />
           {children}
         </Box>
       </Stack>

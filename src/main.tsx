@@ -8,3 +8,10 @@ createRoot(document.getElementById('root')!).render(
     <App />
   </StrictMode>,
 );
+
+// Register Service Worker for Web Push notifications
+if ('serviceWorker' in navigator && 'Notification' in window) {
+  navigator.serviceWorker
+    .register('/sw.js')
+    .catch((error) => console.warn('Service Worker registration failed:', error));
+}

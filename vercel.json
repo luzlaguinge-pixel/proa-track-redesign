@@ -1,3 +1,9 @@
 {
-  "alias": ["proatrack.vercel.app"]
+  "alias": ["proatrack.vercel.app"],
+  "crons": [
+    {
+      "path": "/api/notifications/cron/monthly-reminder",
+      "schedule": "0 8 1 * *"
+    }
+  ]
 }
