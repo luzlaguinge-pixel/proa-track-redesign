@@ -38,6 +38,8 @@ const RoleManagement = () => {
   const [teamSelection, setTeamSelection] = useState<Set<string>>(
     () => new Set(user ? getTeamForLeader(user.employeeInternalId) : []),
   );
+  const [selectedLeaderDni, setSelectedLeaderDni] = useState<string>('');
+  const [leaderTeamSelection, setLeaderTeamSelection] = useState<Set<string>>(new Set());
 
   const { data: people = [], isLoading } = useQuery({
     queryKey: ['people-for-roles'],
@@ -85,7 +87,29 @@ const RoleManagement = () => {
     setSnackbar('Equipo guardado correctamente.');
   };
 
+  const handleSelectLeader = (leaderDni: string) => {
+    setSelectedLeaderDni(leaderDni);
+    setLeaderTeamSelection(new Set(getTeamForLeader(leaderDni)));
+  };
+
+  const handleToggleLeaderTeamMember = (dni: string) => {
+    setLeaderTeamSelection(prev => {
+      const next = new Set(prev);
+      if (next.has(dni)) next.delete(dni);
+      else next.add(dni);
+      return next;
+    });
+  };
+
+  const handleSaveLeaderTeam = () => {
+    if (!selectedLeaderDni) return;
+    setTeamForLeader(selectedLeaderDni, Array.from(leaderTeamSelection));
+    setSnackbar('Equipo del líder guardado correctamente.');
+  };
+
   const navegantes = people.filter(p => getEffectiveRole(p.dni) === 'navegante');
+  const lideres = people.filter(p => getEffectiveRole(p.dni) === 'lider');
+  const selectedLeader = lideres.find(l => l.dni === selectedLeaderDni);
 
   return (
     <DashboardLayout>
@@ -185,6 +209,76 @@ const RoleManagement = () => {
                 })}
               </Stack>
             )}
+          </Stack>
+        )}
+
+        {/* Admin section: assign teams to leaders */}
+        {perfil === 'admin' && lideres.length > 0 && (
+          <Stack sx={{ gap: 3 }}>
+            <Title
+              title="Equipos de líderes"
+              description="Asignà navegantes a los equipos de los líderes."
+              variant="M"
+            />
+
+            <Stack sx={{ gap: 2 }}>
+              <Stack sx={{ gap: 1 }}>
+                <Typography variant="body2" fontWeight={500} color="text.secondary">
+                  Seleccionar líder
+                </Typography>
+                <Stack sx={{ flexWrap: 'wrap', flexDirection: 'row', gap: 1 }}>
+                  {lideres.map(leader => (
+                    <Chip
+                      key={leader.id}
+                      label={leader.nombre}
+                      onClick={() => handleSelectLeader(leader.dni)}
+                      color={selectedLeaderDni === leader.dni ? 'primary' : 'default'}
+                      variant={selectedLeaderDni === leader.dni ? 'filled' : 'outlined'}
+                      sx={{ cursor: 'pointer' }}
+                    />
+                  ))}
+                </Stack>
+              </Stack>
+
+              {selectedLeader && (
+                <Stack sx={{ gap: 2 }}>
+                  <Stack sx={{ gap: 1 }}>
+                    <Typography variant="body2" fontWeight={500}>
+                      Equipo de {selectedLeader.nombre}
+                    </Typography>
+                    {navegantes.length === 0 ? (
+                      <Typography variant="caption" color="text.secondary">
+                        No hay navegantes disponibles
+                      </Typography>
+                    ) : (
+                      <Stack sx={{ flexWrap: 'wrap', flexDirection: 'row', gap: 1 }}>
+                        {navegantes.map(person => {
+                          const selected = leaderTeamSelection.has(person.dni);
+                          return (
+                            <Chip
+                              key={person.id}
+                              label={person.nombre}
+                              onClick={() => handleToggleLeaderTeamMember(person.dni)}
+                              color={selected ? 'primary' : 'default'}
+                              variant={selected ? 'filled' : 'outlined'}
+                              sx={{ cursor: 'pointer' }}
+                            />
+                          );
+                        })}
+                      </Stack>
+                    )}
+                  </Stack>
+                  <Button
+                    variant="primary"
+                    size="medium"
+                    onClick={handleSaveLeaderTeam}
+                    sx={{ alignSelf: 'flex-start' }}
+                  >
+                    Guardar equipo
+                  </Button>
+                </Stack>
+              )}
+            </Stack>
           </Stack>
         )}
 
