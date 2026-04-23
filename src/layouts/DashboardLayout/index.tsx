@@ -41,12 +41,12 @@ import { getNotificacionesCaptador, getNotificacionesLiderAdmin } from '../../pa
 
 const PERFIL_LABEL: Record<Perfil, string> = {
   admin: 'Admin',
-  lider: 'Líder',
+  coordinador: 'Coordinador/a Regional',
   navegante: 'Navegante',
 };
 
 const ADMIN_NAV_KEYS = new Set(['home', 'inventory', 'people', 'catalog', 'movements', 'my-materials', 'team-confirmations', 'solicitudes', 'reports', 'faqs', 'roles']);
-const LIDER_NAV_KEYS = new Set(['home', 'my-team', 'team-inventory', 'my-materials', 'team-confirmations', 'solicitudes', 'reports', 'faqs', 'roles']);
+const COORDINADOR_NAV_KEYS = new Set(['home', 'my-team', 'team-inventory', 'my-materials', 'team-confirmations', 'solicitudes', 'reports', 'faqs', 'roles']);
 const NAVEGANTE_NAV_KEYS = new Set(['my-materials', 'faqs']);
 
 const ALL_ITEMS = [
@@ -70,8 +70,8 @@ function getSections(perfil: Perfil): NavSectionProps[] {
   const keys =
     perfil === 'admin'
       ? ADMIN_NAV_KEYS
-      : perfil === 'lider'
-        ? LIDER_NAV_KEYS
+      : perfil === 'coordinador'
+        ? COORDINADOR_NAV_KEYS
         : NAVEGANTE_NAV_KEYS;
 
   return [
@@ -172,7 +172,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                       label={profileBadge}
                       size="small"
                       variant="outlined"
-                      color={perfil === 'admin' ? 'error' : perfil === 'lider' ? 'warning' : 'default'}
+                      color={perfil === 'admin' ? 'error' : perfil === 'coordinador' ? 'warning' : 'default'}
                     />
                   </Stack>
                 </Stack>
@@ -189,7 +189,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           <Chip
             label={profileBadge}
             size="medium"
-            color={perfil === 'admin' ? 'error' : perfil === 'lider' ? 'warning' : 'default'}
+            color={perfil === 'admin' ? 'error' : perfil === 'coordinador' ? 'warning' : 'default'}
             variant={perfil === 'admin' ? 'filled' : 'outlined'}
             sx={{ fontWeight: 600 }}
           />

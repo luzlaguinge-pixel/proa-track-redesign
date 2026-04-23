@@ -63,7 +63,7 @@ const MyTeamList = () => {
                 title: search ? 'Sin resultados' : 'Sin integrantes',
                 description: search
                   ? 'Probá con otro nombre o puesto.'
-                  : 'No hay personas con este líder directo.',
+                  : 'No hay personas bajo tu responsabilidad.',
                 variant: 'M',
               },
               avatar: { Icon: IconInfoCircle, color: 'default' },

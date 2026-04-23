@@ -24,7 +24,7 @@ const COPY: Record<
 > = {
   perdido: {
     title: 'Marcar como perdido',
-    intro: 'Se le notificará al admin y al líder para iniciar el seguimiento.',
+    intro: 'Se le notificará al admin y al coordinador/a regional para iniciar el seguimiento.',
     primary: 'Marcar perdido',
   },
   dañado: {

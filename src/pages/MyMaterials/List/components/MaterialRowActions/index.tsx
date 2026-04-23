@@ -258,7 +258,7 @@ const ReportarMovimientoDialog = ({ onClose, onSubmit }: ReportarMovimientoDialo
     >
       <Stack sx={{ gap: 3 }}>
         <Typography variant="body2" color="text.secondary">
-          Indicá a quién le entregaste el material y el motivo. Un líder o admin deberá aprobarlo.
+          Indicá a quién le entregaste el material y el motivo. Un coordinador/a regional o admin deberá aprobarlo.
         </Typography>
         <Autocomplete
           label="Destinatario"

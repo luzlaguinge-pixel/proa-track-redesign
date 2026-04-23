@@ -9,7 +9,7 @@ import {
 import { useAuth } from './AuthContext';
 import { getRoleForId, setRoleForId } from '../stores/roleStore';
 
-export type Perfil = 'admin' | 'lider' | 'navegante';
+export type Perfil = 'admin' | 'coordinador' | 'navegante';
 
 type ProfileState = {
   perfil: Perfil;
