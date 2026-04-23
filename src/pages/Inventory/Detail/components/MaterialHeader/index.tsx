@@ -40,7 +40,7 @@ const MaterialHeader = ({ material, actions }: MaterialHeaderProps) => {
       <Stack sx={{ alignItems: 'flex-start' }}>
         {perfil !== 'navegante' && (
           <Button
-            variant="ghost"
+            variant="text"
             size="small"
             startIcon={<IconArrowLeft size={16} />}
             onClick={handleBackClick}

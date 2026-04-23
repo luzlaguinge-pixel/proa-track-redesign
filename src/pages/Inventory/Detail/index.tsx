@@ -23,7 +23,7 @@ const InventoryDetail = () => {
   const { material, isLoading } = useGetMaterial(id);
 
   if (isLoading) {
-    return <DashboardLayout />;
+    return <DashboardLayout><div /></DashboardLayout>;
   }
 
   if (!material) {

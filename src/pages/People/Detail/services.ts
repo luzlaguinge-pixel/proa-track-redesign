@@ -6,6 +6,7 @@ import {
 } from '../../Inventory/List/types';
 import { getAllMaterials } from '../../Inventory/store';
 
+import { getPersonOverride, updatePersonOverride } from '../store';
 import { type PersonDetail } from './types';
 
 type RawPerson = {
@@ -24,7 +25,16 @@ export const getPersonById = async (
   id: string,
 ): Promise<PersonDetail | null> => {
   const found = rawPersons.find(p => p.id === id);
-  return found ?? null;
+  if (!found) return null;
+  const override = getPersonOverride(id);
+  return { ...found, ...override };
+};
+
+export const updatePersonContact = async (
+  id: string,
+  fields: { dni?: string; telefono?: string },
+): Promise<void> => {
+  updatePersonOverride(id, fields);
 };
 
 export const getPersonMaterials = async (

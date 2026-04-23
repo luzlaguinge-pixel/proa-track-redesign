@@ -1,36 +1,41 @@
-import db from '../../../../mock/db.json';
+import { postgrest } from '../../../services/postgrest';
 import { getAllMaterials } from '../../Inventory/store';
+import { getTeamForLeader } from '../../../stores/teamStore';
 
 import { type TeamMember } from './types';
 
-type RawPerson = {
-  id: string;
-  nombre: string;
-  dni: string;
-  telefono: string;
-  email: string;
-  puesto: string;
-  pais: 'AR' | 'GT' | 'UY';
-  jefeDirectoNombre: string | null;
+type HumandUser = {
+  id: number;
+  firstName: string;
+  lastName: string;
+  employeeInternalId: string;
+  email: string | null;
 };
 
-const rawPersons = (db as { persons: RawPerson[] }).persons;
+export const getMyTeam = async (leaderDni: string): Promise<TeamMember[]> => {
+  const memberDnis = getTeamForLeader(leaderDni);
+  if (memberDnis.length === 0) return [];
 
-// TODO: replace with actual logged-in user lookup via auth session
-export const DEMO_LEADER_NOMBRE = 'Agustina Ayelen Jalil';
+  const dniList = memberDnis.join(',');
+  const result = await postgrest.get<HumandUser>('/users', {
+    employeeInternalId: `in.(${dniList})`,
+    select: 'id,firstName,lastName,employeeInternalId,email',
+    limit: '500',
+  });
 
-export const getMyTeam = async (leaderNombre: string): Promise<TeamMember[]> => {
   const materials = getAllMaterials();
-  return rawPersons
-    .filter(p => p.jefeDirectoNombre === leaderNombre)
-    .map(p => ({
-      id: p.id,
-      nombre: p.nombre,
-      dni: p.dni,
-      telefono: p.telefono,
-      email: p.email,
-      puesto: p.puesto,
-      pais: p.pais,
-      materialesCount: materials.filter(m => m.responsableNombre === p.nombre).length,
-    }));
+
+  return result.data.map(u => {
+    const nombre = `${u.firstName} ${u.lastName}`.trim();
+    return {
+      id: String(u.id),
+      nombre,
+      dni: u.employeeInternalId,
+      telefono: '',
+      email: u.email ?? '',
+      puesto: '',
+      pais: 'AR' as const,
+      materialesCount: materials.filter(m => m.responsableNombre === nombre).length,
+    };
+  });
 };

@@ -5,12 +5,17 @@ import Search from '@material-hu/components/design-system/Inputs/Search';
 import Select from '@material-hu/components/design-system/Inputs/Select';
 
 import { DUEÑO_LABEL, ESTADO_CONFIG, TIPO_LABEL } from '../../constants';
-import { type Filters } from '../../hooks/useMaterialsFilters';
+import { type Disponibilidad, type Filters } from '../../hooks/useMaterialsFilters';
 import {
   type MaterialDueño,
   type MaterialEstado,
   type MaterialTipo,
 } from '../../types';
+
+const disponibilidadOptions: { value: Disponibilidad; label: string }[] = [
+  { value: 'disponible', label: 'Disponible' },
+  { value: 'no_disponible', label: 'No disponible' },
+];
 
 type MaterialsFiltersProps = {
   filters: Filters;
@@ -76,6 +81,15 @@ const MaterialsFilters = ({
       </Stack>
       <Stack sx={{ width: 160 }}>
         <Select
+          value={filters.disponibilidad}
+          onChange={value => onUpdate('disponibilidad', value as Disponibilidad | '')}
+          options={disponibilidadOptions}
+          placeholder="Disponibilidad"
+          allowClear
+        />
+      </Stack>
+      <Stack sx={{ width: 160 }}>
+        <Select
           value={filters.estado}
           onChange={value => onUpdate('estado', value as MaterialEstado | '')}
           options={estadoOptions}
@@ -112,7 +126,7 @@ const MaterialsFilters = ({
       </Stack>
       {hasActiveFilters && (
         <Button
-          variant="ghost"
+          variant="text"
           onClick={onClear}
         >
           Limpiar filtros

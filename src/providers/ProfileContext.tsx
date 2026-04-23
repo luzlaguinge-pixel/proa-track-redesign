@@ -2,32 +2,44 @@ import {
   createContext,
   type ReactNode,
   useContext,
+  useEffect,
   useState,
 } from 'react';
 
-export type Perfil = 'admin' | 'lider' | 'captador';
+import { useAuth } from './AuthContext';
+import { getRoleForId, setRoleForId } from '../stores/roleStore';
 
-const STORAGE_KEY = 'proa_demo_perfil';
+export type Perfil = 'admin' | 'lider' | 'navegante';
 
 type ProfileState = {
   perfil: Perfil;
-  setPerfil: (p: Perfil) => void;
+  assignRole: (employeeInternalId: string, role: Perfil) => void;
 };
 
 const ProfileCtx = createContext<ProfileState | null>(null);
 
 export function ProfileProvider({ children }: { children: ReactNode }) {
-  const [perfil, setPerfilState] = useState<Perfil>(
-    () => (localStorage.getItem(STORAGE_KEY) as Perfil) ?? 'admin',
-  );
+  const { user } = useAuth();
+  const [perfil, setPerfil] = useState<Perfil>('navegante');
 
-  const setPerfil = (p: Perfil) => {
-    setPerfilState(p);
-    localStorage.setItem(STORAGE_KEY, p);
+  useEffect(() => {
+    if (!user) {
+      setPerfil('navegante');
+      return;
+    }
+    setPerfil(getRoleForId(user.employeeInternalId));
+  }, [user]);
+
+  const assignRole = (employeeInternalId: string, role: Perfil) => {
+    setRoleForId(employeeInternalId, role);
+    // If assigning to the current user, update state immediately
+    if (user && user.employeeInternalId === employeeInternalId) {
+      setPerfil(role);
+    }
   };
 
   return (
-    <ProfileCtx.Provider value={{ perfil, setPerfil }}>
+    <ProfileCtx.Provider value={{ perfil, assignRole }}>
       {children}
     </ProfileCtx.Provider>
   );

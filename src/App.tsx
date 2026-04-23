@@ -24,6 +24,13 @@ const MovementsList = lazy(() => import('./pages/Movements/List'));
 const MyTeamList = lazy(() => import('./pages/MyTeam/List'));
 const TeamInventoryList = lazy(() => import('./pages/TeamInventory/List'));
 const MyMaterialsList = lazy(() => import('./pages/MyMaterials/List'));
+const ConfirmationList = lazy(() => import('./pages/Confirmation/List'));
+const TeamConfirmationsList = lazy(() => import('./pages/TeamConfirmations/List'));
+const SolicitudesList = lazy(() => import('./pages/Solicitudes/List'));
+const ReportsList = lazy(() => import('./pages/Reports/List'));
+const FAQsList = lazy(() => import('./pages/FAQs/List'));
+const NotificationsList = lazy(() => import('./pages/Notifications/List'));
+const RoleManagement = lazy(() => import('./pages/Admin/Roles'));
 
 function ProtectedRoute({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();
@@ -49,8 +56,8 @@ const App = () => {
           <DialogLayerProvider>
             <DrawerLayerProvider>
               <BrowserRouter>
-                <ProfileProvider>
                 <AuthProvider>
+                <ProfileProvider>
                   <Suspense fallback={null}>
                     <Routes>
                       <Route
@@ -137,10 +144,66 @@ const App = () => {
                           </ProtectedRoute>
                         }
                       />
+                      <Route
+                        path="/my-confirmation"
+                        element={
+                          <ProtectedRoute>
+                            <ConfirmationList />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/team-confirmations"
+                        element={
+                          <ProtectedRoute>
+                            <TeamConfirmationsList />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/solicitudes"
+                        element={
+                          <ProtectedRoute>
+                            <SolicitudesList />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/reports"
+                        element={
+                          <ProtectedRoute>
+                            <ReportsList />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/faqs"
+                        element={
+                          <ProtectedRoute>
+                            <FAQsList />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/notifications"
+                        element={
+                          <ProtectedRoute>
+                            <NotificationsList />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/roles"
+                        element={
+                          <ProtectedRoute>
+                            <RoleManagement />
+                          </ProtectedRoute>
+                        }
+                      />
                     </Routes>
                   </Suspense>
-                </AuthProvider>
                 </ProfileProvider>
+                </AuthProvider>
               </BrowserRouter>
             </DrawerLayerProvider>
           </DialogLayerProvider>

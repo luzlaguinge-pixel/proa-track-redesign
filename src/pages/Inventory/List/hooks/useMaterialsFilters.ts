@@ -7,6 +7,8 @@ import {
   type MaterialTipo,
 } from '../types';
 
+export type Disponibilidad = 'disponible' | 'no_disponible';
+
 export type Filters = {
   search: string;
   tipo: MaterialTipo | '';
@@ -14,6 +16,7 @@ export type Filters = {
   dueño: MaterialDueño | '';
   osc: string;
   plaza: string;
+  disponibilidad: Disponibilidad | '';
 };
 
 const EMPTY_FILTERS: Filters = {
@@ -23,6 +26,7 @@ const EMPTY_FILTERS: Filters = {
   dueño: '',
   osc: '',
   plaza: '',
+  disponibilidad: '',
 };
 
 export const useMaterialsFilters = (materials: Material[]) => {
@@ -43,6 +47,8 @@ export const useMaterialsFilters = (materials: Material[]) => {
     return materials.filter(m => {
       if (filters.tipo && m.tipo !== filters.tipo) return false;
       if (filters.estado && m.estado !== filters.estado) return false;
+      if (filters.disponibilidad === 'disponible' && m.estado !== 'sin_uso') return false;
+      if (filters.disponibilidad === 'no_disponible' && m.estado === 'sin_uso') return false;
       if (filters.dueño && m.dueño !== filters.dueño) return false;
       if (filters.osc && m.osc !== filters.osc) return false;
       if (filters.plaza && m.plaza !== filters.plaza) return false;
@@ -76,7 +82,8 @@ export const useMaterialsFilters = (materials: Material[]) => {
     filters.estado !== '' ||
     filters.dueño !== '' ||
     filters.osc !== '' ||
-    filters.plaza !== '';
+    filters.plaza !== '' ||
+    filters.disponibilidad !== '';
 
   return {
     filters,

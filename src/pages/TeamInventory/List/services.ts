@@ -1,21 +1,29 @@
-import db from '../../../../mock/db.json';
+import { postgrest } from '../../../services/postgrest';
 import { getAllMaterials } from '../../Inventory/store';
+import { getTeamForLeader } from '../../../stores/teamStore';
 import { type Material } from '../../Inventory/List/types';
 
-type RawPerson = {
-  id: string;
-  nombre: string;
-  jefeDirectoNombre: string | null;
+type HumandUser = {
+  firstName: string;
+  lastName: string;
+  employeeInternalId: string;
 };
 
-const rawPersons = (db as { persons: RawPerson[] }).persons;
+export const getTeamMaterials = async (leaderDni: string): Promise<Material[]> => {
+  const memberDnis = getTeamForLeader(leaderDni);
+  if (memberDnis.length === 0) return [];
 
-export const getTeamMaterials = async (leaderNombre: string): Promise<Material[]> => {
+  const dniList = memberDnis.join(',');
+  const result = await postgrest.get<HumandUser>('/users', {
+    employeeInternalId: `in.(${dniList})`,
+    select: 'firstName,lastName,employeeInternalId',
+    limit: '500',
+  });
+
   const teamNames = new Set(
-    rawPersons
-      .filter(p => p.jefeDirectoNombre === leaderNombre)
-      .map(p => p.nombre),
+    result.data.map(u => `${u.firstName} ${u.lastName}`.trim()),
   );
+
   return getAllMaterials().filter(
     m => m.responsableNombre !== null && teamNames.has(m.responsableNombre),
   );

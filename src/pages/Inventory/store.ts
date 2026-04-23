@@ -87,6 +87,42 @@ export const createMaterial = (
   return { ...newMaterial };
 };
 
+export const unassignMaterials = (ids: string[]): void => {
+  const list = load();
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const idSet = new Set(ids);
+  for (let i = 0; i < list.length; i++) {
+    if (!idSet.has(list[i].id)) continue;
+    list[i] = {
+      ...list[i],
+      responsableNombre: null,
+      responsableDni: null,
+      responsableTelefono: null,
+      comodatoFirmado: false,
+      estado: 'sin_uso',
+      fechaActualizacion: todayStr,
+    };
+  }
+  cache = list;
+  persist();
+};
+
+export const deleteMaterials = (ids: string[]): void => {
+  const idSet = new Set(ids);
+  cache = load().filter(m => !idSet.has(m.id));
+  persist();
+};
+
+export const deleteMaterial = (id: string): boolean => {
+  const list = load();
+  const idx = list.findIndex(m => m.id === id);
+  if (idx === -1) return false;
+  list.splice(idx, 1);
+  cache = list;
+  persist();
+  return true;
+};
+
 export const resetStore = () => {
   cache = seedMaterials();
   persist();

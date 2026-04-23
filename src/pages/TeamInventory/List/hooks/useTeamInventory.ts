@@ -2,15 +2,19 @@ import { useMemo, useState } from 'react';
 
 import { useQuery } from '@tanstack/react-query';
 
-import { DEMO_LEADER_NOMBRE } from '../../../MyTeam/List/services';
+import { useAuth } from '../../../../providers/AuthContext';
 import { getTeamMaterials } from '../services';
 
 export const useTeamInventory = () => {
+  const { user } = useAuth();
   const [search, setSearch] = useState('');
 
+  const leaderDni = user?.employeeInternalId ?? '';
+
   const { data: materials = [], isLoading } = useQuery({
-    queryKey: ['team-inventory', DEMO_LEADER_NOMBRE],
-    queryFn: () => getTeamMaterials(DEMO_LEADER_NOMBRE),
+    queryKey: ['team-inventory', leaderDni],
+    queryFn: () => getTeamMaterials(leaderDni),
+    enabled: !!leaderDni,
   });
 
   const filtered = useMemo(() => {

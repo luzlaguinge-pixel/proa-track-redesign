@@ -2,14 +2,19 @@ import { useMemo, useState } from 'react';
 
 import { useQuery } from '@tanstack/react-query';
 
-import { DEMO_LEADER_NOMBRE, getMyTeam } from '../services';
+import { useAuth } from '../../../../providers/AuthContext';
+import { getMyTeam } from '../services';
 
 export const useMyTeam = () => {
+  const { user } = useAuth();
   const [search, setSearch] = useState('');
 
+  const leaderDni = user?.employeeInternalId ?? '';
+
   const { data: members = [], isLoading } = useQuery({
-    queryKey: ['my-team', DEMO_LEADER_NOMBRE],
-    queryFn: () => getMyTeam(DEMO_LEADER_NOMBRE),
+    queryKey: ['my-team', leaderDni],
+    queryFn: () => getMyTeam(leaderDni),
+    enabled: !!leaderDni,
   });
 
   const filtered = useMemo(() => {

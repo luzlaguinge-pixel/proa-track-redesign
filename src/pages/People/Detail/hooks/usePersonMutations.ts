@@ -11,6 +11,7 @@ import { type Person } from '../../../Inventory/Detail/types';
 import { materialsKeys } from '../../../Inventory/List/hooks/useGetMaterials';
 import { type Material } from '../../../Inventory/List/types';
 
+import { updatePersonContact } from '../services';
 import { personKeys } from './useGetPerson';
 
 const autorFrom = (user: { firstName: string; lastName: string } | null) =>
@@ -108,5 +109,17 @@ export const usePersonMutations = (
     onSuccess: invalidate,
   });
 
-  return { assignNew, notifyAll, requestReturnAll, recoverAll, returnAll };
+  const updateContact = useMutation({
+    mutationFn: (fields: { dni?: string; telefono?: string }) => {
+      if (!person) return Promise.resolve();
+      return updatePersonContact(person.id, fields);
+    },
+    onSuccess: () => {
+      if (person) {
+        queryClient.invalidateQueries({ queryKey: personKeys.detail(person.id) });
+      }
+    },
+  });
+
+  return { assignNew, notifyAll, requestReturnAll, recoverAll, returnAll, updateContact };
 };

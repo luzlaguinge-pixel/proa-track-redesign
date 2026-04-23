@@ -5,14 +5,16 @@ import StateCard from '@material-hu/components/composed-components/StateCard';
 import Search from '@material-hu/components/design-system/Inputs/Search';
 import Title from '@material-hu/components/design-system/Title';
 
+import { useAuth } from '../../../providers/AuthContext';
 import { DashboardLayout } from '../../../layouts/DashboardLayout';
 import MaterialsTable from '../../Inventory/List/components/MaterialsTable';
-import { DEMO_LEADER_NOMBRE } from '../../MyTeam/List/services';
 
 import { useTeamInventory } from './hooks/useTeamInventory';
 
 const TeamInventoryList = () => {
+  const { user } = useAuth();
   const { materials, total, isLoading, search, setSearch } = useTeamInventory();
+  const leaderNombre = user ? `${user.firstName} ${user.lastName}`.trim() : 'mi equipo';
 
   if (isLoading) return <DashboardLayout><div /></DashboardLayout>;
 
@@ -21,7 +23,7 @@ const TeamInventoryList = () => {
       <Stack sx={{ gap: 3 }}>
         <Title
           title="Materiales del equipo"
-          description={`Materiales asignados al equipo de ${DEMO_LEADER_NOMBRE} · ${total} en total`}
+          description={`Materiales asignados al equipo de ${leaderNombre} · ${total} en total`}
           variant="L"
         />
 

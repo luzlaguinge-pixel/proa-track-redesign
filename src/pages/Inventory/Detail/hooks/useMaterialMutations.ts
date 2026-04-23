@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { useAuth } from '../../../../providers/AuthContext';
 import { materialsKeys } from '../../List/hooks/useGetMaterials';
+import { deleteMaterial } from '../../store';
 import {
   type AssignInput,
   assignMaterial,
@@ -56,5 +57,10 @@ export const useMaterialMutations = (materialId: string) => {
     onSuccess: invalidate,
   });
 
-  return { assign, report, confirm, repair, recover };
+  const remove = useMutation({
+    mutationFn: () => Promise.resolve(deleteMaterial(materialId)),
+    onSuccess: invalidate,
+  });
+
+  return { assign, report, confirm, repair, recover, remove };
 };

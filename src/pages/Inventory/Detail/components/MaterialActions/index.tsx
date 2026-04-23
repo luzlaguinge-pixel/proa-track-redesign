@@ -1,3 +1,5 @@
+import { useNavigate } from 'react-router-dom';
+
 import {
   IconAlertTriangle,
   IconBell,
@@ -5,6 +7,7 @@ import {
   IconDotsVertical,
   IconMailbox,
   IconTool,
+  IconTrash,
   IconUserPlus,
   IconUserX,
 } from '@material-hu/icons/tabler';
@@ -16,13 +19,13 @@ import { useDialogLayer } from '@material-hu/components/layers/Dialogs';
 import { useDrawerLayer } from '@material-hu/components/layers/Drawers';
 import { useMenuLayer } from '@material-hu/components/layers/Menus';
 
-import db from '../../../../../../mock/db.json';
 import { type Material } from '../../../List/types';
 import { useMaterialMutations } from '../../hooks/useMaterialMutations';
-import { type Person } from '../../types';
+import { useGetPersons } from '../../../../People/List/hooks/useGetPersons';
 
 import AssignDrawer from './AssignDrawer';
 import ConfirmDialog from './ConfirmDialog';
+import DeleteDialog from './DeleteDialog';
 import MarkRecoveredDialog from './MarkRecoveredDialog';
 import ReportDialog from './ReportDialog';
 import SendToRepairDialog from './SendToRepairDialog';
@@ -31,15 +34,15 @@ type MaterialActionsProps = {
   material: Material;
 };
 
-const persons = (db as { persons: Person[] }).persons;
-
 const MaterialActions = ({ material }: MaterialActionsProps) => {
+  const navigate = useNavigate();
   const { openDrawer, closeDrawer } = useDrawerLayer();
   const { openDialog, closeDialog } = useDialogLayer();
   const { openMenu } = useMenuLayer();
-  const { assign, report, confirm, repair, recover } = useMaterialMutations(
+  const { assign, report, confirm, repair, recover, remove } = useMaterialMutations(
     material.id,
   );
+  const { persons } = useGetPersons();
 
   const hasResponsable = !!material.responsableNombre;
   const canSendToRepair =
@@ -149,6 +152,22 @@ const MaterialActions = ({ material }: MaterialActionsProps) => {
     });
   };
 
+  const openDeleteDialog = () => {
+    openDialog({
+      content: (
+        <DeleteDialog
+          material={material}
+          onClose={() => closeDialog()}
+          onConfirm={async () => {
+            await remove.mutateAsync();
+            closeDialog();
+            navigate('/inventory');
+          }}
+        />
+      ),
+    });
+  };
+
   const handleMoreClick = (event: React.MouseEvent<HTMLElement>) => {
     const items = [
       ...(hasResponsable
@@ -198,6 +217,12 @@ const MaterialActions = ({ material }: MaterialActionsProps) => {
         title: 'Marcar como dañado',
         icon: IconAlertTriangle,
         onSelect: () => openReport('dañado'),
+      },
+      {
+        id: 'eliminar',
+        title: 'Eliminar material',
+        icon: IconTrash,
+        onSelect: openDeleteDialog,
       },
     ];
 

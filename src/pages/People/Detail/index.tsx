@@ -1,12 +1,16 @@
+import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
-import { IconAlertTriangle, IconArrowLeft } from '@material-hu/icons/tabler';
+import { IconAlertTriangle, IconArrowLeft, IconPencil } from '@material-hu/icons/tabler';
+import IconButton from '@material-hu/mui/IconButton';
 import Paper from '@material-hu/mui/Paper';
 import Stack from '@material-hu/mui/Stack';
 import Typography from '@material-hu/mui/Typography';
 
 import StateCard from '@material-hu/components/composed-components/StateCard';
 import Button from '@material-hu/components/design-system/Buttons/Button';
+import InputClassic from '@material-hu/components/design-system/Inputs/Classic';
+import { useDialogLayer } from '@material-hu/components/layers/Dialogs';
 
 import { DashboardLayout } from '../../../layouts/DashboardLayout';
 
@@ -18,6 +22,7 @@ import {
   useGetPersonHistory,
   useGetPersonMaterials,
 } from './hooks/useGetPerson';
+import { usePersonMutations } from './hooks/usePersonMutations';
 
 const PeopleDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -25,6 +30,8 @@ const PeopleDetail = () => {
   const { person, isLoading } = useGetPerson(id);
   const { materials } = useGetPersonMaterials(person?.nombre);
   const { history } = useGetPersonHistory(person?.nombre);
+  const { updateContact } = usePersonMutations(person ?? null);
+  const { openDialog, closeDialog } = useDialogLayer();
 
   if (isLoading)
     return (
@@ -107,26 +114,20 @@ const PeopleDetail = () => {
               Información
             </Typography>
             <Stack sx={{ flexDirection: 'row', gap: 4, flexWrap: 'wrap' }}>
-              <Stack sx={{ gap: 0.25 }}>
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
-                >
-                  DNI
-                </Typography>
-                <Typography variant="body1">{person.dni || '—'}</Typography>
-              </Stack>
-              <Stack sx={{ gap: 0.25 }}>
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
-                >
-                  Teléfono
-                </Typography>
-                <Typography variant="body1">
-                  {person.telefono || '—'}
-                </Typography>
-              </Stack>
+              <ContactField
+                label="DNI"
+                value={person.dni}
+                onEdit={val =>
+                  updateContact.mutateAsync({ dni: val })
+                }
+              />
+              <ContactField
+                label="Teléfono"
+                value={person.telefono}
+                onEdit={val =>
+                  updateContact.mutateAsync({ telefono: val })
+                }
+              />
             </Stack>
           </Stack>
         </Paper>
@@ -139,3 +140,88 @@ const PeopleDetail = () => {
 };
 
 export default PeopleDetail;
+
+// ─── ContactField ──────────────────────────────────────────────────────────────
+
+type ContactFieldProps = {
+  label: string;
+  value: string;
+  onEdit: (val: string) => Promise<void>;
+};
+
+const ContactField = ({ label, value, onEdit }: ContactFieldProps) => {
+  const { openDialog, closeDialog } = useDialogLayer();
+  const isEmpty = !value;
+
+  const handleOpen = () => {
+    openDialog({
+      content: (
+        <EditContactDialog
+          label={label}
+          initialValue={value}
+          onClose={closeDialog}
+          onSubmit={async val => {
+            await onEdit(val);
+            closeDialog();
+          }}
+        />
+      ),
+    });
+  };
+
+  return (
+    <Stack sx={{ gap: 0.25 }}>
+      <Typography variant="caption" color="text.secondary">
+        {label}
+      </Typography>
+      <Stack sx={{ flexDirection: 'row', alignItems: 'center', gap: 0.5 }}>
+        <Typography variant="body1" color={isEmpty ? 'text.disabled' : 'text.primary'}>
+          {value || 'Sin completar'}
+        </Typography>
+        <IconButton size="small" onClick={handleOpen} sx={{ p: 0.25 }}>
+          <IconPencil size={14} />
+        </IconButton>
+      </Stack>
+    </Stack>
+  );
+};
+
+type EditContactDialogProps = {
+  label: string;
+  initialValue: string;
+  onClose: () => void;
+  onSubmit: (val: string) => Promise<void>;
+};
+
+const EditContactDialog = ({ label, initialValue, onClose, onSubmit }: EditContactDialogProps) => {
+  const [value, setValue] = useState(initialValue);
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async () => {
+    setLoading(true);
+    try { await onSubmit(value); } finally { setLoading(false); }
+  };
+
+  return (
+    <Stack sx={{ p: 3, gap: 3, minWidth: 320 }}>
+      <Typography variant="h6" sx={{ fontWeight: 600 }}>
+        Editar {label.toLowerCase()}
+      </Typography>
+      <InputClassic
+        label={label}
+        value={value}
+        onChange={setValue}
+        fullWidth
+        autoFocus
+      />
+      <Stack sx={{ flexDirection: 'row', gap: 1, justifyContent: 'flex-end' }}>
+        <Button variant="tertiary" size="medium" onClick={onClose} disabled={loading}>
+          Cancelar
+        </Button>
+        <Button variant="primary" size="medium" onClick={handleSubmit} loading={loading} disabled={!value.trim()}>
+          Guardar
+        </Button>
+      </Stack>
+    </Stack>
+  );
+};

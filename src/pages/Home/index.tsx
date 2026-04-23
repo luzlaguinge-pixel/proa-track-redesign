@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { IconBell, IconPlus } from '@material-hu/icons/tabler';
@@ -7,6 +8,8 @@ import Typography from '@material-hu/mui/Typography';
 
 import Button from '@material-hu/components/design-system/Buttons/Button';
 import Title from '@material-hu/components/design-system/Title';
+import Snackbar from '@material-hu/mui/Snackbar';
+import Alert from '@material-hu/mui/Alert';
 import { useDrawerLayer } from '@material-hu/components/layers/Drawers';
 
 import { DashboardLayout } from '../../layouts/DashboardLayout';
@@ -19,6 +22,8 @@ import { CountryToggle } from './components/CountryToggle';
 import { StatCard } from './components/StatCard';
 import { useCountryFilter } from './hooks/useCountryFilter';
 import { useDashboardStats } from './hooks/useDashboardStats';
+import { useSendReminder } from './hooks/useSendReminder';
+import type { SendReminderResult } from './hooks/useSendReminder';
 
 export const HomePage = () => {
   const navigate = useNavigate();
@@ -26,6 +31,11 @@ export const HomePage = () => {
   const { stats, isLoading } = useDashboardStats(country);
   const { openDrawer, closeDrawer } = useDrawerLayer();
   const createMaterial = useCreateMaterial();
+  const { sendReminder, isLoading: isSendingReminder } = useSendReminder();
+
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error'>('success');
 
   if (isLoading)
     return (
@@ -47,6 +57,13 @@ export const HomePage = () => {
         />
       ),
     });
+  };
+
+  const handleSendReminder = async () => {
+    const result: SendReminderResult = await sendReminder();
+    setSnackbarMessage(result.message);
+    setSnackbarSeverity(result.success ? 'success' : 'error');
+    setSnackbarOpen(true);
   };
 
   return (
@@ -75,12 +92,12 @@ export const HomePage = () => {
             >
               Nuevo material
             </Button>
-            {/* TODO: Enviar recordatorio masivo — requiere endpoint POST /notifications/bulk-reminder */}
             <Button
               variant="secondary"
               size="large"
               startIcon={<IconBell size={18} />}
-              disabled
+              onClick={handleSendReminder}
+              disabled={isSendingReminder}
             >
               Enviar recordatorio
             </Button>
@@ -179,6 +196,21 @@ export const HomePage = () => {
           </Stack>
         </Paper>
       </Stack>
+
+      <Snackbar
+        open={snackbarOpen}
+        onClose={() => setSnackbarOpen(false)}
+        autoHideDuration={4000}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert
+          onClose={() => setSnackbarOpen(false)}
+          severity={snackbarSeverity}
+          sx={{ width: '100%' }}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </DashboardLayout>
   );
 };
