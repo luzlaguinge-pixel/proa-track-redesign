@@ -28,7 +28,7 @@ export function useUsersWithMaterials() {
   const { data = [], isLoading, error } = useQuery({
     queryKey: ['users-with-materials'],
     queryFn: getUsersWithAssignedMaterials,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 30 * 1000, // 30 seconds — refresh quickly so newly subscribed users appear
   });
 
   return useMemo(

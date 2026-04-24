@@ -181,6 +181,7 @@ const NotifCard = ({
 const NotificationsList = () => {
   const { perfil } = useProfile();
   const [tick, setTick] = useState(0);
+  const [sendState, setSendState] = useState<'idle' | 'sending' | 'done' | 'error'>('idle');
   const { openDialog } = useDialogLayer();
 
   const { users, recipientCount, userCount, isLoading: usersLoading } =
@@ -208,6 +209,7 @@ const NotificationsList = () => {
   };
 
   const handleSendMonthlyConfirmation = async () => {
+    setSendState('sending');
     try {
       const response = await fetch('/api/notifications/send-monthly-confirmation', {
         method: 'POST',
@@ -220,9 +222,18 @@ const NotificationsList = () => {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to send notifications');
+        const err = await response.json().catch(() => ({}));
+        throw new Error((err as { error?: string }).error ?? 'Failed to send notifications');
       }
-    } finally {
+
+      setSendState('done');
+      // Reset back to idle after 4 seconds
+      setTimeout(() => setSendState('idle'), 4000);
+    } catch (e) {
+      // biome-ignore lint/suspicious/noConsole: dispatch error must be visible
+      console.error('[Push] Monthly confirmation dispatch failed:', e);
+      setSendState('error');
+      setTimeout(() => setSendState('idle'), 4000);
     }
   };
 
@@ -265,11 +276,18 @@ const NotificationsList = () => {
               <Button
                 variant="primary"
                 size="small"
-                startIcon={<IconBellRinging size={16} />}
+                startIcon={
+                  sendState === 'done' ? <IconCircleCheck size={16} /> :
+                  sendState === 'error' ? <IconX size={16} /> :
+                  <IconBellRinging size={16} />
+                }
                 onClick={handleOpenSendDialog}
-                disabled={usersLoading}
+                disabled={usersLoading || sendState === 'sending'}
               >
-                Enviar confirmación mensual
+                {sendState === 'sending' ? 'Enviando...' :
+                 sendState === 'done' ? `Enviado a ${userCount} usuario${userCount !== 1 ? 's' : ''}` :
+                 sendState === 'error' ? 'Error — revisá la consola' :
+                 'Enviar confirmación mensual'}
               </Button>
             )}
             {unread.length > 0 && (
