@@ -3,7 +3,6 @@ import {
   useCallback,
   useContext,
   useEffect,
-  useRef,
   useState,
   type ReactNode,
 } from 'react';
@@ -27,7 +26,6 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
   const { user } = useAuth();
   const [permission, setPermission] = useState<NotificationPermission | null>(null);
   const [isSubscribed, setIsSubscribed] = useState(false);
-  const syncedRef = useRef(false); // prevent double-sync on StrictMode double-invoke
 
   const isSupported =
     typeof window !== 'undefined' &&
@@ -40,66 +38,17 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
     return user.employeeInternalId || (user.id != null ? String(user.id) : null);
   }, [user]);
 
-  const checkSubscription = useCallback(async () => {
-    if (!isSupported) return;
-    try {
-      const registration = await navigator.serviceWorker.ready;
-      const subscription = await registration.pushManager.getSubscription();
-      setIsSubscribed(!!subscription);
-      return subscription;
-    } catch {
-      return null;
-    }
-  }, [isSupported]);
-
-  // On mount (and whenever user is set): if permission is already granted,
-  // ensure the subscription is synced to the server. This covers:
-  // 1. User granted permission in a previous session but server never got it
-  // 2. First launch after adding to home screen (SW just became active)
+  // Only check browser-side subscription state — do NOT auto-save to server.
+  // Subscriptions are saved ONLY when the user explicitly taps the banner button.
+  // This prevents the desktop Chrome subscription from silently overwriting the mobile one.
   useEffect(() => {
-    if (!isSupported || !user || syncedRef.current) return;
-
-    const currentPermission = Notification.permission;
-    setPermission(currentPermission);
-
-    if (currentPermission !== 'granted') {
-      // Not yet granted — just track state, let banner prompt the user
-      checkSubscription();
-      return;
-    }
-
-    // Permission already granted — check if this device has a browser-side subscription.
-    // If it does, sync it to the server (upsert by endpoint is safe — each device keeps its own row).
-    // If not, show the banner with "Reintentar" so the user can re-subscribe on this device.
-    syncedRef.current = true;
-    (async () => {
-      try {
-        const registration = await navigator.serviceWorker.ready;
-        const subscription = await registration.pushManager.getSubscription();
-
-        if (!subscription) {
-          // No browser subscription on this device. Let the banner handle re-subscription.
-          setIsSubscribed(false);
-          return;
-        }
-
-        // Browser subscription exists — sync it to the server for this device
-        const userId = getUserId();
-        if (!userId) return;
-        await fetch('/api/notifications/subscribe', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ subscription: subscription.toJSON(), userId }),
-        });
-
-        setIsSubscribed(true);
-        console.log('[Push] Subscription synced for', userId, subscription.endpoint.slice(0, 50));
-      } catch (err) {
-        console.warn('[Push] Auto-sync failed:', err);
-        syncedRef.current = false;
-      }
-    })();
-  }, [isSupported, user, checkSubscription, getUserId]);
+    if (!isSupported) return;
+    setPermission(Notification.permission);
+    navigator.serviceWorker.ready
+      .then((reg) => reg.pushManager.getSubscription())
+      .then((sub) => setIsSubscribed(!!sub))
+      .catch(() => {});
+  }, [isSupported]);
 
   const requestPermission = useCallback(async (): Promise<NotificationPermission> => {
     if (!isSupported) throw new Error('Notifications not supported');
@@ -118,30 +67,47 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
 
     const registration = await navigator.serviceWorker.ready;
     const vapidKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
-    if (!vapidKey) throw new Error('VITE_VAPID_PUBLIC_KEY is not defined');
+    if (!vapidKey) throw new Error('VAPID public key not configured');
 
-    const subscription = await registration.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array(vapidKey) as BufferSource,
-    });
+    let subscription: PushSubscription;
+    try {
+      subscription = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(vapidKey) as BufferSource,
+      });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      // biome-ignore lint/suspicious/noConsole: intentional push debug log
+      console.error('[Push] pushManager.subscribe failed:', msg);
+      throw new Error(`Subscription failed: ${msg}`);
+    }
 
     const userId = getUserId();
-    if (!userId) throw new Error('User not authenticated — cannot save subscription');
+    if (!userId) throw new Error('User not authenticated');
+
+    const subJson = subscription.toJSON();
+    // biome-ignore lint/suspicious/noConsole: intentional push debug log
+    console.log('[Push] Subscribing:', {
+      userId,
+      endpoint: subscription.endpoint.slice(0, 60),
+      hasP256dh: !!subJson.keys?.p256dh,
+      hasAuth: !!subJson.keys?.auth,
+    });
 
     const response = await fetch('/api/notifications/subscribe', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ subscription: subscription.toJSON(), userId }),
+      body: JSON.stringify({ subscription: subJson, userId }),
     });
 
     if (!response.ok) {
       const err = await response.json().catch(() => ({}));
-      throw new Error((err as { error?: string }).error ?? 'Failed to save subscription');
+      throw new Error((err as { error?: string }).error ?? 'Server failed to save subscription');
     }
 
     setIsSubscribed(true);
-    syncedRef.current = true;
-    console.log('[Push] Subscribed for', userId);
+    // biome-ignore lint/suspicious/noConsole: intentional push debug log
+    console.log('[Push] Subscribed and saved for', userId, subscription.endpoint.slice(0, 60));
   }, [isSupported, requestPermission, getUserId]);
 
   const unsubscribe = useCallback(async () => {
@@ -150,7 +116,6 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
       const subscription = await registration.pushManager.getSubscription();
       if (subscription) await subscription.unsubscribe();
       setIsSubscribed(false);
-      syncedRef.current = false;
     } catch (error) {
       console.error('Failed to unsubscribe:', error);
       throw error;
