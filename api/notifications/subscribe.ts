@@ -58,7 +58,8 @@ export default async function handler(
 
   try {
     // Get user ID from auth token (placeholder - implement with actual auth)
-    const userId = request.headers['x-user-id'] || 'anonymous';
+    const userIdHeader = request.headers['x-user-id'];
+    const userId = Array.isArray(userIdHeader) ? userIdHeader[0] : (userIdHeader || 'anonymous');
 
     const subscriptions = getSubscriptions();
 
