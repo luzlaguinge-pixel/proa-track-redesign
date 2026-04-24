@@ -13,7 +13,7 @@ export interface DispatchedNotification {
 }
 
 async function fetchNotifications(): Promise<DispatchedNotification[]> {
-  const res = await fetch('/api/notifications');
+  const res = await fetch('/api/notifications/list');
   if (!res.ok) return [];
   const data = await res.json();
   return (data ?? []).map(

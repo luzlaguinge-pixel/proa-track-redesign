@@ -9,7 +9,7 @@ const supabase = createClient(
 );
 
 /**
- * GET /api/notifications
+ * GET /api/notifications/list
  * Returns the last 50 notifications for the authenticated user.
  */
 export default async function handler(req: VercelRequest, res: VercelResponse) {

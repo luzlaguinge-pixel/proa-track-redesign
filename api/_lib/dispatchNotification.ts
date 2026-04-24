@@ -1,11 +1,18 @@
 import { createClient } from '@supabase/supabase-js';
 import webpush from 'web-push';
 
-webpush.setVapidDetails(
-  process.env.VAPID_SUBJECT || 'mailto:admin@example.com',
-  process.env.VITE_VAPID_PUBLIC_KEY!,
-  process.env.VAPID_PRIVATE_KEY!,
-);
+// Initialise VAPID lazily inside the function so a missing key never crashes
+// the module at load time and surfaces a clear error instead.
+let vapidInitialised = false;
+function ensureVapid() {
+  if (vapidInitialised) return;
+  const subject = process.env.VAPID_SUBJECT || 'mailto:admin@example.com';
+  const pub = process.env.VITE_VAPID_PUBLIC_KEY;
+  const priv = process.env.VAPID_PRIVATE_KEY;
+  if (!pub || !priv) throw new Error('VAPID keys not configured');
+  webpush.setVapidDetails(subject, pub, priv);
+  vapidInitialised = true;
+}
 
 export interface NotificationPayload {
   title: string;
@@ -81,6 +88,7 @@ export async function dispatchNotification(
     return { userId, inApp: 'delivered', push: 'no_subscription', pushSent: 0, pushFailed: 0 };
   }
 
+  ensureVapid();
   const pushPayload = JSON.stringify({ title: payload.title, body: payload.body, icon, url });
   let pushSent = 0;
   let pushFailed = 0;
