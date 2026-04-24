@@ -9,7 +9,9 @@ type HumandUser = {
   employeeInternalId: string;
 };
 
-export const getTeamMaterials = async (leaderDni: string): Promise<Material[]> => {
+export const getTeamMaterials = async (
+  leaderDni: string,
+): Promise<Material[]> => {
   const memberDnis = getTeamForLeader(leaderDni);
   if (memberDnis.length === 0) return [];
 

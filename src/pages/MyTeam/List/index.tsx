@@ -36,7 +36,12 @@ const MyTeamList = () => {
   const { members, total, isLoading, search, setSearch } = useMyTeam();
   const leaderNombre = user ? `${user.firstName} ${user.lastName}`.trim() : '';
 
-  if (isLoading) return <DashboardLayout><div /></DashboardLayout>;
+  if (isLoading)
+    return (
+      <DashboardLayout>
+        <div />
+      </DashboardLayout>
+    );
 
   return (
     <DashboardLayout>
@@ -90,11 +95,17 @@ const MyTeamList = () => {
                   >
                     <TableCell>
                       <Stack sx={{ gap: 0 }}>
-                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                        <Typography
+                          variant="body2"
+                          sx={{ fontWeight: 600 }}
+                        >
                           {member.nombre}
                         </Typography>
                         {member.dni && (
-                          <Typography variant="caption" color="text.secondary">
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                          >
                             DNI {member.dni}
                           </Typography>
                         )}
@@ -116,7 +127,10 @@ const MyTeamList = () => {
                             }}
                           >
                             <IconMail size={14} />
-                            <Typography variant="caption" noWrap>
+                            <Typography
+                              variant="caption"
+                              noWrap
+                            >
                               {member.email}
                             </Typography>
                           </Stack>
@@ -136,7 +150,10 @@ const MyTeamList = () => {
                           </Stack>
                         )}
                         {!member.email && !member.telefono && (
-                          <Typography variant="caption" color="text.disabled">
+                          <Typography
+                            variant="caption"
+                            color="text.disabled"
+                          >
                             —
                           </Typography>
                         )}

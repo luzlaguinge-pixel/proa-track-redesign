@@ -1,7 +1,11 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
-import { IconAlertTriangle, IconArrowLeft, IconPencil } from '@material-hu/icons/tabler';
+import {
+  IconAlertTriangle,
+  IconArrowLeft,
+  IconPencil,
+} from '@material-hu/icons/tabler';
 import IconButton from '@material-hu/mui/IconButton';
 import Paper from '@material-hu/mui/Paper';
 import Stack from '@material-hu/mui/Stack';
@@ -117,16 +121,12 @@ const PeopleDetail = () => {
               <ContactField
                 label="DNI"
                 value={person.dni}
-                onEdit={val =>
-                  updateContact.mutateAsync({ dni: val })
-                }
+                onEdit={val => updateContact.mutateAsync({ dni: val })}
               />
               <ContactField
                 label="Teléfono"
                 value={person.telefono}
-                onEdit={val =>
-                  updateContact.mutateAsync({ telefono: val })
-                }
+                onEdit={val => updateContact.mutateAsync({ telefono: val })}
               />
             </Stack>
           </Stack>
@@ -171,14 +171,24 @@ const ContactField = ({ label, value, onEdit }: ContactFieldProps) => {
 
   return (
     <Stack sx={{ gap: 0.25 }}>
-      <Typography variant="caption" color="text.secondary">
+      <Typography
+        variant="caption"
+        color="text.secondary"
+      >
         {label}
       </Typography>
       <Stack sx={{ flexDirection: 'row', alignItems: 'center', gap: 0.5 }}>
-        <Typography variant="body1" color={isEmpty ? 'text.disabled' : 'text.primary'}>
+        <Typography
+          variant="body1"
+          color={isEmpty ? 'text.disabled' : 'text.primary'}
+        >
           {value || 'Sin completar'}
         </Typography>
-        <IconButton size="small" onClick={handleOpen} sx={{ p: 0.25 }}>
+        <IconButton
+          size="small"
+          onClick={handleOpen}
+          sx={{ p: 0.25 }}
+        >
           <IconPencil size={14} />
         </IconButton>
       </Stack>
@@ -193,18 +203,30 @@ type EditContactDialogProps = {
   onSubmit: (val: string) => Promise<void>;
 };
 
-const EditContactDialog = ({ label, initialValue, onClose, onSubmit }: EditContactDialogProps) => {
+const EditContactDialog = ({
+  label,
+  initialValue,
+  onClose,
+  onSubmit,
+}: EditContactDialogProps) => {
   const [value, setValue] = useState(initialValue);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async () => {
     setLoading(true);
-    try { await onSubmit(value); } finally { setLoading(false); }
+    try {
+      await onSubmit(value);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <Stack sx={{ p: 3, gap: 3, minWidth: 320 }}>
-      <Typography variant="h6" sx={{ fontWeight: 600 }}>
+      <Typography
+        variant="h6"
+        sx={{ fontWeight: 600 }}
+      >
         Editar {label.toLowerCase()}
       </Typography>
       <InputClassic
@@ -215,10 +237,21 @@ const EditContactDialog = ({ label, initialValue, onClose, onSubmit }: EditConta
         autoFocus
       />
       <Stack sx={{ flexDirection: 'row', gap: 1, justifyContent: 'flex-end' }}>
-        <Button variant="tertiary" size="medium" onClick={onClose} disabled={loading}>
+        <Button
+          variant="tertiary"
+          size="medium"
+          onClick={onClose}
+          disabled={loading}
+        >
           Cancelar
         </Button>
-        <Button variant="primary" size="medium" onClick={handleSubmit} loading={loading} disabled={!value.trim()}>
+        <Button
+          variant="primary"
+          size="medium"
+          onClick={handleSubmit}
+          loading={loading}
+          disabled={!value.trim()}
+        >
           Guardar
         </Button>
       </Stack>

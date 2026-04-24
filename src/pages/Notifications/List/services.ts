@@ -21,7 +21,9 @@ export type NavegantePendiente = {
 const esMismoMes = (fecha: string): boolean => {
   const d = new Date(fecha);
   const now = new Date();
-  return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+  return (
+    d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth()
+  );
 };
 
 const esUltimaSemana = (fecha: string): boolean => {
@@ -32,7 +34,9 @@ const esUltimaSemana = (fecha: string): boolean => {
 
 export const getNotificacionesCaptador = (nombre: string): Notificacion[] => {
   const notifs: Notificacion[] = [];
-  const materials = getAllMaterials().filter(m => m.responsableNombre === nombre && m.estado === 'en_uso');
+  const materials = getAllMaterials().filter(
+    m => m.responsableNombre === nombre && m.estado === 'en_uso',
+  );
 
   if (materials.length > 0) {
     const confirmados = new Set(
@@ -55,9 +59,15 @@ export const getNotificacionesCaptador = (nombre: string): Notificacion[] => {
     }
   }
 
-  const solicitudes = getAllSolicitudes().filter(s => s.solicitanteNombre === nombre);
+  const solicitudes = getAllSolicitudes().filter(
+    s => s.solicitanteNombre === nombre,
+  );
   for (const s of solicitudes) {
-    if (s.estado === 'aprobada' && s.fechaResolucion && esUltimaSemana(s.fechaResolucion)) {
+    if (
+      s.estado === 'aprobada' &&
+      s.fechaResolucion &&
+      esUltimaSemana(s.fechaResolucion)
+    ) {
       const id = `sol-aprobada-${s.id}`;
       notifs.push({
         id,
@@ -69,7 +79,11 @@ export const getNotificacionesCaptador = (nombre: string): Notificacion[] => {
         navigationPath: `/my-materials`,
       });
     }
-    if (s.estado === 'rechazada' && s.fechaResolucion && esUltimaSemana(s.fechaResolucion)) {
+    if (
+      s.estado === 'rechazada' &&
+      s.fechaResolucion &&
+      esUltimaSemana(s.fechaResolucion)
+    ) {
       const id = `sol-rechazada-${s.id}`;
       notifs.push({
         id,
@@ -83,10 +97,14 @@ export const getNotificacionesCaptador = (nombre: string): Notificacion[] => {
     }
   }
 
-  return notifs.sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime());
+  return notifs.sort(
+    (a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime(),
+  );
 };
 
-export const getNotificacionesLiderAdmin = (teamNombres: string[]): Notificacion[] => {
+export const getNotificacionesLiderAdmin = (
+  teamNombres: string[],
+): Notificacion[] => {
   const notifs: Notificacion[] = [];
 
   const pendientes = getAllSolicitudes().filter(
@@ -106,7 +124,10 @@ export const getNotificacionesLiderAdmin = (teamNombres: string[]): Notificacion
   }
 
   const materials = getAllMaterials().filter(
-    m => m.estado === 'en_uso' && m.responsableNombre && teamNombres.includes(m.responsableNombre),
+    m =>
+      m.estado === 'en_uso' &&
+      m.responsableNombre &&
+      teamNombres.includes(m.responsableNombre),
   );
   const confirmados = new Set(
     getAllConfirmaciones()
@@ -129,7 +150,9 @@ export const getNotificacionesLiderAdmin = (teamNombres: string[]): Notificacion
     });
   }
 
-  const enRiesgo = getAllMaterials().filter(m => m.estado === 'perdida' || m.estado === 'en_reparacion');
+  const enRiesgo = getAllMaterials().filter(
+    m => m.estado === 'perdida' || m.estado === 'en_reparacion',
+  );
   if (enRiesgo.length > 0) {
     const id = 'materiales-en-riesgo';
     notifs.push({
@@ -143,33 +166,38 @@ export const getNotificacionesLiderAdmin = (teamNombres: string[]): Notificacion
     });
   }
 
-  return notifs.sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime());
-};
-
-export const getNavegantesConConfirmacionesPendientes = (): NavegantePendiente[] => {
-  const materials = getAllMaterials().filter(m => m.estado === 'en_uso' && m.responsableNombre);
-  const confirmados = new Set(
-    getAllConfirmaciones()
-      .filter(c => esMismoMes(c.fecha))
-      .map(c => c.materialId),
+  return notifs.sort(
+    (a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime(),
   );
-
-  const navegantesPendientes = new Map<string, number>();
-
-  for (const material of materials) {
-    if (material.responsableNombre && !confirmados.has(material.id)) {
-      navegantesPendientes.set(
-        material.responsableNombre,
-        (navegantesPendientes.get(material.responsableNombre) ?? 0) + 1,
-      );
-    }
-  }
-
-  return Array.from(navegantesPendientes, ([nombre, count]) => ({
-    nombre,
-    materialesPendientes: count,
-  }));
 };
+
+export const getNavegantesConConfirmacionesPendientes =
+  (): NavegantePendiente[] => {
+    const materials = getAllMaterials().filter(
+      m => m.estado === 'en_uso' && m.responsableNombre,
+    );
+    const confirmados = new Set(
+      getAllConfirmaciones()
+        .filter(c => esMismoMes(c.fecha))
+        .map(c => c.materialId),
+    );
+
+    const navegantesPendientes = new Map<string, number>();
+
+    for (const material of materials) {
+      if (material.responsableNombre && !confirmados.has(material.id)) {
+        navegantesPendientes.set(
+          material.responsableNombre,
+          (navegantesPendientes.get(material.responsableNombre) ?? 0) + 1,
+        );
+      }
+    }
+
+    return Array.from(navegantesPendientes, ([nombre, count]) => ({
+      nombre,
+      materialesPendientes: count,
+    }));
+  };
 
 export const sendBulkReminderNotifications = (): Notificacion[] => {
   const navegantes = getNavegantesConConfirmacionesPendientes();

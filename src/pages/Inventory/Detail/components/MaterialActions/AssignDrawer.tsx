@@ -1,5 +1,6 @@
-import { useMemo, useState } from 'react';
+import { memo, useEffect, useMemo, useState } from 'react';
 
+import Fuse from 'fuse.js';
 import Stack from '@material-hu/mui/Stack';
 import Typography from '@material-hu/mui/Typography';
 
@@ -22,7 +23,15 @@ type AssignDrawerProps = {
   }) => Promise<void> | void;
 };
 
-const AssignDrawer = ({
+// Utility function to normalize strings for search (remove accents, lowercase)
+const normalizeString = (str: string): string => {
+  return str
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, ''); // Remove diacritics
+};
+
+const AssignDrawerContent = ({
   material,
   persons,
   onClose,
@@ -37,10 +46,20 @@ const AssignDrawer = ({
     currentPerson?.id ?? null,
   );
   const [inputValue, setInputValue] = useState('');
+  const [debouncedInputValue, setDebouncedInputValue] = useState('');
   const [comodato, setComodato] = useState(material.comodatoFirmado);
   const [observacion, setObservacion] = useState('');
   const [personError, setPersonError] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+
+  // Debounce input changes (250ms)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedInputValue(inputValue);
+    }, 250);
+
+    return () => clearTimeout(timer);
+  }, [inputValue]);
 
   const allOptions = useMemo(
     () =>
@@ -48,20 +67,44 @@ const AssignDrawer = ({
         label: p.nombre,
         value: p.id,
         description: p.dni ? `DNI ${p.dni}` : undefined,
+        searchText: `${p.nombre} ${p.dni || ''}`,
       })),
     [persons],
   );
 
-  const options = useMemo(() => {
-    if (!inputValue.trim()) return allOptions;
+  // Create Fuse instance for fuzzy search
+  const fuse = useMemo(
+    () =>
+      new Fuse(allOptions, {
+        keys: ['label', 'description'],
+        threshold: 0.3, // Allow some fuzzy matching
+        includeScore: true,
+        useExtendedSearch: false,
+        isCaseSensitive: false,
+        minMatchCharLength: 1,
+      }),
+    [allOptions],
+  );
 
-    const searchTerm = inputValue.toLowerCase().trim();
-    return allOptions.filter(
-      o =>
-        o.label.toLowerCase().includes(searchTerm) ||
-        (o.description ?? '').toLowerCase().includes(searchTerm),
+  const options = useMemo(() => {
+    if (!debouncedInputValue.trim()) return allOptions;
+
+    const normalizedSearchTerm = normalizeString(debouncedInputValue.trim());
+
+    // First try exact normalized substring matching for instant results
+    const exactMatches = allOptions.filter(o =>
+      normalizeString(o.searchText).includes(normalizedSearchTerm),
     );
-  }, [allOptions, inputValue]);
+
+    // If we have exact matches, return them (up to 15)
+    if (exactMatches.length > 0) {
+      return exactMatches.slice(0, 15);
+    }
+
+    // Otherwise, fall back to fuzzy search
+    const fuzzyResults = fuse.search(debouncedInputValue);
+    return fuzzyResults.slice(0, 15).map(result => result.item);
+  }, [allOptions, debouncedInputValue, fuse]);
 
   const selectedOption = useMemo(
     () => allOptions.find(o => o.value === selectedPersonId) ?? null,
@@ -153,5 +196,7 @@ const AssignDrawer = ({
     </Drawer.Content>
   );
 };
+
+const AssignDrawer = memo(AssignDrawerContent);
 
 export default AssignDrawer;

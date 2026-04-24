@@ -18,7 +18,11 @@ import Typography from '@material-hu/mui/Typography';
 
 import { useProfile } from '../../../providers/ProfileContext';
 import { markAllRead, markRead } from '../store';
-import { type Notificacion, getNotificacionesCaptador, getNotificacionesLiderAdmin } from '../List/services';
+import {
+  type Notificacion,
+  getNotificacionesCaptador,
+  getNotificacionesLiderAdmin,
+} from '../List/services';
 
 const DEMO_CAPTADOR_NOMBRE = 'Ana García';
 const DEMO_LIDER_NOMBRE = 'Carlos López';
@@ -59,7 +63,11 @@ const SEVERITY_CONFIG = {
 
 const formatFecha = (iso: string): string => {
   const d = new Date(iso);
-  return d.toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' });
+  return d.toLocaleDateString('es-AR', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  });
 };
 
 const NotifCardCompact = ({
@@ -91,8 +99,15 @@ const NotifCardCompact = ({
         borderLeftColor: notif.leida ? 'divider' : cfg.color,
         opacity: notif.leida ? 0.65 : 1,
         transition: 'opacity 0.2s',
-        cursor: notif.navigationPath ? 'pointer' : (notif.leida ? 'default' : 'pointer'),
-        '&:hover': notif.navigationPath || !notif.leida ? { bgcolor: 'action.hover' } : {},
+        cursor: notif.navigationPath
+          ? 'pointer'
+          : notif.leida
+            ? 'default'
+            : 'pointer',
+        '&:hover':
+          notif.navigationPath || !notif.leida
+            ? { bgcolor: 'action.hover' }
+            : {},
       }}
       onClick={handleClick}
     >
@@ -109,11 +124,18 @@ const NotifCardCompact = ({
         <Stack sx={{ flex: 1, gap: 0.25, minWidth: 0 }}>
           <Typography
             variant="caption"
-            sx={{ fontWeight: notif.leida ? 400 : 600, color: notif.leida ? 'text.secondary' : 'text.primary' }}
+            sx={{
+              fontWeight: notif.leida ? 400 : 600,
+              color: notif.leida ? 'text.secondary' : 'text.primary',
+            }}
           >
             {notif.titulo}
           </Typography>
-          <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            sx={{ fontSize: '0.7rem' }}
+          >
             {formatFecha(notif.fecha)}
           </Typography>
         </Stack>
@@ -134,11 +156,7 @@ const NotifCardCompact = ({
   );
 };
 
-export const NotificationsMenu = ({
-  onClose,
-}: {
-  onClose?: () => void;
-}) => {
+export const NotificationsMenu = ({ onClose }: { onClose?: () => void }) => {
   const { perfil } = useProfile();
   const [tick, setTick] = useState(0);
 
@@ -182,7 +200,10 @@ export const NotificationsMenu = ({
           borderBottomColor: 'divider',
         }}
       >
-        <Typography variant="body2" sx={{ fontWeight: 600 }}>
+        <Typography
+          variant="body2"
+          sx={{ fontWeight: 600 }}
+        >
           Notificaciones
         </Typography>
         {unread.length > 0 && (
@@ -199,11 +220,23 @@ export const NotificationsMenu = ({
       </Stack>
 
       {notifs.length === 0 ? (
-        <Stack sx={{ alignItems: 'center', gap: 1.5, py: 4, px: 2, justifyContent: 'center' }}>
+        <Stack
+          sx={{
+            alignItems: 'center',
+            gap: 1.5,
+            py: 4,
+            px: 2,
+            justifyContent: 'center',
+          }}
+        >
           <Stack sx={{ color: 'text.disabled' }}>
             <IconBellOff size={32} />
           </Stack>
-          <Typography variant="caption" color="text.disabled" sx={{ textAlign: 'center' }}>
+          <Typography
+            variant="caption"
+            color="text.disabled"
+            sx={{ textAlign: 'center' }}
+          >
             Sin notificaciones
           </Typography>
         </Stack>
@@ -211,14 +244,32 @@ export const NotificationsMenu = ({
         <Stack sx={{ flex: 1, overflowY: 'auto', gap: 1, p: 2 }}>
           {unread.length > 0 && (
             <Stack sx={{ gap: 1 }}>
-              <Stack sx={{ flexDirection: 'row', gap: 0.5, alignItems: 'center' }}>
-                <Typography variant="overline" sx={{ fontWeight: 600, fontSize: '0.65rem', color: 'text.secondary' }}>
+              <Stack
+                sx={{ flexDirection: 'row', gap: 0.5, alignItems: 'center' }}
+              >
+                <Typography
+                  variant="overline"
+                  sx={{
+                    fontWeight: 600,
+                    fontSize: '0.65rem',
+                    color: 'text.secondary',
+                  }}
+                >
                   Sin leer
                 </Typography>
-                <Chip label={unread.length} size="small" color="primary" sx={{ height: 16, fontSize: '0.65rem' }} />
+                <Chip
+                  label={unread.length}
+                  size="small"
+                  color="primary"
+                  sx={{ height: 16, fontSize: '0.65rem' }}
+                />
               </Stack>
               {unread.map(n => (
-                <NotifCardCompact key={`${n.id}-${tick}`} notif={n} onRead={handleRead} />
+                <NotifCardCompact
+                  key={`${n.id}-${tick}`}
+                  notif={n}
+                  onRead={handleRead}
+                />
               ))}
             </Stack>
           )}
@@ -227,14 +278,29 @@ export const NotificationsMenu = ({
 
           {read.length > 0 && (
             <Stack sx={{ gap: 1 }}>
-              <Typography variant="overline" sx={{ fontWeight: 600, fontSize: '0.65rem', color: 'text.disabled' }}>
+              <Typography
+                variant="overline"
+                sx={{
+                  fontWeight: 600,
+                  fontSize: '0.65rem',
+                  color: 'text.disabled',
+                }}
+              >
                 Leídas
               </Typography>
               {read.slice(0, 3).map(n => (
-                <NotifCardCompact key={`${n.id}-${tick}`} notif={n} onRead={handleRead} />
+                <NotifCardCompact
+                  key={`${n.id}-${tick}`}
+                  notif={n}
+                  onRead={handleRead}
+                />
               ))}
               {read.length > 3 && (
-                <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'center', py: 1 }}>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ textAlign: 'center', py: 1 }}
+                >
                   +{read.length - 3} más
                 </Typography>
               )}

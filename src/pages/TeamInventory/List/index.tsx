@@ -14,9 +14,16 @@ import { useTeamInventory } from './hooks/useTeamInventory';
 const TeamInventoryList = () => {
   const { user } = useAuth();
   const { materials, total, isLoading, search, setSearch } = useTeamInventory();
-  const leaderNombre = user ? `${user.firstName} ${user.lastName}`.trim() : 'mi equipo';
+  const leaderNombre = user
+    ? `${user.firstName} ${user.lastName}`.trim()
+    : 'mi equipo';
 
-  if (isLoading) return <DashboardLayout><div /></DashboardLayout>;
+  if (isLoading)
+    return (
+      <DashboardLayout>
+        <div />
+      </DashboardLayout>
+    );
 
   return (
     <DashboardLayout>
@@ -39,7 +46,8 @@ const TeamInventoryList = () => {
             slotProps={{
               title: {
                 title: 'Sin materiales asignados',
-                description: 'Ningún integrante del equipo tiene materiales asignados.',
+                description:
+                  'Ningún integrante del equipo tiene materiales asignados.',
                 variant: 'M',
               },
               avatar: { Icon: IconInfoCircle, color: 'default' },

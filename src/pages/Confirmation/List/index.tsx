@@ -1,4 +1,8 @@
-import { IconCalendarCheck, IconCircleCheck, IconInfoCircle } from '@material-hu/icons/tabler';
+import {
+  IconCalendarCheck,
+  IconCircleCheck,
+  IconInfoCircle,
+} from '@material-hu/icons/tabler';
 import Stack from '@material-hu/mui/Stack';
 import Typography from '@material-hu/mui/Typography';
 
@@ -13,17 +17,23 @@ import TableRow from '@material-hu/components/design-system/Table/components/Tab
 import Title from '@material-hu/components/design-system/Title';
 import { useDialogLayer } from '@material-hu/components/layers/Dialogs';
 
+import { useAuth } from '../../../providers/AuthContext';
 import { DashboardLayout } from '../../../layouts/DashboardLayout';
 import { TIPO_LABEL } from '../../Inventory/List/constants';
-import { DEMO_CAPTADOR_NOMBRE } from '../../MyMaterials/List/services';
 import ConfirmDialog from './components/ConfirmDialog';
 import { useConfirmation } from './hooks/useConfirmation';
 
 const ConfirmationList = () => {
+  const { user } = useAuth();
   const { materials, isLoading, confirmar } = useConfirmation();
   const { openDialog, closeDialog } = useDialogLayer();
 
-  if (isLoading) return <DashboardLayout><div /></DashboardLayout>;
+  if (isLoading)
+    return (
+      <DashboardLayout>
+        <div />
+      </DashboardLayout>
+    );
 
   const pendientes = materials.filter(m => !m.confirmadaEsteMes);
   const confirmados = materials.filter(m => m.confirmadaEsteMes);
@@ -37,7 +47,9 @@ const ConfirmationList = () => {
           onSubmit={async (nota, fotoBase64) => {
             await confirmar.mutateAsync({
               materialId: material.id,
-              responsableNombre: DEMO_CAPTADOR_NOMBRE,
+              responsableNombre: user
+                ? `${user.firstName} ${user.lastName}`
+                : '',
               nota,
               fotoBase64,
             });
@@ -72,7 +84,10 @@ const ConfirmationList = () => {
           <Stack sx={{ gap: 3 }}>
             {pendientes.length > 0 && (
               <Stack sx={{ gap: 1.5 }}>
-                <Typography variant="subtitle2" color="text.secondary">
+                <Typography
+                  variant="subtitle2"
+                  color="text.secondary"
+                >
                   Pendientes de confirmar ({pendientes.length})
                 </Typography>
                 <TableContainer sx={{ overflowX: 'auto' }}>
@@ -93,7 +108,11 @@ const ConfirmationList = () => {
                           <TableCell>{m.detalle || '—'}</TableCell>
                           <TableCell>{m.plaza}</TableCell>
                           <TableCell>
-                            <Pills label="Pendiente" type="warning" size="small" />
+                            <Pills
+                              label="Pendiente"
+                              type="warning"
+                              size="small"
+                            />
                           </TableCell>
                           <TableCell>
                             <Pills
@@ -114,7 +133,10 @@ const ConfirmationList = () => {
 
             {confirmados.length > 0 && (
               <Stack sx={{ gap: 1.5 }}>
-                <Typography variant="subtitle2" color="text.secondary">
+                <Typography
+                  variant="subtitle2"
+                  color="text.secondary"
+                >
                   Confirmados este mes ({confirmados.length})
                 </Typography>
                 <TableContainer sx={{ overflowX: 'auto' }}>
@@ -135,16 +157,30 @@ const ConfirmationList = () => {
                           <TableCell>{m.detalle || '—'}</TableCell>
                           <TableCell>{m.plaza}</TableCell>
                           <TableCell>
-                            <Typography variant="caption" color="text.secondary">
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                            >
                               {m.ultimaConfirmacion
-                                ? new Date(m.ultimaConfirmacion.fecha).toLocaleDateString('es-AR')
+                                ? new Date(
+                                    m.ultimaConfirmacion.fecha,
+                                  ).toLocaleDateString('es-AR')
                                 : '—'}
                             </Typography>
                           </TableCell>
                           <TableCell>
-                            <Stack sx={{ flexDirection: 'row', gap: 0.5, alignItems: 'center', color: 'success.main' }}>
+                            <Stack
+                              sx={{
+                                flexDirection: 'row',
+                                gap: 0.5,
+                                alignItems: 'center',
+                                color: 'success.main',
+                              }}
+                            >
                               <IconCircleCheck size={16} />
-                              <Typography variant="caption">Confirmado</Typography>
+                              <Typography variant="caption">
+                                Confirmado
+                              </Typography>
                             </Stack>
                           </TableCell>
                         </TableRow>

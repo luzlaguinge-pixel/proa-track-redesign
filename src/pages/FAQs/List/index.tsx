@@ -55,7 +55,10 @@ export const FAQsList = () => {
 
         <Stack sx={{ gap: 3 }}>
           {filteredCategories.map((category, categoryIndex) => (
-            <Stack key={category} sx={{ gap: 1.5 }}>
+            <Stack
+              key={category}
+              sx={{ gap: 1.5 }}
+            >
               <Typography
                 variant="overline"
                 color="text.secondary"
@@ -90,7 +93,10 @@ export const FAQsList = () => {
                         },
                       }}
                     >
-                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                      <Typography
+                        variant="body2"
+                        sx={{ fontWeight: 500 }}
+                      >
                         {faq.question}
                       </Typography>
                     </AccordionSummary>
@@ -104,7 +110,11 @@ export const FAQsList = () => {
                         borderTopColor: 'divider',
                       }}
                     >
-                      <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.6 }}>
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{ lineHeight: 1.6 }}
+                      >
                         {faq.answer}
                       </Typography>
                     </AccordionDetails>

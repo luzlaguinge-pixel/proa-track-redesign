@@ -1,6 +1,11 @@
 import { useRef, useState } from 'react';
 
-import { IconCheck, IconDownload, IconUpload, IconX } from '@material-hu/icons/tabler';
+import {
+  IconCheck,
+  IconDownload,
+  IconUpload,
+  IconX,
+} from '@material-hu/icons/tabler';
 import Box from '@material-hu/mui/Box';
 import Chip from '@material-hu/mui/Chip';
 import Divider from '@material-hu/mui/Divider';
@@ -12,7 +17,12 @@ import Button from '@material-hu/components/design-system/Buttons/Button';
 
 import { useCreateMaterial } from '../../hooks/useCreateMaterial';
 import { type CreateMaterialInput } from '../../services';
-import { type MaterialDueño, type MaterialEstadoFisico, type MaterialPais, type MaterialTipo } from '../../types';
+import {
+  type MaterialDueño,
+  type MaterialEstadoFisico,
+  type MaterialPais,
+  type MaterialTipo,
+} from '../../types';
 
 type Props = {
   onClose: () => void;
@@ -34,13 +44,34 @@ type ParsedRow = {
   observaciones: string;
 };
 
-const VALID_TIPOS: MaterialTipo[] = ['pechera', 'filmina', 'tira_credencial', 'gorra', 'remera', 'celular', 'tablet', 'cargador', 'funda', 'banner', 'otro'];
+const VALID_TIPOS: MaterialTipo[] = [
+  'pechera',
+  'filmina',
+  'tira_credencial',
+  'gorra',
+  'remera',
+  'celular',
+  'tablet',
+  'cargador',
+  'funda',
+  'banner',
+  'otro',
+];
 const VALID_ESTADOS_FISICOS: MaterialEstadoFisico[] = ['ok', 'dañado'];
 const VALID_DUEÑOS: MaterialDueño[] = ['proa', 'cliente'];
 const VALID_PAISES: MaterialPais[] = ['AR', 'UY', 'GT'];
 
 const TEMPLATE_HEADERS = [
-  'tipo', 'detalle', 'estadoFisico', 'osc', 'dueño', 'cantidad', 'plaza', 'pais', 'lineaTelefonica', 'observaciones'
+  'tipo',
+  'detalle',
+  'estadoFisico',
+  'osc',
+  'dueño',
+  'cantidad',
+  'plaza',
+  'pais',
+  'lineaTelefonica',
+  'observaciones',
 ];
 
 const HEADER_LABELS: Record<string, string> = {
@@ -102,7 +133,9 @@ function validateRow(row: ParsedRow, index: number): string | null {
   if (!row.detalle?.trim()) {
     return `Fila ${index + 1}: detalle es obligatorio`;
   }
-  if (!VALID_ESTADOS_FISICOS.includes(row.estadoFisico as MaterialEstadoFisico)) {
+  if (
+    !VALID_ESTADOS_FISICOS.includes(row.estadoFisico as MaterialEstadoFisico)
+  ) {
     return `Fila ${index + 1}: estadoFisico "${row.estadoFisico}" no es válido. Usá: ${VALID_ESTADOS_FISICOS.join(', ')}`;
   }
   if (!row.osc?.trim()) {
@@ -132,7 +165,9 @@ function parseExcel(file: File): Promise<ParsedRow[]> {
         const data = new Uint8Array(e.target?.result as ArrayBuffer);
         const wb = XLSX.read(data, { type: 'array' });
         const ws = wb.Sheets[wb.SheetNames[0]];
-        const rows = XLSX.utils.sheet_to_json<Record<string, string>>(ws, { defval: '' });
+        const rows = XLSX.utils.sheet_to_json<Record<string, string>>(ws, {
+          defval: '',
+        });
 
         const parsed = rows
           .filter(r => {
@@ -140,21 +175,45 @@ function parseExcel(file: File): Promise<ParsedRow[]> {
             return tipo && !tipo.startsWith('[');
           })
           .map(r => ({
-            tipo: (r['Tipo'] ?? r['tipo'] ?? '').toString().trim().toLowerCase(),
+            tipo: (r['Tipo'] ?? r['tipo'] ?? '')
+              .toString()
+              .trim()
+              .toLowerCase(),
             detalle: (r['Detalle'] ?? r['detalle'] ?? '').toString().trim(),
-            estadoFisico: (r['Estado físico'] ?? r['estadoFisico'] ?? '').toString().trim().toLowerCase(),
+            estadoFisico: (r['Estado físico'] ?? r['estadoFisico'] ?? '')
+              .toString()
+              .trim()
+              .toLowerCase(),
             osc: (r['OSC'] ?? r['osc'] ?? '').toString().trim(),
-            dueño: (r['Dueño'] ?? r['dueño'] ?? '').toString().trim().toLowerCase(),
+            dueño: (r['Dueño'] ?? r['dueño'] ?? '')
+              .toString()
+              .trim()
+              .toLowerCase(),
             cantidad: (r['Cantidad'] ?? r['cantidad'] ?? '').toString().trim(),
             plaza: (r['Plaza'] ?? r['plaza'] ?? '').toString().trim(),
-            pais: (r['País'] ?? r['pais'] ?? '').toString().trim().toUpperCase(),
-            lineaTelefonica: (r['Línea telefónica'] ?? r['lineaTelefonica'] ?? '').toString().trim(),
-            observaciones: (r['Observaciones'] ?? r['observaciones'] ?? '').toString().trim(),
+            pais: (r['País'] ?? r['pais'] ?? '')
+              .toString()
+              .trim()
+              .toUpperCase(),
+            lineaTelefonica: (
+              r['Línea telefónica'] ??
+              r['lineaTelefonica'] ??
+              ''
+            )
+              .toString()
+              .trim(),
+            observaciones: (r['Observaciones'] ?? r['observaciones'] ?? '')
+              .toString()
+              .trim(),
           }));
 
         resolve(parsed);
       } catch {
-        reject(new Error('No se pudo leer el archivo. Asegurate de subir un .xlsx válido.'));
+        reject(
+          new Error(
+            'No se pudo leer el archivo. Asegurate de subir un .xlsx válido.',
+          ),
+        );
       }
     };
     reader.onerror = () => reject(new Error('Error al leer el archivo.'));
@@ -185,7 +244,9 @@ export const BulkUploadDrawer = ({ onClose, onSuccess }: Props) => {
       const rows = await parseExcel(file);
 
       if (rows.length === 0) {
-        setErrors(['La planilla no tiene filas con datos. Completá al menos una fila y volvé a intentarlo.']);
+        setErrors([
+          'La planilla no tiene filas con datos. Completá al menos una fila y volvé a intentarlo.',
+        ]);
         setIsLoading(false);
         return;
       }
@@ -234,11 +295,29 @@ export const BulkUploadDrawer = ({ onClose, onSuccess }: Props) => {
 
   return (
     <Stack sx={{ width: 480, height: '100%', flexDirection: 'column' }}>
-      <Stack sx={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', px: 3, py: 2, borderBottom: '1px solid', borderBottomColor: 'divider' }}>
-        <Typography variant="h6" fontWeight={600}>
+      <Stack
+        sx={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          px: 3,
+          py: 2,
+          borderBottom: '1px solid',
+          borderBottomColor: 'divider',
+        }}
+      >
+        <Typography
+          variant="h6"
+          fontWeight={600}
+        >
           Carga masiva de materiales
         </Typography>
-        <Button variant="text" size="small" onClick={onClose} sx={{ minWidth: 0, p: 0.5 }}>
+        <Button
+          variant="text"
+          size="small"
+          onClick={onClose}
+          sx={{ minWidth: 0, p: 0.5 }}
+        >
           <IconX size={20} />
         </Button>
       </Stack>
@@ -249,14 +328,21 @@ export const BulkUploadDrawer = ({ onClose, onSuccess }: Props) => {
           const isDone = step > number;
 
           return (
-            <Stack key={number} sx={{ flexDirection: 'row', gap: 2 }}>
+            <Stack
+              key={number}
+              sx={{ flexDirection: 'row', gap: 2 }}
+            >
               <Stack sx={{ alignItems: 'center', gap: 0 }}>
                 <Box
                   sx={{
                     width: 32,
                     height: 32,
                     borderRadius: '50%',
-                    bgcolor: isDone ? 'success.main' : isActive ? 'primary.main' : 'action.disabled',
+                    bgcolor: isDone
+                      ? 'success.main'
+                      : isActive
+                        ? 'primary.main'
+                        : 'action.disabled',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -264,15 +350,30 @@ export const BulkUploadDrawer = ({ onClose, onSuccess }: Props) => {
                   }}
                 >
                   {isDone ? (
-                    <IconCheck size={16} color="white" />
+                    <IconCheck
+                      size={16}
+                      color="white"
+                    />
                   ) : (
-                    <Typography variant="caption" fontWeight={700} color="white">
+                    <Typography
+                      variant="caption"
+                      fontWeight={700}
+                      color="white"
+                    >
                       {number}
                     </Typography>
                   )}
                 </Box>
                 {number < 3 && (
-                  <Box sx={{ width: 2, flex: 1, minHeight: 24, bgcolor: isDone ? 'success.main' : 'divider', my: 0.5 }} />
+                  <Box
+                    sx={{
+                      width: 2,
+                      flex: 1,
+                      minHeight: 24,
+                      bgcolor: isDone ? 'success.main' : 'divider',
+                      my: 0.5,
+                    }}
+                  />
                 )}
               </Stack>
 
@@ -280,7 +381,13 @@ export const BulkUploadDrawer = ({ onClose, onSuccess }: Props) => {
                 <Typography
                   variant="subtitle2"
                   fontWeight={600}
-                  color={isActive ? 'text.primary' : isDone ? 'text.secondary' : 'text.disabled'}
+                  color={
+                    isActive
+                      ? 'text.primary'
+                      : isDone
+                        ? 'text.secondary'
+                        : 'text.disabled'
+                  }
                   sx={{ mt: 0.5, mb: isActive ? 2 : 0 }}
                 >
                   {label}
@@ -288,8 +395,13 @@ export const BulkUploadDrawer = ({ onClose, onSuccess }: Props) => {
 
                 {isActive && number === 1 && (
                   <Stack sx={{ gap: 2 }}>
-                    <Typography variant="body2" color="text.secondary">
-                      Descargá la plantilla de Excel con todas las columnas necesarias. La segunda fila tiene un ejemplo y la tercera los valores válidos para cada campo.
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                    >
+                      Descargá la plantilla de Excel con todas las columnas
+                      necesarias. La segunda fila tiene un ejemplo y la tercera
+                      los valores válidos para cada campo.
                     </Typography>
                     <Button
                       variant="secondary"
@@ -301,11 +413,25 @@ export const BulkUploadDrawer = ({ onClose, onSuccess }: Props) => {
                       Descargar plantilla
                     </Button>
                     <Divider />
-                    <Stack sx={{ flexDirection: 'row', gap: 1, justifyContent: 'flex-end' }}>
-                      <Button variant="text" size="medium" onClick={onClose}>
+                    <Stack
+                      sx={{
+                        flexDirection: 'row',
+                        gap: 1,
+                        justifyContent: 'flex-end',
+                      }}
+                    >
+                      <Button
+                        variant="text"
+                        size="medium"
+                        onClick={onClose}
+                      >
                         Cancelar
                       </Button>
-                      <Button variant="primary" size="medium" onClick={() => setStep(2)}>
+                      <Button
+                        variant="primary"
+                        size="medium"
+                        onClick={() => setStep(2)}
+                      >
                         Siguiente
                       </Button>
                     </Stack>
@@ -314,35 +440,78 @@ export const BulkUploadDrawer = ({ onClose, onSuccess }: Props) => {
 
                 {isActive && number === 2 && (
                   <Stack sx={{ gap: 2 }}>
-                    <Typography variant="body2" color="text.secondary">
-                      Completá la planilla con los materiales que querés cargar. Cada fila es un material. Podés dejar en blanco los campos opcionales (línea telefónica y observaciones).
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                    >
+                      Completá la planilla con los materiales que querés cargar.
+                      Cada fila es un material. Podés dejar en blanco los campos
+                      opcionales (línea telefónica y observaciones).
                     </Typography>
                     <Stack sx={{ gap: 1 }}>
-                      <Typography variant="caption" color="text.secondary" fontWeight={600}>
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        fontWeight={600}
+                      >
                         Valores válidos para campos con opciones fijas:
                       </Typography>
                       {[
                         { label: 'Tipo', values: VALID_TIPOS },
-                        { label: 'Estado físico', values: VALID_ESTADOS_FISICOS },
+                        {
+                          label: 'Estado físico',
+                          values: VALID_ESTADOS_FISICOS,
+                        },
                         { label: 'Dueño', values: VALID_DUEÑOS },
                         { label: 'País', values: VALID_PAISES },
                       ].map(({ label, values }) => (
-                        <Stack key={label} sx={{ flexDirection: 'row', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
-                          <Typography variant="caption" color="text.secondary" sx={{ minWidth: 80 }}>
+                        <Stack
+                          key={label}
+                          sx={{
+                            flexDirection: 'row',
+                            gap: 1,
+                            alignItems: 'center',
+                            flexWrap: 'wrap',
+                          }}
+                        >
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{ minWidth: 80 }}
+                          >
                             {label}:
                           </Typography>
                           {values.map(v => (
-                            <Chip key={v} label={v} size="small" variant="outlined" />
+                            <Chip
+                              key={v}
+                              label={v}
+                              size="small"
+                              variant="outlined"
+                            />
                           ))}
                         </Stack>
                       ))}
                     </Stack>
                     <Divider />
-                    <Stack sx={{ flexDirection: 'row', gap: 1, justifyContent: 'flex-end' }}>
-                      <Button variant="text" size="medium" onClick={() => setStep(1)}>
+                    <Stack
+                      sx={{
+                        flexDirection: 'row',
+                        gap: 1,
+                        justifyContent: 'flex-end',
+                      }}
+                    >
+                      <Button
+                        variant="text"
+                        size="medium"
+                        onClick={() => setStep(1)}
+                      >
                         Volver
                       </Button>
-                      <Button variant="primary" size="medium" onClick={() => setStep(3)}>
+                      <Button
+                        variant="primary"
+                        size="medium"
+                        onClick={() => setStep(3)}
+                      >
                         Siguiente
                       </Button>
                     </Stack>
@@ -351,8 +520,12 @@ export const BulkUploadDrawer = ({ onClose, onSuccess }: Props) => {
 
                 {isActive && number === 3 && (
                   <Stack sx={{ gap: 2 }}>
-                    <Typography variant="body2" color="text.secondary">
-                      Subí la planilla completada. Solo se aceptan archivos .xlsx.
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                    >
+                      Subí la planilla completada. Solo se aceptan archivos
+                      .xlsx.
                     </Typography>
 
                     <input
@@ -379,21 +552,37 @@ export const BulkUploadDrawer = ({ onClose, onSuccess }: Props) => {
                     >
                       {file ? (
                         <>
-                          <IconCheck size={24} color="green" />
-                          <Typography variant="body2" fontWeight={600} color="success.main">
+                          <IconCheck
+                            size={24}
+                            color="green"
+                          />
+                          <Typography
+                            variant="body2"
+                            fontWeight={600}
+                            color="success.main"
+                          >
                             {file.name}
                           </Typography>
-                          <Typography variant="caption" color="text.secondary">
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                          >
                             Hacé clic para cambiar el archivo
                           </Typography>
                         </>
                       ) : (
                         <>
                           <IconUpload size={24} />
-                          <Typography variant="body2" fontWeight={600}>
+                          <Typography
+                            variant="body2"
+                            fontWeight={600}
+                          >
                             Seleccionar archivo
                           </Typography>
-                          <Typography variant="caption" color="text.secondary">
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                          >
                             Solo archivos .xlsx
                           </Typography>
                         </>
@@ -401,12 +590,31 @@ export const BulkUploadDrawer = ({ onClose, onSuccess }: Props) => {
                     </Stack>
 
                     {errors.length > 0 && (
-                      <Stack sx={{ gap: 0.5, p: 2, bgcolor: 'error.50', borderRadius: 1, border: '1px solid', borderColor: 'error.200' }}>
-                        <Typography variant="caption" fontWeight={600} color="error.main">
-                          Encontramos {errors.length} {errors.length === 1 ? 'error' : 'errores'} en la planilla:
+                      <Stack
+                        sx={{
+                          gap: 0.5,
+                          p: 2,
+                          bgcolor: 'error.50',
+                          borderRadius: 1,
+                          border: '1px solid',
+                          borderColor: 'error.200',
+                        }}
+                      >
+                        <Typography
+                          variant="caption"
+                          fontWeight={600}
+                          color="error.main"
+                        >
+                          Encontramos {errors.length}{' '}
+                          {errors.length === 1 ? 'error' : 'errores'} en la
+                          planilla:
                         </Typography>
                         {errors.map((e, i) => (
-                          <Typography key={i} variant="caption" color="error.main">
+                          <Typography
+                            key={i}
+                            variant="caption"
+                            color="error.main"
+                          >
                             • {e}
                           </Typography>
                         ))}
@@ -414,8 +622,22 @@ export const BulkUploadDrawer = ({ onClose, onSuccess }: Props) => {
                     )}
 
                     <Divider />
-                    <Stack sx={{ flexDirection: 'row', gap: 1, justifyContent: 'flex-end' }}>
-                      <Button variant="text" size="medium" onClick={() => { setStep(2); setFile(null); setErrors([]); }}>
+                    <Stack
+                      sx={{
+                        flexDirection: 'row',
+                        gap: 1,
+                        justifyContent: 'flex-end',
+                      }}
+                    >
+                      <Button
+                        variant="text"
+                        size="medium"
+                        onClick={() => {
+                          setStep(2);
+                          setFile(null);
+                          setErrors([]);
+                        }}
+                      >
                         Volver
                       </Button>
                       <Button

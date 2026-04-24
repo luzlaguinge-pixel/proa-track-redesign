@@ -37,7 +37,10 @@ import humandLogo from '../../assets/humand.svg';
 import { useAuth } from '../../providers/AuthContext';
 import { type Perfil, useProfile } from '../../providers/ProfileContext';
 import { NotificationsMenu } from '../../pages/Notifications/NotificationsMenu';
-import { getNotificacionesCaptador, getNotificacionesLiderAdmin } from '../../pages/Notifications/List/services';
+import {
+  getNotificacionesCaptador,
+  getNotificacionesLiderAdmin,
+} from '../../pages/Notifications/List/services';
 import NotificationPermissionBanner from '../../pages/Notifications/components/NotificationPermissionBanner';
 
 const PERFIL_LABEL: Record<Perfil, string> = {
@@ -46,25 +49,102 @@ const PERFIL_LABEL: Record<Perfil, string> = {
   navegante: 'Navegante',
 };
 
-const ADMIN_NAV_KEYS = new Set(['home', 'inventory', 'people', 'catalog', 'movements', 'my-materials', 'team-confirmations', 'solicitudes', 'reports', 'faqs', 'roles']);
-const COORDINADOR_NAV_KEYS = new Set(['home', 'my-team', 'team-inventory', 'my-materials', 'team-confirmations', 'solicitudes', 'reports', 'faqs', 'roles']);
+const ADMIN_NAV_KEYS = new Set([
+  'home',
+  'inventory',
+  'people',
+  'catalog',
+  'movements',
+  'my-materials',
+  'team-confirmations',
+  'solicitudes',
+  'reports',
+  'faqs',
+  'roles',
+]);
+const COORDINADOR_NAV_KEYS = new Set([
+  'home',
+  'my-team',
+  'team-inventory',
+  'my-materials',
+  'team-confirmations',
+  'solicitudes',
+  'reports',
+  'faqs',
+  'roles',
+]);
 const NAVEGANTE_NAV_KEYS = new Set(['my-materials', 'faqs']);
 
 const ALL_ITEMS = [
   { key: 'home', title: 'Home', path: '/', icon: <IconHome /> },
-  { key: 'inventory', title: 'Inventario', path: '/inventory', icon: <IconBox /> },
+  {
+    key: 'inventory',
+    title: 'Inventario',
+    path: '/inventory',
+    icon: <IconBox />,
+  },
   { key: 'people', title: 'Personas', path: '/people', icon: <IconUsers /> },
   { key: 'catalog', title: 'Catálogo', path: '/catalog', icon: <IconTag /> },
-  { key: 'movements', title: 'Movimientos', path: '/movements', icon: <IconArrowsExchange /> },
-  { key: 'my-team', title: 'Mi equipo', path: '/my-team', icon: <IconUsersGroup /> },
-  { key: 'team-inventory', title: 'Materiales del equipo', path: '/team-inventory', icon: <IconBox /> },
-  { key: 'my-materials', title: 'Mis materiales', path: '/my-materials', icon: <IconBox /> },
-  { key: 'my-confirmation', title: 'Confirmación mensual', path: '/my-confirmation', icon: <IconCalendarCheck /> },
-  { key: 'team-confirmations', title: 'Confirmaciones', path: '/team-confirmations', icon: <IconCalendarCheck /> },
-  { key: 'solicitudes', title: 'Solicitudes', path: '/solicitudes', icon: <IconClipboardList /> },
-  { key: 'reports', title: 'Reportes', path: '/reports', icon: <IconChartBar /> },
-  { key: 'faqs', title: 'Preguntas frecuentes', path: '/faqs', icon: <IconHelp /> },
-  { key: 'roles', title: 'Gestión de roles', path: '/roles', icon: <IconShield /> },
+  {
+    key: 'movements',
+    title: 'Movimientos',
+    path: '/movements',
+    icon: <IconArrowsExchange />,
+  },
+  {
+    key: 'my-team',
+    title: 'Mi equipo',
+    path: '/my-team',
+    icon: <IconUsersGroup />,
+  },
+  {
+    key: 'team-inventory',
+    title: 'Materiales del equipo',
+    path: '/team-inventory',
+    icon: <IconBox />,
+  },
+  {
+    key: 'my-materials',
+    title: 'Mis materiales',
+    path: '/my-materials',
+    icon: <IconBox />,
+  },
+  {
+    key: 'my-confirmation',
+    title: 'Confirmación mensual',
+    path: '/my-confirmation',
+    icon: <IconCalendarCheck />,
+  },
+  {
+    key: 'team-confirmations',
+    title: 'Confirmaciones',
+    path: '/team-confirmations',
+    icon: <IconCalendarCheck />,
+  },
+  {
+    key: 'solicitudes',
+    title: 'Solicitudes',
+    path: '/solicitudes',
+    icon: <IconClipboardList />,
+  },
+  {
+    key: 'reports',
+    title: 'Reportes',
+    path: '/reports',
+    icon: <IconChartBar />,
+  },
+  {
+    key: 'faqs',
+    title: 'Preguntas frecuentes',
+    path: '/faqs',
+    icon: <IconHelp />,
+  },
+  {
+    key: 'roles',
+    title: 'Gestión de roles',
+    path: '/roles',
+    icon: <IconShield />,
+  },
 ];
 
 function getSections(perfil: Perfil): NavSectionProps[] {
@@ -90,8 +170,11 @@ type DashboardLayoutProps = {
 
 export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const isMobile = useMediaQuery('(max-width:900px)');
-  const [isCollapsed, setIsCollapsed] = useState(() => window.innerWidth <= 900);
-  const [notificationsAnchor, setNotificationsAnchor] = useState<HTMLButtonElement | null>(null);
+  const [isCollapsed, setIsCollapsed] = useState(
+    () => window.innerWidth <= 900,
+  );
+  const [notificationsAnchor, setNotificationsAnchor] =
+    useState<HTMLButtonElement | null>(null);
   const { pathname } = useLocation();
   const { user, logout } = useAuth();
   const { perfil } = useProfile();
@@ -117,7 +200,9 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       : getNotificacionesLiderAdmin([]);
   const unreadCount = notifs.filter(n => !n.leida).length;
 
-  const handleOpenNotifications = (event: React.MouseEvent<HTMLButtonElement>) => {
+  const handleOpenNotifications = (
+    event: React.MouseEvent<HTMLButtonElement>,
+  ) => {
     setNotificationsAnchor(event.currentTarget);
   };
 
@@ -126,7 +211,9 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   };
 
   return (
-    <Stack sx={{ height: '100vh', flexDirection: 'column', overflow: 'hidden' }}>
+    <Stack
+      sx={{ height: '100vh', flexDirection: 'column', overflow: 'hidden' }}
+    >
       <Box
         sx={{
           flexShrink: 0,
@@ -161,24 +248,42 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
               <Stack sx={{ p: 2, minWidth: 220, gap: 1 }}>
                 <Stack sx={{ px: 1, gap: 0.5 }}>
                   {displayName && (
-                    <Typography variant="body2" fontWeight={600}>
+                    <Typography
+                      variant="body2"
+                      fontWeight={600}
+                    >
                       {displayName}
                     </Typography>
                   )}
-                  <Stack sx={{ flexDirection: 'row', alignItems: 'center', gap: 1 }}>
-                    <Typography variant="caption" color="text.secondary">
+                  <Stack
+                    sx={{ flexDirection: 'row', alignItems: 'center', gap: 1 }}
+                  >
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                    >
                       {user?.employeeInternalId}
                     </Typography>
                     <Chip
                       label={profileBadge}
                       size="small"
                       variant="outlined"
-                      color={perfil === 'admin' ? 'error' : perfil === 'coordinador' ? 'warning' : 'default'}
+                      color={
+                        perfil === 'admin'
+                          ? 'error'
+                          : perfil === 'coordinador'
+                            ? 'warning'
+                            : 'default'
+                      }
                     />
                   </Stack>
                 </Stack>
                 <Divider />
-                <Button onClick={() => logout()} variant="text" size="small">
+                <Button
+                  onClick={() => logout()}
+                  variant="text"
+                  size="small"
+                >
                   Cerrar sesión
                 </Button>
               </Stack>
@@ -190,7 +295,13 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           <Chip
             label={profileBadge}
             size="medium"
-            color={perfil === 'admin' ? 'error' : perfil === 'coordinador' ? 'warning' : 'default'}
+            color={
+              perfil === 'admin'
+                ? 'error'
+                : perfil === 'coordinador'
+                  ? 'warning'
+                  : 'default'
+            }
             variant={perfil === 'admin' ? 'filled' : 'outlined'}
             sx={{ fontWeight: 600 }}
           />
@@ -208,7 +319,15 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         <NotificationsMenu onClose={handleCloseNotifications} />
       </Popover>
 
-      <Stack sx={{ flexDirection: 'row', flex: 1, minHeight: 0, overflow: 'hidden', position: 'relative' }}>
+      <Stack
+        sx={{
+          flexDirection: 'row',
+          flex: 1,
+          minHeight: 0,
+          overflow: 'hidden',
+          position: 'relative',
+        }}
+      >
         {/* Backdrop for mobile overlay */}
         {sidebarOverlay && (
           <Box
@@ -242,7 +361,11 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
               }),
             }}
           >
-            <Box onClick={() => { if (isMobile) setIsCollapsed(true); }}>
+            <Box
+              onClick={() => {
+                if (isMobile) setIsCollapsed(true);
+              }}
+            >
               <Sidebar
                 isCollapsed={false}
                 pathname={pathname}

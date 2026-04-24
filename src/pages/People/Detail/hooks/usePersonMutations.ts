@@ -116,10 +116,19 @@ export const usePersonMutations = (
     },
     onSuccess: () => {
       if (person) {
-        queryClient.invalidateQueries({ queryKey: personKeys.detail(person.id) });
+        queryClient.invalidateQueries({
+          queryKey: personKeys.detail(person.id),
+        });
       }
     },
   });
 
-  return { assignNew, notifyAll, requestReturnAll, recoverAll, returnAll, updateContact };
+  return {
+    assignNew,
+    notifyAll,
+    requestReturnAll,
+    recoverAll,
+    returnAll,
+    updateContact,
+  };
 };

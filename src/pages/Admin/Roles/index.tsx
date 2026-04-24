@@ -37,10 +37,15 @@ const RoleManagement = () => {
   const queryClient = useQueryClient();
   const [snackbar, setSnackbar] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-  const [roles, setRoles] = useState<Record<string, Perfil>>(() => getAllStoredRoles());
+  const [roles, setRoles] = useState<Record<string, Perfil>>(() =>
+    getAllStoredRoles(),
+  );
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [selectedCoordinadorDni, setSelectedCoordinadorDni] = useState<string>('');
-  const [coordinadorTeamSelection, setCoordinadorTeamSelection] = useState<Set<string>>(new Set());
+  const [selectedCoordinadorDni, setSelectedCoordinadorDni] =
+    useState<string>('');
+  const [coordinadorTeamSelection, setCoordinadorTeamSelection] = useState<
+    Set<string>
+  >(new Set());
   const [notificationDrawerOpen, setNotificationDrawerOpen] = useState(false);
 
   const { data: rawPeople = [], isLoading } = useQuery({
@@ -68,7 +73,11 @@ const RoleManagement = () => {
       <DashboardLayout>
         <StateCard
           slotProps={{
-            title: { title: 'Acceso restringido', description: 'No tenés permisos para ver esta sección.', variant: 'M' },
+            title: {
+              title: 'Acceso restringido',
+              description: 'No tenés permisos para ver esta sección.',
+              variant: 'M',
+            },
             avatar: { Icon: IconShield, color: 'default' },
           }}
         />
@@ -88,7 +97,6 @@ const RoleManagement = () => {
     void queryClient.invalidateQueries({ queryKey: ['persons'] });
     setSnackbar('Rol actualizado correctamente.');
   };
-
 
   const handleOpenCreateTeamDrawer = () => {
     setSelectedCoordinadorDni('');
@@ -112,7 +120,10 @@ const RoleManagement = () => {
 
   const handleSaveCoordinadorTeam = () => {
     if (!selectedCoordinadorDni) return;
-    setTeamForLeader(selectedCoordinadorDni, Array.from(coordinadorTeamSelection));
+    setTeamForLeader(
+      selectedCoordinadorDni,
+      Array.from(coordinadorTeamSelection),
+    );
     setSnackbar('Equipo del coordinador/a guardado correctamente.');
     setDrawerOpen(false);
   };
@@ -120,20 +131,25 @@ const RoleManagement = () => {
   const filteredPeople = useMemo(() => {
     if (!searchTerm.trim()) return people;
     const q = searchTerm.toLowerCase();
-    return people.filter(p =>
-      p.nombre.toLowerCase().includes(q) ||
-      p.dni.toLowerCase().includes(q)
+    return people.filter(
+      p =>
+        p.nombre.toLowerCase().includes(q) || p.dni.toLowerCase().includes(q),
     );
   }, [searchTerm, people]);
 
-  const navegantes = people.filter(p => getEffectiveRole(p.dni) === 'navegante');
-  const coordinadores = people.filter(p => getEffectiveRole(p.dni) === 'coordinador');
-  const selectedCoordinador = coordinadores.find(c => c.dni === selectedCoordinadorDni);
+  const navegantes = people.filter(
+    p => getEffectiveRole(p.dni) === 'navegante',
+  );
+  const coordinadores = people.filter(
+    p => getEffectiveRole(p.dni) === 'coordinador',
+  );
+  const selectedCoordinador = coordinadores.find(
+    c => c.dni === selectedCoordinadorDni,
+  );
 
   return (
     <DashboardLayout>
       <Stack sx={{ gap: 4 }}>
-
         {/* Admin section: role assignment */}
         {perfil === 'admin' && (
           <Stack sx={{ gap: 3 }}>
@@ -144,7 +160,9 @@ const RoleManagement = () => {
             />
 
             {isLoading ? (
-              <Typography color="text.secondary">Cargando personas...</Typography>
+              <Typography color="text.secondary">
+                Cargando personas...
+              </Typography>
             ) : (
               <Stack sx={{ gap: 3 }}>
                 <InputClassic
@@ -155,85 +173,134 @@ const RoleManagement = () => {
                 />
 
                 <Stack sx={{ overflowX: 'auto' }}>
-                <Stack
-                  sx={{
-                    flexDirection: 'row',
-                    px: 2,
-                    py: 1,
-                    bgcolor: 'background.paper',
-                    border: '1px solid',
-                    borderColor: 'divider',
-                    borderRadius: '8px 8px 0 0',
-                    minWidth: 500,
-                    overflowX: 'auto',
-                  }}
-                >
-                  <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ flex: 1 }}>NOMBRE</Typography>
-                  <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ width: 200 }}>USUARIO / DNI</Typography>
-                  <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ width: 160 }}>ROL</Typography>
-                </Stack>
-
-                {filteredPeople.map((person, idx) => {
-                  const currentRole = getEffectiveRole(person.dni);
-                  const locked = SEED_ADMINS.has(person.dni);
-                  const isCurrentUser = user?.employeeInternalId === person.dni;
-
-                  return (
-                    <Stack
-                      key={person.id}
-                      sx={{
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        px: 2,
-                        py: 1,
-                        bgcolor: isCurrentUser ? 'action.hover' : 'background.paper',
-                        border: '1px solid',
-                        borderTop: 'none',
-                        borderColor: 'divider',
-                        minWidth: 500,
-                        overflowX: 'auto',
-                        ...(idx === people.length - 1 && { borderRadius: '0 0 8px 8px' }),
-                      }}
+                  <Stack
+                    sx={{
+                      flexDirection: 'row',
+                      px: 2,
+                      py: 1,
+                      bgcolor: 'background.paper',
+                      border: '1px solid',
+                      borderColor: 'divider',
+                      borderRadius: '8px 8px 0 0',
+                      minWidth: 500,
+                      overflowX: 'auto',
+                    }}
+                  >
+                    <Typography
+                      variant="caption"
+                      fontWeight={700}
+                      color="text.secondary"
+                      sx={{ flex: 1 }}
                     >
-                      <Stack sx={{ flex: 1 }}>
-                        <Typography variant="body2" fontWeight={500}>
-                          {person.nombre}
-                          {isCurrentUser && (
-                            <Typography component="span" variant="caption" color="text.secondary" sx={{ ml: 1 }}>(vos)</Typography>
-                          )}
-                        </Typography>
-                      </Stack>
+                      NOMBRE
+                    </Typography>
+                    <Typography
+                      variant="caption"
+                      fontWeight={700}
+                      color="text.secondary"
+                      sx={{ width: 200 }}
+                    >
+                      USUARIO / DNI
+                    </Typography>
+                    <Typography
+                      variant="caption"
+                      fontWeight={700}
+                      color="text.secondary"
+                      sx={{ width: 160 }}
+                    >
+                      ROL
+                    </Typography>
+                  </Stack>
 
-                      <Typography variant="body2" color="text.secondary" sx={{ width: 200 }}>
-                        {person.dni}
-                      </Typography>
+                  {filteredPeople.map((person, idx) => {
+                    const currentRole = getEffectiveRole(person.dni);
+                    const locked = SEED_ADMINS.has(person.dni);
+                    const isCurrentUser =
+                      user?.employeeInternalId === person.dni;
 
-                      <Stack sx={{ width: 160 }}>
-                        {locked ? (
-                          <Chip
-                            label="Admin permanente"
-                            size="small"
-                            color="error"
-                            variant="filled"
-                          />
-                        ) : (
-                          <Select
-                            size="small"
-                            value={currentRole}
-                            onChange={e => handleChangeRole(person.dni, e.target.value as Perfil)}
-                            sx={{ fontSize: 13 }}
+                    return (
+                      <Stack
+                        key={person.id}
+                        sx={{
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          px: 2,
+                          py: 1,
+                          bgcolor: isCurrentUser
+                            ? 'action.hover'
+                            : 'background.paper',
+                          border: '1px solid',
+                          borderTop: 'none',
+                          borderColor: 'divider',
+                          minWidth: 500,
+                          overflowX: 'auto',
+                          ...(idx === people.length - 1 && {
+                            borderRadius: '0 0 8px 8px',
+                          }),
+                        }}
+                      >
+                        <Stack sx={{ flex: 1 }}>
+                          <Typography
+                            variant="body2"
+                            fontWeight={500}
                           >
-                            {ROLE_OPTIONS.map(role => (
-                              <MenuItem key={role} value={role} sx={{ fontSize: 13 }}>
-                                {ROLE_LABELS[role]}
-                              </MenuItem>
-                            ))}
-                          </Select>
-                        )}
+                            {person.nombre}
+                            {isCurrentUser && (
+                              <Typography
+                                component="span"
+                                variant="caption"
+                                color="text.secondary"
+                                sx={{ ml: 1 }}
+                              >
+                                (vos)
+                              </Typography>
+                            )}
+                          </Typography>
+                        </Stack>
+
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          sx={{ width: 200 }}
+                        >
+                          {person.dni}
+                        </Typography>
+
+                        <Stack sx={{ width: 160 }}>
+                          {locked ? (
+                            <Chip
+                              label="Admin permanente"
+                              size="small"
+                              color="error"
+                              variant="filled"
+                            />
+                          ) : (
+                            <Select
+                              size="small"
+                              value={currentRole}
+                              onChange={e =>
+                                handleChangeRole(
+                                  person.dni,
+                                  e.target.value as Perfil,
+                                )
+                              }
+                              sx={{ fontSize: 13 }}
+                            >
+                              {ROLE_OPTIONS.map(role => (
+                                <MenuItem
+                                  key={role}
+                                  value={role}
+                                  sx={{ fontSize: 13 }}
+                                >
+                                  {ROLE_LABELS[role]}
+                                </MenuItem>
+                              ))}
+                            </Select>
+                          )}
+                        </Stack>
                       </Stack>
-                    </Stack>
-                  );
-                })}
+                    );
+                  })}
                 </Stack>
               </Stack>
             )}
@@ -243,7 +310,13 @@ const RoleManagement = () => {
         {/* Assign teams to coordinators */}
         {coordinadores.length > 0 && (
           <Stack sx={{ gap: 3 }}>
-            <Stack sx={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <Stack
+              sx={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'flex-start',
+              }}
+            >
               <Title
                 title="Equipos de coordinadores/as regionales"
                 description="Asignà los navegantes que conforman el equipo de cada coordinador/a regional."
@@ -289,16 +362,27 @@ const RoleManagement = () => {
           >
             <Stack sx={{ p: 3, gap: 3, flex: 1, overflowY: 'auto' }}>
               <Stack sx={{ gap: 1 }}>
-                <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                <Typography
+                  variant="h6"
+                  sx={{ fontWeight: 600 }}
+                >
                   Crear equipo
                 </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Seleccioná un coordinador/a regional y los navegantes que conforman su equipo.
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                >
+                  Seleccioná un coordinador/a regional y los navegantes que
+                  conforman su equipo.
                 </Typography>
               </Stack>
 
               <Stack sx={{ gap: 1 }}>
-                <Typography variant="body2" fontWeight={500} color="text.secondary">
+                <Typography
+                  variant="body2"
+                  fontWeight={500}
+                  color="text.secondary"
+                >
                   Seleccionar coordinador/a regional
                 </Typography>
                 <Stack sx={{ flexWrap: 'wrap', flexDirection: 'row', gap: 1 }}>
@@ -307,8 +391,16 @@ const RoleManagement = () => {
                       key={coordinador.id}
                       label={coordinador.nombre}
                       onClick={() => handleSelectCoordinador(coordinador.dni)}
-                      color={selectedCoordinadorDni === coordinador.dni ? 'primary' : 'default'}
-                      variant={selectedCoordinadorDni === coordinador.dni ? 'filled' : 'outlined'}
+                      color={
+                        selectedCoordinadorDni === coordinador.dni
+                          ? 'primary'
+                          : 'default'
+                      }
+                      variant={
+                        selectedCoordinadorDni === coordinador.dni
+                          ? 'filled'
+                          : 'outlined'
+                      }
                       sx={{ cursor: 'pointer' }}
                     />
                   ))}
@@ -317,22 +409,34 @@ const RoleManagement = () => {
 
               {selectedCoordinadorDni && (
                 <Stack sx={{ gap: 1 }}>
-                  <Typography variant="body2" fontWeight={500}>
+                  <Typography
+                    variant="body2"
+                    fontWeight={500}
+                  >
                     Equipo de {selectedCoordinador?.nombre}
                   </Typography>
                   {navegantes.length === 0 ? (
-                    <Typography variant="caption" color="text.secondary">
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                    >
                       No hay navegantes disponibles
                     </Typography>
                   ) : (
-                    <Stack sx={{ flexWrap: 'wrap', flexDirection: 'row', gap: 1 }}>
+                    <Stack
+                      sx={{ flexWrap: 'wrap', flexDirection: 'row', gap: 1 }}
+                    >
                       {navegantes.map(person => {
-                        const selected = coordinadorTeamSelection.has(person.dni);
+                        const selected = coordinadorTeamSelection.has(
+                          person.dni,
+                        );
                         return (
                           <Chip
                             key={person.id}
                             label={person.nombre}
-                            onClick={() => handleToggleCoordinadorTeamMember(person.dni)}
+                            onClick={() =>
+                              handleToggleCoordinadorTeamMember(person.dni)
+                            }
                             color={selected ? 'primary' : 'default'}
                             variant={selected ? 'filled' : 'outlined'}
                             sx={{ cursor: 'pointer' }}
@@ -379,11 +483,11 @@ const RoleManagement = () => {
           open={notificationDrawerOpen}
           onClose={() => setNotificationDrawerOpen(false)}
           people={people}
-          onSuccess={(message) => {
+          onSuccess={message => {
             setSnackbar(message);
             setNotificationDrawerOpen(false);
           }}
-          onError={(message) => setSnackbar(message)}
+          onError={message => setSnackbar(message)}
         />
 
         <Snackbar
@@ -392,12 +496,14 @@ const RoleManagement = () => {
           autoHideDuration={3000}
           anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
         >
-          <Alert severity="success" onClose={() => setSnackbar('')}>
+          <Alert
+            severity="success"
+            onClose={() => setSnackbar('')}
+          >
             {snackbar}
           </Alert>
         </Snackbar>
       </Stack>
-
     </DashboardLayout>
   );
 };

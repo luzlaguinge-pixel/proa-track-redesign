@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 
 import { getBasicPersons } from '../services';
@@ -12,5 +13,6 @@ export const useGetPersons = () => {
     queryKey: personsKeys.lists(),
     queryFn: getBasicPersons,
   });
-  return { persons: data ?? [], ...query };
+
+  return useMemo(() => ({ persons: data ?? [], ...query }), [data, query]);
 };

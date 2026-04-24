@@ -58,4 +58,5 @@ export type Material = {
   observaciones: string | null;
   fechaActualizacion: string;
   historial: HistorialEvento[];
+  assignedToUserId: string | null;
 };

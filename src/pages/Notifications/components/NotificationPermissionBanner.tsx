@@ -43,7 +43,8 @@ const NotificationPermissionBanner = () => {
           </Button>
         }
       >
-        Las notificaciones están deshabilitadas. Actívalas para recibir recordatorios y updates.
+        Las notificaciones están deshabilitadas. Actívalas para recibir
+        recordatorios y updates.
       </Alert>
     </Stack>
   );

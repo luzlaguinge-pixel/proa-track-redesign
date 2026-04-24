@@ -1,3 +1,9 @@
+import {
+  postgrestCreate,
+  postgrestDelete,
+  postgrestQuery,
+} from '../../services/api';
+
 export type Confirmacion = {
   id: string;
   materialId: string;
@@ -7,44 +13,55 @@ export type Confirmacion = {
   fotoBase64: string | null;
 };
 
-const STORAGE_KEY = 'proa-track:confirmaciones';
-
 let cache: Confirmacion[] | null = null;
 
-const load = (): Confirmacion[] => {
-  if (cache) return cache;
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      cache = JSON.parse(stored) as Confirmacion[];
-      return cache;
-    }
-  } catch { /* ignore */ }
-  cache = [];
-  return cache;
+export const getAllConfirmaciones = (): Confirmacion[] => {
+  return cache ? cache.map(c => ({ ...c })) : [];
 };
 
-const persist = () => {
-  if (!cache) return;
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(cache)); } catch { /* ignore */ }
-};
+export const getConfirmacionesByMaterial = (
+  materialId: string,
+): Confirmacion[] =>
+  (cache ?? []).filter(c => c.materialId === materialId).map(c => ({ ...c }));
 
-export const getAllConfirmaciones = (): Confirmacion[] => load().map(c => ({ ...c }));
+export const getConfirmacionesByResponsable = (
+  nombre: string,
+): Confirmacion[] =>
+  (cache ?? [])
+    .filter(c => c.responsableNombre === nombre)
+    .map(c => ({ ...c }));
 
-export const getConfirmacionesByMaterial = (materialId: string): Confirmacion[] =>
-  load().filter(c => c.materialId === materialId).map(c => ({ ...c }));
-
-export const getConfirmacionesByResponsable = (nombre: string): Confirmacion[] =>
-  load().filter(c => c.responsableNombre === nombre).map(c => ({ ...c }));
-
-export const createConfirmacion = (data: Omit<Confirmacion, 'id'>): Confirmacion => {
-  const list = load();
+export const createConfirmacion = (
+  data: Omit<Confirmacion, 'id'>,
+): Confirmacion => {
+  if (!cache) cache = [];
   const entry: Confirmacion = {
     ...data,
     id: `conf_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
   };
-  list.push(entry);
-  cache = list;
-  persist();
+  cache.push(entry);
+  postgrestCreate<Confirmacion>('confirmaciones', entry).catch(() => {
+    // log silently
+  });
   return { ...entry };
+};
+
+export const deleteConfirmacion = (id: string): boolean => {
+  if (!cache) return false;
+  const idx = cache.findIndex(c => c.id === id);
+  if (idx === -1) return false;
+  cache.splice(idx, 1);
+  postgrestDelete('confirmaciones', id).catch(() => {
+    // log silently
+  });
+  return true;
+};
+
+export const initializeStore = async (): Promise<void> => {
+  try {
+    const confirmaciones = await postgrestQuery<Confirmacion>('confirmaciones');
+    cache = confirmaciones;
+  } catch {
+    cache = [];
+  }
 };

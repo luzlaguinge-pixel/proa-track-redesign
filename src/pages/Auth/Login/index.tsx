@@ -67,8 +67,16 @@ export default function LoginPage() {
         sx={{ width: 360, gap: 3 }}
       >
         <Stack sx={{ alignItems: 'center', gap: 1, mb: 1 }}>
-          <img src={humandLogo} alt="Humand" style={{ height: 32 }} />
-          <Typography variant="h6" fontWeight={700} sx={{ letterSpacing: '-0.5px' }}>
+          <img
+            src={humandLogo}
+            alt="Humand"
+            style={{ height: 32 }}
+          />
+          <Typography
+            variant="h6"
+            fontWeight={700}
+            sx={{ letterSpacing: '-0.5px' }}
+          >
             Proa Track
           </Typography>
         </Stack>

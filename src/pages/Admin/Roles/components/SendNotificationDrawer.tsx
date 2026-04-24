@@ -28,7 +28,9 @@ export const SendNotificationDrawer = ({
   onSuccess,
   onError,
 }: SendNotificationDrawerProps) => {
-  const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(new Set());
+  const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(
+    new Set(),
+  );
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
   const [isSending, setIsSending] = useState(false);
@@ -44,7 +46,9 @@ export const SendNotificationDrawer = ({
 
   const handleSendNotification = async () => {
     if (selectedUserIds.size === 0 || !title.trim() || !body.trim()) {
-      onError('Por favor completa todos los campos y selecciona al menos un usuario.');
+      onError(
+        'Por favor completa todos los campos y selecciona al menos un usuario.',
+      );
       return;
     }
 
@@ -88,17 +92,26 @@ export const SendNotificationDrawer = ({
     >
       <Stack sx={{ p: 3, gap: 3, flex: 1, overflowY: 'auto' }}>
         <Stack sx={{ gap: 1 }}>
-          <Typography variant="h6" sx={{ fontWeight: 600 }}>
+          <Typography
+            variant="h6"
+            sx={{ fontWeight: 600 }}
+          >
             Enviar notificación
           </Typography>
-          <Typography variant="body2" color="text.secondary">
+          <Typography
+            variant="body2"
+            color="text.secondary"
+          >
             Selecciona usuarios y redacta el mensaje.
           </Typography>
         </Stack>
 
         <Stack sx={{ gap: 2 }}>
           <Stack sx={{ gap: 1 }}>
-            <Typography variant="body2" fontWeight={500}>
+            <Typography
+              variant="body2"
+              fontWeight={500}
+            >
               Título
             </Typography>
             <InputClassic
@@ -110,7 +123,10 @@ export const SendNotificationDrawer = ({
           </Stack>
 
           <Stack sx={{ gap: 1 }}>
-            <Typography variant="body2" fontWeight={500}>
+            <Typography
+              variant="body2"
+              fontWeight={500}
+            >
               Mensaje
             </Typography>
             <InputClassic
@@ -125,7 +141,10 @@ export const SendNotificationDrawer = ({
           </Stack>
 
           <Stack sx={{ gap: 1 }}>
-            <Typography variant="body2" fontWeight={500}>
+            <Typography
+              variant="body2"
+              fontWeight={500}
+            >
               Usuarios ({selectedUserIds.size} seleccionados)
             </Typography>
             <Stack
@@ -160,7 +179,10 @@ export const SendNotificationDrawer = ({
                   />
                   <Stack sx={{ flex: 1 }}>
                     <Typography variant="body2">{person.nombre}</Typography>
-                    <Typography variant="caption" color="text.secondary">
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                    >
                       {person.dni}
                     </Typography>
                   </Stack>
@@ -193,7 +215,12 @@ export const SendNotificationDrawer = ({
           variant="primary"
           size="medium"
           onClick={handleSendNotification}
-          disabled={selectedUserIds.size === 0 || !title.trim() || !body.trim() || isSending}
+          disabled={
+            selectedUserIds.size === 0 ||
+            !title.trim() ||
+            !body.trim() ||
+            isSending
+          }
           loading={isSending}
         >
           Enviar

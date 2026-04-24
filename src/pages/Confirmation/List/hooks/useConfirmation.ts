@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { DEMO_CAPTADOR_NOMBRE } from '../../../MyMaterials/List/services';
+import { useAuth } from '../../../../providers/AuthContext';
 import {
   confirmarTenencia,
   type ConfirmarInput,
@@ -9,10 +9,13 @@ import {
 
 export const useConfirmation = () => {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const userName = user ? `${user.firstName} ${user.lastName}` : '';
 
   const { data: materials = [], isLoading } = useQuery({
-    queryKey: ['confirmation-materials', DEMO_CAPTADOR_NOMBRE],
-    queryFn: () => getMaterialesParaConfirmar(DEMO_CAPTADOR_NOMBRE),
+    queryKey: ['confirmation-materials', userName],
+    queryFn: () => getMaterialesParaConfirmar(userName),
+    enabled: !!userName,
   });
 
   const mutation = useMutation({

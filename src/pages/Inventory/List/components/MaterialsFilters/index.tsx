@@ -5,7 +5,10 @@ import Search from '@material-hu/components/design-system/Inputs/Search';
 import Select from '@material-hu/components/design-system/Inputs/Select';
 
 import { DUEÑO_LABEL, ESTADO_CONFIG, TIPO_LABEL } from '../../constants';
-import { type Disponibilidad, type Filters } from '../../hooks/useMaterialsFilters';
+import {
+  type Disponibilidad,
+  type Filters,
+} from '../../hooks/useMaterialsFilters';
 import {
   type MaterialDueño,
   type MaterialEstado,
@@ -62,7 +65,7 @@ const MaterialsFilters = ({
         alignItems: 'center',
       }}
     >
-      <Stack sx={{ flex: '1 1 280px', minWidth: 240 }}>
+      <Stack sx={{ flex: '1 1 240px', minWidth: 200 }}>
         <Search
           value={filters.search}
           onChange={value => onUpdate('search', value)}
@@ -70,7 +73,7 @@ const MaterialsFilters = ({
           variant="classic"
         />
       </Stack>
-      <Stack sx={{ width: 180 }}>
+      <Stack sx={{ minWidth: 140 }}>
         <Select
           value={filters.tipo}
           onChange={value => onUpdate('tipo', value as MaterialTipo | '')}
@@ -79,16 +82,18 @@ const MaterialsFilters = ({
           allowClear
         />
       </Stack>
-      <Stack sx={{ width: 160 }}>
+      <Stack sx={{ minWidth: 140 }}>
         <Select
           value={filters.disponibilidad}
-          onChange={value => onUpdate('disponibilidad', value as Disponibilidad | '')}
+          onChange={value =>
+            onUpdate('disponibilidad', value as Disponibilidad | '')
+          }
           options={disponibilidadOptions}
           placeholder="Disponibilidad"
           allowClear
         />
       </Stack>
-      <Stack sx={{ width: 160 }}>
+      <Stack sx={{ minWidth: 140 }}>
         <Select
           value={filters.estado}
           onChange={value => onUpdate('estado', value as MaterialEstado | '')}
@@ -97,7 +102,7 @@ const MaterialsFilters = ({
           allowClear
         />
       </Stack>
-      <Stack sx={{ width: 160 }}>
+      <Stack sx={{ minWidth: 140 }}>
         <Select
           value={filters.dueño}
           onChange={value => onUpdate('dueño', value as MaterialDueño | '')}
@@ -106,7 +111,7 @@ const MaterialsFilters = ({
           allowClear
         />
       </Stack>
-      <Stack sx={{ width: 180 }}>
+      <Stack sx={{ minWidth: 140 }}>
         <Select
           value={filters.osc}
           onChange={value => onUpdate('osc', value)}
@@ -115,7 +120,7 @@ const MaterialsFilters = ({
           allowClear
         />
       </Stack>
-      <Stack sx={{ width: 180 }}>
+      <Stack sx={{ minWidth: 140 }}>
         <Select
           value={filters.plaza}
           onChange={value => onUpdate('plaza', value)}

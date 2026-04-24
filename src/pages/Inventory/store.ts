@@ -1,46 +1,30 @@
 import db from '../../../mock/db.json';
 
+import {
+  postgrestCreate,
+  postgrestDelete,
+  postgrestQuery,
+  postgrestUpdate,
+} from '../../services/api';
 import { type Material } from './List/types';
-
-const STORAGE_KEY = 'proa-track:materials';
-
-const seedMaterials = (): Material[] =>
-  (db as { materials: Omit<Material, 'historial'>[] }).materials.map(m => ({
-    ...m,
-    historial: [],
-  })) as Material[];
 
 let cache: Material[] | null = null;
 
-const load = (): Material[] => {
-  if (cache) return cache;
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      cache = JSON.parse(stored) as Material[];
-      return cache;
-    }
-  } catch {
-    // ignore
-  }
-  cache = seedMaterials();
-  persist();
-  return cache;
-};
+const seedMaterials = (): Material[] =>
+  (
+    db as { materials: Omit<Material, 'historial' | 'assignedToUserId'>[] }
+  ).materials.map(m => ({
+    ...m,
+    historial: [],
+    assignedToUserId: null,
+  })) as Material[];
 
-const persist = () => {
-  if (!cache) return;
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(cache));
-  } catch {
-    // ignore
-  }
+export const getAllMaterials = (): Material[] => {
+  return cache ? cache.map(m => ({ ...m })) : seedMaterials();
 };
-
-export const getAllMaterials = (): Material[] => load().map(m => ({ ...m }));
 
 export const getMaterialById = (id: string): Material | null => {
-  const found = load().find(m => m.id === id);
+  const found = cache?.find(m => m.id === id);
   return found ? { ...found } : null;
 };
 
@@ -48,12 +32,15 @@ export const updateMaterial = (
   id: string,
   updater: (current: Material) => Material,
 ): Material | null => {
-  const list = load();
-  const idx = list.findIndex(m => m.id === id);
+  if (!cache) return null;
+  const idx = cache.findIndex(m => m.id === id);
   if (idx === -1) return null;
-  list[idx] = updater(list[idx]);
-  persist();
-  return { ...list[idx] };
+  const updated = updater({ ...cache[idx] });
+  cache[idx] = updated;
+  postgrestUpdate<Material>('materials', id, updated).catch(() => {
+    // log silently
+  });
+  return { ...updated };
 };
 
 export const createMaterial = (
@@ -67,9 +54,10 @@ export const createMaterial = (
     | 'comodatoFirmado'
     | 'fechaActualizacion'
     | 'historial'
+    | 'assignedToUserId'
   >,
 ): Material => {
-  const list = load();
+  if (!cache) cache = seedMaterials();
   const newMaterial: Material = {
     ...data,
     id: `mat_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
@@ -80,50 +68,81 @@ export const createMaterial = (
     comodatoFirmado: false,
     fechaActualizacion: new Date().toISOString().slice(0, 10),
     historial: [],
+    assignedToUserId: null,
   };
-  list.push(newMaterial);
-  cache = list;
-  persist();
+  cache.push(newMaterial);
+  postgrestCreate<Material>('materials', newMaterial).catch(() => {
+    // log silently
+  });
   return { ...newMaterial };
 };
 
 export const unassignMaterials = (ids: string[]): void => {
-  const list = load();
+  if (!cache) return;
   const todayStr = new Date().toISOString().slice(0, 10);
   const idSet = new Set(ids);
-  for (let i = 0; i < list.length; i++) {
-    if (!idSet.has(list[i].id)) continue;
-    list[i] = {
-      ...list[i],
+  for (let i = 0; i < cache.length; i++) {
+    if (!idSet.has(cache[i].id)) continue;
+    const updated = {
+      ...cache[i],
       responsableNombre: null,
       responsableDni: null,
       responsableTelefono: null,
       comodatoFirmado: false,
-      estado: 'sin_uso',
+      estado: 'sin_uso' as const,
       fechaActualizacion: todayStr,
     };
+    cache[i] = updated;
+    postgrestUpdate<Material>('materials', cache[i].id, updated).catch(() => {
+      // log silently
+    });
   }
-  cache = list;
-  persist();
 };
 
 export const deleteMaterials = (ids: string[]): void => {
+  if (!cache) return;
   const idSet = new Set(ids);
-  cache = load().filter(m => !idSet.has(m.id));
-  persist();
+  for (const id of ids) {
+    postgrestDelete('materials', id).catch(() => {
+      // log silently
+    });
+  }
+  cache = cache.filter(m => !idSet.has(m.id));
 };
 
 export const deleteMaterial = (id: string): boolean => {
-  const list = load();
-  const idx = list.findIndex(m => m.id === id);
+  if (!cache) return false;
+  const idx = cache.findIndex(m => m.id === id);
   if (idx === -1) return false;
-  list.splice(idx, 1);
-  cache = list;
-  persist();
+  cache.splice(idx, 1);
+  postgrestDelete('materials', id).catch(() => {
+    // log silently
+  });
   return true;
 };
 
-export const resetStore = () => {
+export const resetStore = (): void => {
   cache = seedMaterials();
-  persist();
+  postgrestQuery<Material>('materials')
+    .then(current => {
+      const ops = current.map(m => postgrestDelete('materials', m.id));
+      return Promise.all(ops);
+    })
+    .then(() => {
+      if (!cache) return;
+      const ops = cache.map(m => postgrestCreate<Material>('materials', m));
+      return Promise.all(ops);
+    })
+    .catch(() => {
+      // log silently
+    });
+};
+
+export const initializeStore = async (): Promise<void> => {
+  try {
+    const materials = await postgrestQuery<Material>('materials');
+    cache = materials;
+  } catch {
+    cache = seedMaterials();
+  }
 };

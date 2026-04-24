@@ -21,7 +21,11 @@ import Typography from '@material-hu/mui/Typography';
 import { DashboardLayout } from '../../../layouts/DashboardLayout';
 import { useProfile } from '../../../providers/ProfileContext';
 import { markAllRead, markRead } from '../store';
-import { type Notificacion, getNotificacionesCaptador, getNotificacionesLiderAdmin } from './services';
+import {
+  type Notificacion,
+  getNotificacionesCaptador,
+  getNotificacionesLiderAdmin,
+} from './services';
 
 const DEMO_CAPTADOR_NOMBRE = 'Ana García';
 const DEMO_LIDER_NOMBRE = 'Carlos López';
@@ -62,7 +66,11 @@ const SEVERITY_CONFIG = {
 
 const formatFecha = (iso: string): string => {
   const d = new Date(iso);
-  return d.toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' });
+  return d.toLocaleDateString('es-AR', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  });
 };
 
 const NotifCard = ({
@@ -94,8 +102,15 @@ const NotifCard = ({
         borderLeftColor: notif.leida ? 'divider' : cfg.color,
         opacity: notif.leida ? 0.65 : 1,
         transition: 'opacity 0.2s',
-        cursor: notif.navigationPath ? 'pointer' : (notif.leida ? 'default' : 'pointer'),
-        '&:hover': notif.navigationPath || !notif.leida ? { bgcolor: 'action.hover' } : {},
+        cursor: notif.navigationPath
+          ? 'pointer'
+          : notif.leida
+            ? 'default'
+            : 'pointer',
+        '&:hover':
+          notif.navigationPath || !notif.leida
+            ? { bgcolor: 'action.hover' }
+            : {},
       }}
       onClick={handleClick}
     >
@@ -110,18 +125,34 @@ const NotifCard = ({
           {cfg.icon}
         </Stack>
         <Stack sx={{ flex: 1, gap: 0.5 }}>
-          <Stack sx={{ flexDirection: 'row', justifyContent: 'space-between', gap: 1 }}>
+          <Stack
+            sx={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              gap: 1,
+            }}
+          >
             <Typography
               variant="body2"
-              sx={{ fontWeight: notif.leida ? 400 : 600, color: notif.leida ? 'text.secondary' : 'text.primary' }}
+              sx={{
+                fontWeight: notif.leida ? 400 : 600,
+                color: notif.leida ? 'text.secondary' : 'text.primary',
+              }}
             >
               {notif.titulo}
             </Typography>
-            <Typography variant="caption" color="text.disabled" sx={{ flexShrink: 0 }}>
+            <Typography
+              variant="caption"
+              color="text.disabled"
+              sx={{ flexShrink: 0 }}
+            >
               {formatFecha(notif.fecha)}
             </Typography>
           </Stack>
-          <Typography variant="caption" color="text.secondary">
+          <Typography
+            variant="caption"
+            color="text.secondary"
+          >
             {notif.descripcion}
           </Typography>
         </Stack>
@@ -167,7 +198,13 @@ const NotificationsList = () => {
   return (
     <DashboardLayout>
       <Stack sx={{ gap: 4 }}>
-        <Stack sx={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <Stack
+          sx={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'flex-start',
+          }}
+        >
           <Title
             title="Notificaciones"
             description="Mantente al tanto de lo que pasa en tu equipo."
@@ -190,7 +227,10 @@ const NotificationsList = () => {
             <Stack sx={{ color: 'text.disabled' }}>
               <IconBellOff size={48} />
             </Stack>
-            <Typography variant="body2" color="text.disabled">
+            <Typography
+              variant="body2"
+              color="text.disabled"
+            >
               No tenés notificaciones nuevas
             </Typography>
           </Stack>
@@ -198,14 +238,28 @@ const NotificationsList = () => {
           <Stack sx={{ gap: 4 }}>
             {unread.length > 0 && (
               <Stack sx={{ gap: 1.5 }}>
-                <Stack sx={{ flexDirection: 'row', gap: 1, alignItems: 'center' }}>
-                  <Typography variant="overline" color="text.secondary" sx={{ fontWeight: 600, letterSpacing: '0.08em' }}>
+                <Stack
+                  sx={{ flexDirection: 'row', gap: 1, alignItems: 'center' }}
+                >
+                  <Typography
+                    variant="overline"
+                    color="text.secondary"
+                    sx={{ fontWeight: 600, letterSpacing: '0.08em' }}
+                  >
                     Sin leer
                   </Typography>
-                  <Chip label={unread.length} size="small" color="primary" />
+                  <Chip
+                    label={unread.length}
+                    size="small"
+                    color="primary"
+                  />
                 </Stack>
                 {unread.map(n => (
-                  <NotifCard key={`${n.id}-${tick}`} notif={n} onRead={handleRead} />
+                  <NotifCard
+                    key={`${n.id}-${tick}`}
+                    notif={n}
+                    onRead={handleRead}
+                  />
                 ))}
               </Stack>
             )}
@@ -214,11 +268,19 @@ const NotificationsList = () => {
 
             {read.length > 0 && (
               <Stack sx={{ gap: 1.5 }}>
-                <Typography variant="overline" color="text.disabled" sx={{ fontWeight: 600, letterSpacing: '0.08em' }}>
+                <Typography
+                  variant="overline"
+                  color="text.disabled"
+                  sx={{ fontWeight: 600, letterSpacing: '0.08em' }}
+                >
                   Leídas
                 </Typography>
                 {read.map(n => (
-                  <NotifCard key={`${n.id}-${tick}`} notif={n} onRead={handleRead} />
+                  <NotifCard
+                    key={`${n.id}-${tick}`}
+                    notif={n}
+                    onRead={handleRead}
+                  />
                 ))}
               </Stack>
             )}

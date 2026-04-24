@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import {
@@ -39,9 +40,8 @@ const MaterialActions = ({ material }: MaterialActionsProps) => {
   const { openDrawer, closeDrawer } = useDrawerLayer();
   const { openDialog, closeDialog } = useDialogLayer();
   const { openMenu } = useMenuLayer();
-  const { assign, report, confirm, repair, recover, remove } = useMaterialMutations(
-    material.id,
-  );
+  const { assign, report, confirm, repair, recover, remove } =
+    useMaterialMutations(material.id);
   const { persons } = useGetPersons();
 
   const hasResponsable = !!material.responsableNombre;
@@ -50,20 +50,23 @@ const MaterialActions = ({ material }: MaterialActionsProps) => {
   const canMarkRecovered =
     material.estado === 'perdida' || material.estado === 'en_reparacion';
 
-  const handleAssign = async (input: {
-    personId: string;
-    comodato: boolean;
-    observacion: string;
-  }) => {
-    const person = persons.find(p => p.id === input.personId);
-    if (!person) return;
-    await assign.mutateAsync({
-      person,
-      comodato: input.comodato,
-      observacion: input.observacion,
-    });
-    closeDrawer();
-  };
+  const handleAssign = useCallback(
+    async (input: {
+      personId: string;
+      comodato: boolean;
+      observacion: string;
+    }) => {
+      const person = persons.find(p => p.id === input.personId);
+      if (!person) return;
+      await assign.mutateAsync({
+        person,
+        comodato: input.comodato,
+        observacion: input.observacion,
+      });
+      closeDrawer();
+    },
+    [persons, assign, closeDrawer],
+  );
 
   const handleReport = async (kind: 'perdido' | 'dañado', motivo: string) => {
     await report.mutateAsync({ kind, motivo });
@@ -88,19 +91,23 @@ const MaterialActions = ({ material }: MaterialActionsProps) => {
     closeDialog();
   };
 
-  const openAssignDrawer = () => {
+  const handleAssignDrawerClose = useCallback(() => {
+    closeDrawer();
+  }, [closeDrawer]);
+
+  const openAssignDrawer = useCallback(() => {
     openDrawer({
       wrapperProps: { anchor: 'right' },
       content: (
         <AssignDrawer
           material={material}
           persons={persons}
-          onClose={() => closeDrawer()}
+          onClose={handleAssignDrawerClose}
           onSubmit={handleAssign}
         />
       ),
     });
-  };
+  }, [material, persons, handleAssignDrawerClose, handleAssign, openDrawer]);
 
   const openReport = (kind: 'perdido' | 'dañado') => {
     openDialog({

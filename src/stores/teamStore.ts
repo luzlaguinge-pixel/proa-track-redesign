@@ -24,7 +24,10 @@ export function getTeamForLeader(leaderDni: string): string[] {
   return load()[leaderDni] ?? [];
 }
 
-export function setTeamForLeader(leaderDni: string, memberDnis: string[]): void {
+export function setTeamForLeader(
+  leaderDni: string,
+  memberDnis: string[],
+): void {
   const map = load();
   map[leaderDni] = memberDnis;
   save(map);

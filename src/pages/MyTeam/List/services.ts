@@ -35,7 +35,8 @@ export const getMyTeam = async (leaderDni: string): Promise<TeamMember[]> => {
       email: u.email ?? '',
       puesto: '',
       pais: 'AR' as const,
-      materialesCount: materials.filter(m => m.responsableNombre === nombre).length,
+      materialesCount: materials.filter(m => m.responsableNombre === nombre)
+        .length,
     };
   });
 };

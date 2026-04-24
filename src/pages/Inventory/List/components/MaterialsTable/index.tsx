@@ -2,7 +2,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { IconTrash, IconUserX } from '@material-hu/icons/tabler';
+import Alert from '@material-hu/mui/Alert';
 import Checkbox from '@material-hu/mui/Checkbox';
+import Snackbar from '@material-hu/mui/Snackbar';
 import Stack from '@material-hu/mui/Stack';
 import Typography from '@material-hu/mui/Typography';
 
@@ -34,13 +36,20 @@ type MaterialsTableProps = {
   selectable?: boolean;
 };
 
-const MaterialsTable = ({ materials, selectable = false }: MaterialsTableProps) => {
+const MaterialsTable = ({
+  materials,
+  selectable = false,
+}: MaterialsTableProps) => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { openDialog, closeDialog } = useDialogLayer();
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(25);
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string }>({
+    open: false,
+    message: '',
+  });
 
   // Reset selection when material list changes (e.g. filters)
   useEffect(() => {
@@ -55,7 +64,8 @@ const MaterialsTable = ({ materials, selectable = false }: MaterialsTableProps) 
   );
 
   const pageIds = paginated.map(m => m.id);
-  const allOnPageSelected = pageIds.length > 0 && pageIds.every(id => selected.has(id));
+  const allOnPageSelected =
+    pageIds.length > 0 && pageIds.every(id => selected.has(id));
   const someOnPageSelected = pageIds.some(id => selected.has(id));
 
   const toggleAll = () => {
@@ -91,19 +101,43 @@ const MaterialsTable = ({ materials, selectable = false }: MaterialsTableProps) 
       content: (
         <Stack sx={{ p: 3, gap: 3, maxWidth: 440 }}>
           <Stack sx={{ gap: 1 }}>
-            <Typography variant="h6" fontWeight={600}>Desasignar materiales</Typography>
-            <Typography variant="body2" color="text.secondary">
-              ¿Desasignar <strong>{count} {count === 1 ? 'material' : 'materiales'}</strong>? Los responsables quedarán sin material asignado.
+            <Typography
+              variant="h6"
+              fontWeight={600}
+            >
+              Desasignar materiales
+            </Typography>
+            <Typography
+              variant="body2"
+              color="text.secondary"
+            >
+              ¿Desasignar{' '}
+              <strong>
+                {count} {count === 1 ? 'material' : 'materiales'}
+              </strong>
+              ? Los responsables quedarán sin material asignado.
             </Typography>
           </Stack>
-          <Stack sx={{ flexDirection: 'row', gap: 1, justifyContent: 'flex-end' }}>
-            <Button variant="secondary" size="medium" onClick={() => closeDialog()}>Cancelar</Button>
-            <Button variant="primary" size="medium" onClick={() => {
-              unassignMaterials(ids);
-              invalidate();
-              setSelected(new Set());
-              closeDialog();
-            }}>
+          <Stack
+            sx={{ flexDirection: 'row', gap: 1, justifyContent: 'flex-end' }}
+          >
+            <Button
+              variant="secondary"
+              size="medium"
+              onClick={() => closeDialog()}
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="primary"
+              size="medium"
+              onClick={() => {
+                unassignMaterials(ids);
+                invalidate();
+                setSelected(new Set());
+                closeDialog();
+              }}
+            >
               Desasignar
             </Button>
           </Stack>
@@ -119,13 +153,33 @@ const MaterialsTable = ({ materials, selectable = false }: MaterialsTableProps) 
       content: (
         <Stack sx={{ p: 3, gap: 3, maxWidth: 440 }}>
           <Stack sx={{ gap: 1 }}>
-            <Typography variant="h6" fontWeight={600}>Eliminar materiales</Typography>
-            <Typography variant="body2" color="text.secondary">
-              ¿Eliminar <strong>{count} {count === 1 ? 'material' : 'materiales'}</strong>? Esta acción no se puede deshacer.
+            <Typography
+              variant="h6"
+              fontWeight={600}
+            >
+              Eliminar materiales
+            </Typography>
+            <Typography
+              variant="body2"
+              color="text.secondary"
+            >
+              ¿Eliminar{' '}
+              <strong>
+                {count} {count === 1 ? 'material' : 'materiales'}
+              </strong>
+              ? Esta acción no se puede deshacer.
             </Typography>
           </Stack>
-          <Stack sx={{ flexDirection: 'row', gap: 1, justifyContent: 'flex-end' }}>
-            <Button variant="secondary" size="medium" onClick={() => closeDialog()}>Cancelar</Button>
+          <Stack
+            sx={{ flexDirection: 'row', gap: 1, justifyContent: 'flex-end' }}
+          >
+            <Button
+              variant="secondary"
+              size="medium"
+              onClick={() => closeDialog()}
+            >
+              Cancelar
+            </Button>
             <Button
               variant="primary"
               size="medium"
@@ -135,7 +189,10 @@ const MaterialsTable = ({ materials, selectable = false }: MaterialsTableProps) 
                 setSelected(new Set());
                 closeDialog();
               }}
-              sx={{ bgcolor: 'error.main', '&:hover': { bgcolor: 'error.dark' } }}
+              sx={{
+                bgcolor: 'error.main',
+                '&:hover': { bgcolor: 'error.dark' },
+              }}
             >
               Eliminar
             </Button>
@@ -166,17 +223,34 @@ const MaterialsTable = ({ materials, selectable = false }: MaterialsTableProps) 
             color: 'primary.contrastText',
           }}
         >
-          <Typography variant="body2" fontWeight={600} sx={{ color: 'inherit' }}>
-            {selectedCount} {selectedCount === 1 ? 'material seleccionado' : 'materiales seleccionados'}
+          <Typography
+            variant="body2"
+            fontWeight={600}
+            sx={{ color: 'inherit' }}
+          >
+            {selectedCount}{' '}
+            {selectedCount === 1
+              ? 'material seleccionado'
+              : 'materiales seleccionados'}
           </Typography>
-          <Stack sx={{ flexDirection: 'row', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
+          <Stack
+            sx={{
+              flexDirection: 'row',
+              gap: 1,
+              alignItems: 'center',
+              flexWrap: 'wrap',
+            }}
+          >
             {hasAssignedSelected && (
               <Button
                 variant="secondary"
                 size="small"
                 startIcon={<IconUserX size={16} />}
                 onClick={handleUnassign}
-                sx={{ color: 'primary.contrastText', borderColor: 'primary.contrastText' }}
+                sx={{
+                  color: 'primary.contrastText',
+                  borderColor: 'primary.contrastText',
+                }}
               >
                 Desasignar
               </Button>
@@ -186,7 +260,10 @@ const MaterialsTable = ({ materials, selectable = false }: MaterialsTableProps) 
               size="small"
               startIcon={<IconTrash size={16} />}
               onClick={handleDelete}
-              sx={{ color: 'primary.contrastText', borderColor: 'primary.contrastText' }}
+              sx={{
+                color: 'primary.contrastText',
+                borderColor: 'primary.contrastText',
+              }}
             >
               Eliminar
             </Button>
@@ -207,7 +284,10 @@ const MaterialsTable = ({ materials, selectable = false }: MaterialsTableProps) 
           <TableHead>
             <TableRow headerRow>
               {selectable && (
-                <TableCell headerCell sx={{ width: 48, pr: 0 }}>
+                <TableCell
+                  headerCell
+                  sx={{ width: 48, pr: 0 }}
+                >
                   <Checkbox
                     size="small"
                     checked={allOnPageSelected}
@@ -252,7 +332,11 @@ const MaterialsTable = ({ materials, selectable = false }: MaterialsTableProps) 
                   <TableCell>{TIPO_LABEL[material.tipo]}</TableCell>
                   <TableCell>{material.detalle || '—'}</TableCell>
                   <TableCell>
-                    <Pills label={estado.label} type={estado.type} size="small" />
+                    <Pills
+                      label={estado.label}
+                      type={estado.type}
+                      size="small"
+                    />
                   </TableCell>
                   <TableCell>{DUEÑO_LABEL[material.dueño]}</TableCell>
                   <TableCell>{material.osc || '—'}</TableCell>
@@ -277,6 +361,20 @@ const MaterialsTable = ({ materials, selectable = false }: MaterialsTableProps) 
           setPage(1);
         }}
       />
+
+      <Snackbar
+        open={snackbar.open}
+        onClose={() => setSnackbar(s => ({ ...s, open: false }))}
+        autoHideDuration={3000}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert
+          severity="success"
+          onClose={() => setSnackbar(s => ({ ...s, open: false }))}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Stack>
   );
 };

@@ -37,10 +37,16 @@ export type ReportFilters = {
 const esMismoMes = (fecha: string): boolean => {
   const d = new Date(fecha);
   const now = new Date();
-  return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+  return (
+    d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth()
+  );
 };
 
-const isWithinDateRange = (fecha: string, start?: string, end?: string): boolean => {
+const isWithinDateRange = (
+  fecha: string,
+  start?: string,
+  end?: string,
+): boolean => {
   if (!start && !end) return true;
   const d = new Date(fecha);
   if (start && d < new Date(start)) return false;
@@ -67,7 +73,9 @@ export const getMaterialStats = (filters?: ReportFilters): MaterialStats => {
   };
 };
 
-export const getConfirmacionStats = (filters?: ReportFilters): ConfirmacionStats => {
+export const getConfirmacionStats = (
+  filters?: ReportFilters,
+): ConfirmacionStats => {
   let enUso = getAllMaterials().filter(m => m.estado === 'en_uso');
 
   if (filters?.ubicacion) {
@@ -77,7 +85,9 @@ export const getConfirmacionStats = (filters?: ReportFilters): ConfirmacionStats
   let confirmaciones = getAllConfirmaciones().filter(c => esMismoMes(c.fecha));
 
   if (filters?.dateStart || filters?.dateEnd) {
-    confirmaciones = confirmaciones.filter(c => isWithinDateRange(c.fecha, filters.dateStart, filters.dateEnd));
+    confirmaciones = confirmaciones.filter(c =>
+      isWithinDateRange(c.fecha, filters.dateStart, filters.dateEnd),
+    );
   }
 
   const confirmadosIds = new Set(confirmaciones.map(c => c.materialId));
@@ -95,7 +105,9 @@ export const getSolicitudStats = (filters?: ReportFilters): SolicitudStats => {
   let s = getAllSolicitudes();
 
   if (filters?.dateStart || filters?.dateEnd) {
-    s = s.filter(x => isWithinDateRange(x.fecha, filters.dateStart, filters.dateEnd));
+    s = s.filter(x =>
+      isWithinDateRange(x.fecha, filters.dateStart, filters.dateEnd),
+    );
   }
 
   return {
@@ -123,7 +135,9 @@ export const getMaterialsByOsc = (filters?: ReportFilters): BreakdownItem[] => {
     .slice(0, 10);
 };
 
-export const getMaterialsByPlaza = (filters?: ReportFilters): BreakdownItem[] => {
+export const getMaterialsByPlaza = (
+  filters?: ReportFilters,
+): BreakdownItem[] => {
   let materials = getAllMaterials().filter(m => m.estado === 'en_uso');
 
   if (filters?.estado) {

@@ -48,13 +48,19 @@ const TeamConfirmationsList = () => {
     queryFn: () => {
       if (isAdmin) {
         const materials = getAllMaterials();
-        return getAllConfirmaciones().map(c => {
-          const m = materials.find(mat => mat.id === c.materialId);
-          return {
-            ...c,
-            materialLabel: m ? `${m.tipo} · ${m.detalle || '—'}` : c.materialId,
-          } as ConfirmacionConMaterial;
-        }).sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime());
+        return getAllConfirmaciones()
+          .map(c => {
+            const m = materials.find(mat => mat.id === c.materialId);
+            return {
+              ...c,
+              materialLabel: m
+                ? `${m.tipo} · ${m.detalle || '—'}`
+                : c.materialId,
+            } as ConfirmacionConMaterial;
+          })
+          .sort(
+            (a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime(),
+          );
       }
       return getConfirmacionesEquipo(team.map(t => t.nombre));
     },
@@ -63,22 +69,40 @@ const TeamConfirmationsList = () => {
 
   const isLoading = loadingTeam || loadingConf;
 
-  if (isLoading) return <DashboardLayout><div /></DashboardLayout>;
+  if (isLoading)
+    return (
+      <DashboardLayout>
+        <div />
+      </DashboardLayout>
+    );
 
   const handleVerFoto = (conf: ConfirmacionConMaterial) => {
     if (!conf.fotoBase64) return;
     openDialog({
       content: (
         <Stack sx={{ p: 3, gap: 2, maxWidth: 540 }}>
-          <Typography variant="h6" sx={{ fontWeight: 600 }}>Foto de confirmación</Typography>
-          <Typography variant="body2" color="text.secondary">
+          <Typography
+            variant="h6"
+            sx={{ fontWeight: 600 }}
+          >
+            Foto de confirmación
+          </Typography>
+          <Typography
+            variant="body2"
+            color="text.secondary"
+          >
             {conf.responsableNombre} · {conf.materialLabel}
           </Typography>
           <Box
             component="img"
             src={conf.fotoBase64}
             alt="confirmación"
-            sx={{ width: '100%', maxHeight: 400, objectFit: 'contain', borderRadius: 1 }}
+            sx={{
+              width: '100%',
+              maxHeight: 400,
+              objectFit: 'contain',
+              borderRadius: 1,
+            }}
           />
           {conf.nota && (
             <Typography variant="body2">
@@ -98,7 +122,11 @@ const TeamConfirmationsList = () => {
   return (
     <DashboardLayout>
       <Stack sx={{ gap: 3 }}>
-        <Title title={title} description={description} variant="L" />
+        <Title
+          title={title}
+          description={description}
+          variant="L"
+        />
 
         {confirmaciones.length === 0 ? (
           <StateCard
@@ -134,7 +162,10 @@ const TeamConfirmationsList = () => {
                       </Typography>
                     </TableCell>
                     <TableCell>
-                      <Typography variant="caption" color="text.secondary">
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                      >
                         {conf.nota || '—'}
                       </Typography>
                     </TableCell>
@@ -148,7 +179,12 @@ const TeamConfirmationsList = () => {
                           onClick={() => handleVerFoto(conf)}
                         />
                       ) : (
-                        <Typography variant="caption" color="text.disabled">Sin foto</Typography>
+                        <Typography
+                          variant="caption"
+                          color="text.disabled"
+                        >
+                          Sin foto
+                        </Typography>
                       )}
                     </TableCell>
                   </TableRow>

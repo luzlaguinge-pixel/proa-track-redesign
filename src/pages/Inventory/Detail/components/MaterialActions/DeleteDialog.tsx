@@ -13,20 +13,33 @@ type DeleteDialogProps = {
 };
 
 const DeleteDialog = ({ material, onClose, onConfirm }: DeleteDialogProps) => {
-  const label = TIPO_LABEL[material.tipo] + (material.detalle ? ` · ${material.detalle}` : '');
+  const label =
+    TIPO_LABEL[material.tipo] +
+    (material.detalle ? ` · ${material.detalle}` : '');
 
   return (
     <Stack sx={{ p: 3, gap: 3, maxWidth: 440 }}>
       <Stack sx={{ gap: 1 }}>
-        <Typography variant="h6" fontWeight={600}>
+        <Typography
+          variant="h6"
+          fontWeight={600}
+        >
           Eliminar material
         </Typography>
-        <Typography variant="body2" color="text.secondary">
-          ¿Seguro que querés eliminar <strong>{label}</strong>? Esta acción no se puede deshacer.
+        <Typography
+          variant="body2"
+          color="text.secondary"
+        >
+          ¿Seguro que querés eliminar <strong>{label}</strong>? Esta acción no
+          se puede deshacer.
         </Typography>
       </Stack>
       <Stack sx={{ flexDirection: 'row', gap: 1, justifyContent: 'flex-end' }}>
-        <Button variant="secondary" size="medium" onClick={onClose}>
+        <Button
+          variant="secondary"
+          size="medium"
+          onClick={onClose}
+        >
           Cancelar
         </Button>
         <Button

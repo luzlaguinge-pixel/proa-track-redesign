@@ -29,5 +29,11 @@ export const useTeamInventory = () => {
     );
   }, [materials, search]);
 
-  return { materials: filtered, total: materials.length, isLoading, search, setSearch };
+  return {
+    materials: filtered,
+    total: materials.length,
+    isLoading,
+    search,
+    setSearch,
+  };
 };

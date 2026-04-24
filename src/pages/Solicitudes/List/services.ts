@@ -9,10 +9,15 @@ const rawPersons = (db as { persons: RawPerson[] }).persons;
 
 export type SolicitudConLabel = Solicitud & { materialLabel: string };
 
-export const getSolicitudesPendientes = (teamNombres: string[]): SolicitudConLabel[] => {
+export const getSolicitudesPendientes = (
+  teamNombres: string[],
+): SolicitudConLabel[] => {
   const materials = getAllMaterials();
   return getAllSolicitudes()
-    .filter(s => s.estado === 'pendiente' && teamNombres.includes(s.solicitanteNombre))
+    .filter(
+      s =>
+        s.estado === 'pendiente' && teamNombres.includes(s.solicitanteNombre),
+    )
     .map(s => {
       const m = materials.find(mat => mat.id === s.materialId);
       return {
@@ -36,11 +41,16 @@ export const getAllSolicitudesAdmin = (): SolicitudConLabel[] => {
     .sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime());
 };
 
-export const aprobarSolicitud = (id: string, resolverPorNombre: string): Solicitud | null => {
+export const aprobarSolicitud = (
+  id: string,
+  resolverPorNombre: string,
+): Solicitud | null => {
   const solicitud = getAllSolicitudes().find(s => s.id === id);
   if (!solicitud) return null;
 
-  const destinatario = rawPersons.find(p => p.nombre === solicitud.destinatarioNombre);
+  const destinatario = rawPersons.find(
+    p => p.nombre === solicitud.destinatarioNombre,
+  );
 
   updateMaterial(solicitud.materialId, current => ({
     ...current,

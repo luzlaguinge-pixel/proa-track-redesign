@@ -1,4 +1,11 @@
-import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+  type ReactNode,
+} from 'react';
 
 type NotificationContextType = {
   permission: NotificationPermission | null;
@@ -9,10 +16,14 @@ type NotificationContextType = {
   unsubscribe: () => Promise<void>;
 };
 
-const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
+const NotificationContext = createContext<NotificationContextType | undefined>(
+  undefined,
+);
 
 export const NotificationProvider = ({ children }: { children: ReactNode }) => {
-  const [permission, setPermission] = useState<NotificationPermission | null>(null);
+  const [permission, setPermission] = useState<NotificationPermission | null>(
+    null,
+  );
   const [isSubscribed, setIsSubscribed] = useState(false);
 
   const isSupported = 'Notification' in window && 'serviceWorker' in navigator;
@@ -115,7 +126,9 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
 export const useNotificationPermission = () => {
   const context = useContext(NotificationContext);
   if (!context) {
-    throw new Error('useNotificationPermission must be used within NotificationProvider');
+    throw new Error(
+      'useNotificationPermission must be used within NotificationProvider',
+    );
   }
   return context;
 };

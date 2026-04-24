@@ -28,5 +28,11 @@ export const useMyTeam = () => {
     );
   }, [members, search]);
 
-  return { members: filtered, total: members.length, isLoading, search, setSearch };
+  return {
+    members: filtered,
+    total: members.length,
+    isLoading,
+    search,
+    setSearch,
+  };
 };

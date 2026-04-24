@@ -1,6 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { IconArrowsExchange, IconCheck, IconX } from '@material-hu/icons/tabler';
+import {
+  IconArrowsExchange,
+  IconCheck,
+  IconX,
+} from '@material-hu/icons/tabler';
 import Stack from '@material-hu/mui/Stack';
 import Typography from '@material-hu/mui/Typography';
 
@@ -71,7 +75,12 @@ const SolicitudesList = () => {
     onSuccess: invalidate,
   });
 
-  if (isLoading) return <DashboardLayout><div /></DashboardLayout>;
+  if (isLoading)
+    return (
+      <DashboardLayout>
+        <div />
+      </DashboardLayout>
+    );
 
   const pendientes = solicitudes.filter(s => s.estado === 'pendiente');
   const resueltas = solicitudes.filter(s => s.estado !== 'pendiente');
@@ -79,14 +88,26 @@ const SolicitudesList = () => {
   return (
     <DashboardLayout>
       <Stack sx={{ gap: 3 }}>
-        <Stack sx={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 2 }}>
+        <Stack
+          sx={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'flex-start',
+            flexWrap: 'wrap',
+            gap: 2,
+          }}
+        >
           <Title
             title="Solicitudes"
             description="Movimientos de materiales pendientes de aprobación."
             variant="L"
           />
           {pendientes.length > 0 && (
-            <Pills label={`${pendientes.length} pendiente${pendientes.length > 1 ? 's' : ''}`} type="warning" size="small" />
+            <Pills
+              label={`${pendientes.length} pendiente${pendientes.length > 1 ? 's' : ''}`}
+              type="warning"
+              size="small"
+            />
           )}
         </Stack>
 
@@ -95,7 +116,8 @@ const SolicitudesList = () => {
             slotProps={{
               title: {
                 title: 'Sin solicitudes',
-                description: 'Las solicitudes de movimiento de materiales aparecerán acá.',
+                description:
+                  'Las solicitudes de movimiento de materiales aparecerán acá.',
                 variant: 'M',
               },
               avatar: { Icon: IconArrowsExchange, color: 'default' },
@@ -105,7 +127,10 @@ const SolicitudesList = () => {
           <Stack sx={{ gap: 3 }}>
             {pendientes.length > 0 && (
               <Stack sx={{ gap: 1.5 }}>
-                <Typography variant="subtitle2" color="text.secondary">
+                <Typography
+                  variant="subtitle2"
+                  color="text.secondary"
+                >
                   Pendientes ({pendientes.length})
                 </Typography>
                 <SolicitudesTable
@@ -113,17 +138,25 @@ const SolicitudesList = () => {
                   showActions
                   onAprobar={id => aprobar.mutate(id)}
                   onRechazar={id => rechazar.mutate(id)}
-                  loadingId={aprobar.isPending || rechazar.isPending ? 'loading' : null}
+                  loadingId={
+                    aprobar.isPending || rechazar.isPending ? 'loading' : null
+                  }
                 />
               </Stack>
             )}
 
             {resueltas.length > 0 && (
               <Stack sx={{ gap: 1.5 }}>
-                <Typography variant="subtitle2" color="text.secondary">
+                <Typography
+                  variant="subtitle2"
+                  color="text.secondary"
+                >
                   Historial ({resueltas.length})
                 </Typography>
-                <SolicitudesTable rows={resueltas} showActions={false} />
+                <SolicitudesTable
+                  rows={resueltas}
+                  showActions={false}
+                />
               </Stack>
             )}
           </Stack>
@@ -145,7 +178,12 @@ type TableProps = {
   loadingId?: string | null;
 };
 
-const SolicitudesTable = ({ rows, showActions, onAprobar, onRechazar }: TableProps) => (
+const SolicitudesTable = ({
+  rows,
+  showActions,
+  onAprobar,
+  onRechazar,
+}: TableProps) => (
   <TableContainer sx={{ overflowX: 'auto' }}>
     <Table sx={{ minWidth: 800 }}>
       <TableHead>
@@ -168,7 +206,10 @@ const SolicitudesTable = ({ rows, showActions, onAprobar, onRechazar }: TablePro
               <TableCell>{s.materialLabel}</TableCell>
               <TableCell>{s.destinatarioNombre}</TableCell>
               <TableCell>
-                <Typography variant="caption" color="text.secondary">
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                >
                   {s.descripcion || '—'}
                 </Typography>
               </TableCell>
@@ -178,7 +219,11 @@ const SolicitudesTable = ({ rows, showActions, onAprobar, onRechazar }: TablePro
                 </Typography>
               </TableCell>
               <TableCell>
-                <Pills label={estadoConf.label} type={estadoConf.type} size="small" />
+                <Pills
+                  label={estadoConf.label}
+                  type={estadoConf.type}
+                  size="small"
+                />
               </TableCell>
               {showActions && (
                 <TableCell>

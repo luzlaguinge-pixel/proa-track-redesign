@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 
 import db from '../../../../../../mock/db.json';
+import { useAuth } from '../../../../../providers/AuthContext';
 
 import {
   IconAlertTriangle,
@@ -28,11 +29,11 @@ import { useMaterialMutations } from '../../../../Inventory/Detail/hooks/useMate
 import { type Material } from '../../../../Inventory/List/types';
 import { confirmarTenencia } from '../../../../Confirmation/List/services';
 import { createSolicitud } from '../../../../Solicitudes/store';
-import { DEMO_CAPTADOR_NOMBRE } from '../../services';
 
 type Props = { material: Material };
 
 const MaterialRowActions = ({ material }: Props) => {
+  const { user } = useAuth();
   const { openMenu } = useMenuLayer();
   const { openDialog, closeDialog } = useDialogLayer();
   const { openDrawer, closeDrawer } = useDrawerLayer();
@@ -55,7 +56,9 @@ const MaterialRowActions = ({ material }: Props) => {
                   onSubmit={async (nota, fotoBase64) => {
                     await confirmarTenencia({
                       materialId: material.id,
-                      responsableNombre: DEMO_CAPTADOR_NOMBRE,
+                      responsableNombre: user
+                        ? `${user.firstName} ${user.lastName}`
+                        : '',
                       nota,
                       fotoBase64,
                     });
@@ -116,7 +119,9 @@ const MaterialRowActions = ({ material }: Props) => {
                     createSolicitud({
                       materialId: material.id,
                       materialLabel: `${material.tipo}${material.detalle ? ` · ${material.detalle}` : ''}`,
-                      solicitanteNombre: DEMO_CAPTADOR_NOMBRE,
+                      solicitanteNombre: user
+                        ? `${user.firstName} ${user.lastName}`
+                        : '',
                       destinatarioNombre,
                       descripcion: motivo,
                       fecha: new Date().toISOString(),
@@ -133,7 +138,11 @@ const MaterialRowActions = ({ material }: Props) => {
   };
 
   return (
-    <IconButton size="small" onClick={handleMenuClick} aria-label="Acciones">
+    <IconButton
+      size="small"
+      onClick={handleMenuClick}
+      aria-label="Acciones"
+    >
       <IconDotsVertical size={18} />
     </IconButton>
   );
@@ -171,10 +180,16 @@ const ReportarDialog = ({
   return (
     <Stack sx={{ p: 3, gap: 3, minWidth: 360, maxWidth: 480 }}>
       <Stack sx={{ gap: 1 }}>
-        <Typography variant="h6" sx={{ fontWeight: 600 }}>
+        <Typography
+          variant="h6"
+          sx={{ fontWeight: 600 }}
+        >
           {titulo}
         </Typography>
-        <Typography variant="body2" color="text.secondary">
+        <Typography
+          variant="body2"
+          color="text.secondary"
+        >
           {descripcion}
         </Typography>
       </Stack>
@@ -189,7 +204,12 @@ const ReportarDialog = ({
         fullWidth
       />
       <Stack sx={{ flexDirection: 'row', gap: 1, justifyContent: 'flex-end' }}>
-        <Button variant="tertiary" size="medium" onClick={onClose} disabled={loading}>
+        <Button
+          variant="tertiary"
+          size="medium"
+          onClick={onClose}
+          disabled={loading}
+        >
           Cancelar
         </Button>
         <Button
@@ -207,10 +227,11 @@ const ReportarDialog = ({
 
 // ─── Reportar movimiento ──────────────────────────────────────────────────────
 
-type RawPerson = { id: string; nombre: string };
-const allPersonOptions = ((db as { persons: RawPerson[] }).persons).map(p => ({
+type RawPerson = { id: string; nombre: string; dni?: string };
+const allPersonOptions = (db as { persons: RawPerson[] }).persons.map(p => ({
   label: p.nombre,
   value: p.id,
+  description: p.dni ? `DNI ${p.dni}` : undefined,
 }));
 
 type ReportarMovimientoDialogProps = {
@@ -218,7 +239,10 @@ type ReportarMovimientoDialogProps = {
   onSubmit: (destinatarioNombre: string, motivo: string) => Promise<void>;
 };
 
-const ReportarMovimientoDialog = ({ onClose, onSubmit }: ReportarMovimientoDialogProps) => {
+const ReportarMovimientoDialog = ({
+  onClose,
+  onSubmit,
+}: ReportarMovimientoDialogProps) => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [inputValue, setInputValue] = useState('');
   const [motivo, setMotivo] = useState('');
@@ -226,13 +250,23 @@ const ReportarMovimientoDialog = ({ onClose, onSubmit }: ReportarMovimientoDialo
   const [personError, setPersonError] = useState(false);
 
   const options = inputValue.trim()
-    ? allPersonOptions.filter(o => o.label.toLowerCase().includes(inputValue.toLowerCase())).slice(0, 50)
-    : allPersonOptions.slice(0, 50);
+    ? allPersonOptions.filter(
+        o =>
+          o.label.toLowerCase().includes(inputValue.toLowerCase().trim()) ||
+          (o.description ?? '')
+            .toLowerCase()
+            .includes(inputValue.toLowerCase().trim()),
+      )
+    : allPersonOptions;
 
-  const selectedOption = allPersonOptions.find(o => o.value === selectedId) ?? null;
+  const selectedOption =
+    allPersonOptions.find(o => o.value === selectedId) ?? null;
 
   const handleSubmit = async () => {
-    if (!selectedId) { setPersonError(true); return; }
+    if (!selectedId) {
+      setPersonError(true);
+      return;
+    }
     setLoading(true);
     try {
       await onSubmit(selectedOption?.label ?? selectedId, motivo);
@@ -257,8 +291,12 @@ const ReportarMovimientoDialog = ({ onClose, onSubmit }: ReportarMovimientoDialo
       }}
     >
       <Stack sx={{ gap: 3 }}>
-        <Typography variant="body2" color="text.secondary">
-          Indicá a quién le entregaste el material y el motivo. Un coordinador/a regional o admin deberá aprobarlo.
+        <Typography
+          variant="body2"
+          color="text.secondary"
+        >
+          Indicá a quién le entregaste el material y el motivo. Un coordinador/a
+          regional o admin deberá aprobarlo.
         </Typography>
         <Autocomplete
           label="Destinatario"
@@ -267,9 +305,11 @@ const ReportarMovimientoDialog = ({ onClose, onSubmit }: ReportarMovimientoDialo
           value={selectedOption}
           inputValue={inputValue}
           onInputChange={(_e, val) => setInputValue(val)}
-          isServerFiltered
+          onChange={val => {
+            setSelectedId(val ? String(val.value) : null);
+            setPersonError(false);
+          }}
           virtualized
-          onChange={val => { setSelectedId(val ? String(val.value) : null); setPersonError(false); }}
           hasError={personError}
           helperText={personError ? 'Seleccioná una persona' : undefined}
         />
@@ -326,11 +366,19 @@ const ConfirmarTenenciaDialog = ({
   return (
     <Stack sx={{ p: 3, gap: 3, minWidth: 360, maxWidth: 480 }}>
       <Stack sx={{ gap: 0.5 }}>
-        <Typography variant="h6" sx={{ fontWeight: 600 }}>
+        <Typography
+          variant="h6"
+          sx={{ fontWeight: 600 }}
+        >
           Confirmar tenencia
         </Typography>
-        <Typography variant="body2" color="text.secondary">
-          {material.tipo}{material.detalle ? ` · ${material.detalle}` : ''} — confirmás que lo tenés en tu poder.
+        <Typography
+          variant="body2"
+          color="text.secondary"
+        >
+          {material.tipo}
+          {material.detalle ? ` · ${material.detalle}` : ''} — confirmás que lo
+          tenés en tu poder.
         </Typography>
       </Stack>
       <InputClassic
@@ -344,19 +392,36 @@ const ConfirmarTenenciaDialog = ({
         fullWidth
       />
       <Stack sx={{ gap: 1 }}>
-        <Typography variant="body2" sx={{ fontWeight: 500 }}>Foto del material</Typography>
+        <Typography
+          variant="body2"
+          sx={{ fontWeight: 500 }}
+        >
+          Foto del material
+        </Typography>
         {foto ? (
           <Stack sx={{ position: 'relative', alignSelf: 'flex-start' }}>
             <Box
               component="img"
               src={foto}
               alt="foto"
-              sx={{ width: 200, height: 140, objectFit: 'cover', borderRadius: 1, border: '1px solid', borderColor: 'divider' }}
+              sx={{
+                width: 200,
+                height: 140,
+                objectFit: 'cover',
+                borderRadius: 1,
+                border: '1px solid',
+                borderColor: 'divider',
+              }}
             />
             <IconButton
               size="small"
               onClick={() => setFoto(null)}
-              sx={{ position: 'absolute', top: 4, right: 4, bgcolor: 'background.paper' }}
+              sx={{
+                position: 'absolute',
+                top: 4,
+                right: 4,
+                bgcolor: 'background.paper',
+              }}
             >
               <IconX size={14} />
             </IconButton>
@@ -372,13 +437,30 @@ const ConfirmarTenenciaDialog = ({
             Subir foto
           </Button>
         )}
-        <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleFile} />
+        <input
+          ref={fileRef}
+          type="file"
+          accept="image/*"
+          style={{ display: 'none' }}
+          onChange={handleFile}
+        />
       </Stack>
       <Stack sx={{ flexDirection: 'row', gap: 1, justifyContent: 'flex-end' }}>
-        <Button variant="tertiary" size="medium" onClick={onClose} disabled={loading}>
+        <Button
+          variant="tertiary"
+          size="medium"
+          onClick={onClose}
+          disabled={loading}
+        >
           Cancelar
         </Button>
-        <Button variant="primary" size="medium" onClick={handleSubmit} loading={loading} disabled={!foto}>
+        <Button
+          variant="primary"
+          size="medium"
+          onClick={handleSubmit}
+          loading={loading}
+          disabled={!foto}
+        >
           Confirmar
         </Button>
       </Stack>

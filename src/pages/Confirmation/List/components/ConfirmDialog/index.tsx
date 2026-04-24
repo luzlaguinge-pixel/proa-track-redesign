@@ -43,11 +43,18 @@ const ConfirmDialog = ({ material, onClose, onSubmit }: Props) => {
   return (
     <Stack sx={{ p: 3, gap: 3, minWidth: 360, maxWidth: 480 }}>
       <Stack sx={{ gap: 0.5 }}>
-        <Typography variant="h6" sx={{ fontWeight: 600 }}>
+        <Typography
+          variant="h6"
+          sx={{ fontWeight: 600 }}
+        >
           Confirmar tenencia
         </Typography>
-        <Typography variant="body2" color="text.secondary">
-          {material.tipo}{material.detalle ? ` · ${material.detalle}` : ''}
+        <Typography
+          variant="body2"
+          color="text.secondary"
+        >
+          {material.tipo}
+          {material.detalle ? ` · ${material.detalle}` : ''}
         </Typography>
       </Stack>
 
@@ -63,7 +70,10 @@ const ConfirmDialog = ({ material, onClose, onSubmit }: Props) => {
       />
 
       <Stack sx={{ gap: 1 }}>
-        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+        <Typography
+          variant="body2"
+          sx={{ fontWeight: 500 }}
+        >
           Foto del material
         </Typography>
         {foto ? (
@@ -72,12 +82,24 @@ const ConfirmDialog = ({ material, onClose, onSubmit }: Props) => {
               component="img"
               src={foto}
               alt="foto"
-              sx={{ width: 200, height: 140, objectFit: 'cover', borderRadius: 1, border: '1px solid', borderColor: 'divider' }}
+              sx={{
+                width: 200,
+                height: 140,
+                objectFit: 'cover',
+                borderRadius: 1,
+                border: '1px solid',
+                borderColor: 'divider',
+              }}
             />
             <IconButton
               size="small"
               onClick={() => setFoto(null)}
-              sx={{ position: 'absolute', top: 4, right: 4, bgcolor: 'background.paper' }}
+              sx={{
+                position: 'absolute',
+                top: 4,
+                right: 4,
+                bgcolor: 'background.paper',
+              }}
             >
               <IconX size={14} />
             </IconButton>
@@ -103,10 +125,21 @@ const ConfirmDialog = ({ material, onClose, onSubmit }: Props) => {
       </Stack>
 
       <Stack sx={{ flexDirection: 'row', gap: 1, justifyContent: 'flex-end' }}>
-        <Button variant="tertiary" size="medium" onClick={onClose} disabled={loading}>
+        <Button
+          variant="tertiary"
+          size="medium"
+          onClick={onClose}
+          disabled={loading}
+        >
           Cancelar
         </Button>
-        <Button variant="primary" size="medium" onClick={handleSubmit} loading={loading} disabled={!foto}>
+        <Button
+          variant="primary"
+          size="medium"
+          onClick={handleSubmit}
+          loading={loading}
+          disabled={!foto}
+        >
           Confirmar
         </Button>
       </Stack>

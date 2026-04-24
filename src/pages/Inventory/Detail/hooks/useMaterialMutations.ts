@@ -25,6 +25,8 @@ export const useMaterialMutations = (materialId: string) => {
 
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: materialsKeys.all() });
+    // Also invalidate my-materials queries to refresh "My materials" view
+    queryClient.invalidateQueries({ queryKey: ['my-materials'] });
   };
 
   const assign = useMutation({
