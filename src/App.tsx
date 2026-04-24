@@ -34,6 +34,7 @@ const ReportsList = lazy(() => import('./pages/Reports/List'));
 const FAQsList = lazy(() => import('./pages/FAQs/List'));
 const NotificationsList = lazy(() => import('./pages/Notifications/List'));
 const RoleManagement = lazy(() => import('./pages/Admin/Roles'));
+const DebugPage = lazy(() => import('./pages/Debug'));
 
 function ProtectedRoute({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();
@@ -201,6 +202,14 @@ const App = () => {
                             element={
                               <ProtectedRoute>
                                 <RoleManagement />
+                              </ProtectedRoute>
+                            }
+                          />
+                          <Route
+                            path="/debug"
+                            element={
+                              <ProtectedRoute>
+                                <DebugPage />
                               </ProtectedRoute>
                             }
                           />

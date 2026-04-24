@@ -22,7 +22,7 @@ const autorFrom = (user: { firstName: string; lastName: string } | null) =>
   user ? `${user.firstName} ${user.lastName}`.trim() : 'Usuario';
 
 export const usePersonMutations = (
-  person: { id: string; nombre: string } | null,
+  person: { id: string; nombre: string; email?: string } | null,
 ) => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -63,11 +63,35 @@ export const usePersonMutations = (
   const notifyAll = useMutation({
     mutationFn: async (materials: Material[]) => {
       const autor = autorFrom(user);
-      return Promise.all(
+
+      // 1. Write historial events for each material (local record)
+      await Promise.all(
         materials.map(m =>
           requestConfirmation({ materialId: m.id, kind: 'notificar', autor }),
         ),
       );
+
+      // 2. Send dual-channel notification (in-app + push) to the person
+      const personEmail = person?.email;
+      if (personEmail) {
+        const dispatcherName = autorFrom(user);
+        const dispatcherId =
+          (user as { employeeInternalId?: string } | null)?.employeeInternalId ??
+          String((user as { id?: number } | null)?.id ?? 'admin');
+
+        fetch('/api/notifications/send-custom', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userIds: [personEmail],
+            title: 'Confirmá tus materiales',
+            body: `Se te solicita confirmar la tenencia de tus ${materials.length} ${materials.length === 1 ? 'material' : 'materiales'} asignados.`,
+            url: '/my-materials',
+            dispatcherName,
+            dispatcherId,
+          }),
+        }).catch(err => console.error('[notifyAll] dispatch failed:', err));
+      }
     },
     onSuccess: invalidate,
   });
