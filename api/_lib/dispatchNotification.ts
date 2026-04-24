@@ -1,5 +1,21 @@
 import { createClient } from '@supabase/supabase-js';
 
+// ─── Push notification status ──────────────────────────────────────────────
+// TODO: Push notifications (web-push / APNs) are NOT reliably working in this
+// deployment. Multiple root causes were investigated:
+//   1. The web-push module had module-level import issues on Vercel Lambda
+//      (fixed by lazy require() below, but push delivery still unverified)
+//   2. iOS Safari requires the app to be "Added to Home Screen" as a PWA
+//      for Web Push to be delivered — plain Safari browser sessions drop
+//      all push silently
+//   3. We could not confirm end-to-end delivery without Vercel log access
+//      (403 on runtime logs due to SAML scope restrictions on the team)
+//
+// The in-app channel (Supabase INSERT → bell icon) is the PRIMARY channel
+// and MUST work reliably — see the guaranteed Step 1 below.
+// A developer with deeper PWA/push experience should revisit push later.
+// ─────────────────────────────────────────────────────────────────────────────
+
 // web-push is loaded lazily with require() so that any load-time failure
 // (native crypto bindings, bundler issue, missing key) cannot crash the module
 // or kill the in-app record creation — the two channels are fully independent.

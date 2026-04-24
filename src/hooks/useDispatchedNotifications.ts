@@ -53,14 +53,15 @@ export const DISPATCHED_NOTIFS_KEY = ['dispatched-notifications'] as const;
 
 /**
  * Fetches real server-dispatched notifications for the current user.
- * Refetches every 60 seconds and whenever the query is invalidated.
+ * Polls every 15 seconds so the bell stays near-real-time for all users.
+ * Also re-fetches immediately whenever the query is invalidated (e.g. after dispatch).
  */
 export function useDispatchedNotifications() {
   return useQuery({
     queryKey: DISPATCHED_NOTIFS_KEY,
     queryFn: fetchNotifications,
     staleTime: 0,
-    refetchInterval: 60_000,
+    refetchInterval: 15_000,
   });
 }
 

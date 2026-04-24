@@ -63,6 +63,9 @@ const RoleManagement = () => {
         nombre: `${user.firstName} ${user.lastName}`.trim(),
         dni: user.employeeInternalId,
         email: user.email,
+        telefono: '',
+        bossId: null,
+        employeeInternalId: user.employeeInternalId ?? '',
       },
       ...rawPeople,
     ];

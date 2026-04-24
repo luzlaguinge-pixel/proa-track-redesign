@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 
 import {
   IconAlertTriangle,
@@ -20,6 +21,8 @@ import { useDialogLayer } from '@material-hu/components/layers/Dialogs';
 import { useDrawerLayer } from '@material-hu/components/layers/Drawers';
 import { useMenuLayer } from '@material-hu/components/layers/Menus';
 
+import { DISPATCHED_NOTIFS_KEY } from '../../../../../hooks/useDispatchedNotifications';
+import { useAuth } from '../../../../../providers/AuthContext';
 import { type Material } from '../../../List/types';
 import { useMaterialMutations } from '../../hooks/useMaterialMutations';
 import { useGetPersons } from '../../../../People/List/hooks/useGetPersons';
@@ -37,6 +40,8 @@ type MaterialActionsProps = {
 
 const MaterialActions = ({ material }: MaterialActionsProps) => {
   const navigate = useNavigate();
+  const qc = useQueryClient();
+  const { user } = useAuth();
   const { openDrawer, closeDrawer } = useDrawerLayer();
   const { openDialog, closeDialog } = useDialogLayer();
   const { openMenu } = useMenuLayer();
@@ -64,8 +69,32 @@ const MaterialActions = ({ material }: MaterialActionsProps) => {
         observacion: input.observacion,
       });
       closeDrawer();
+
+      // Fire in-app notification to the recipient (best-effort, non-blocking)
+      const recipientEmail = (person as { email?: string }).email;
+      if (recipientEmail) {
+        const dispatcherName = user ? `${user.firstName} ${user.lastName}`.trim() : 'Admin';
+        const dispatcherId =
+          (user as { employeeInternalId?: string } | null)?.employeeInternalId ??
+          String((user as { id?: number } | null)?.id ?? 'admin');
+        const isReassign = !!material.responsableNombre;
+        fetch('/api/notifications/send-custom', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userIds: [recipientEmail],
+            title: isReassign ? 'Material reasignado' : 'Nuevo material asignado',
+            body: `Se te asignó un material. Revisá "Mis materiales" para confirmar la tenencia.`,
+            url: '/my-materials',
+            dispatcherName,
+            dispatcherId,
+          }),
+        })
+          .then(() => qc.invalidateQueries({ queryKey: DISPATCHED_NOTIFS_KEY }))
+          .catch(err => console.error('[assign] notification dispatch failed:', err));
+      }
     },
-    [persons, assign, closeDrawer],
+    [persons, assign, closeDrawer, material.responsableNombre, user, qc],
   );
 
   const handleReport = async (kind: 'perdido' | 'dañado', motivo: string) => {

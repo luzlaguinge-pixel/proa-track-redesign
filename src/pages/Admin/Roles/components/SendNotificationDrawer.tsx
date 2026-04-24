@@ -11,6 +11,7 @@ interface Person {
   nombre: string;
   dni: string;
   email?: string;
+  employeeInternalId: string;
 }
 
 interface SendNotificationDrawerProps {
@@ -35,14 +36,17 @@ export const SendNotificationDrawer = ({
   const [body, setBody] = useState('');
   const [isSending, setIsSending] = useState(false);
 
-  const handleToggleUser = (dni: string) => {
+  const handleToggleUser = (userId: string) => {
     setSelectedUserIds(prev => {
       const next = new Set(prev);
-      if (next.has(dni)) next.delete(dni);
-      else next.add(dni);
+      if (next.has(userId)) next.delete(userId);
+      else next.add(userId);
       return next;
     });
   };
+
+  const getUserId = (person: Person) =>
+    person.employeeInternalId || String(person.id);
 
   const handleSendNotification = async () => {
     if (selectedUserIds.size === 0 || !title.trim() || !body.trim()) {
@@ -158,7 +162,7 @@ export const SendNotificationDrawer = ({
             >
               {people.map(person => (
                 <Stack
-                  key={person.dni}
+                  key={person.id}
                   sx={{
                     flexDirection: 'row',
                     alignItems: 'center',
@@ -170,11 +174,11 @@ export const SendNotificationDrawer = ({
                     cursor: 'pointer',
                     '&:hover': { bgcolor: 'action.hover' },
                   }}
-                  onClick={() => handleToggleUser(person.dni)}
+                  onClick={() => handleToggleUser(getUserId(person))}
                 >
                   <Checkbox
-                    checked={selectedUserIds.has(person.dni)}
-                    onChange={() => handleToggleUser(person.dni)}
+                    checked={selectedUserIds.has(getUserId(person))}
+                    onChange={() => handleToggleUser(getUserId(person))}
                     onClick={e => e.stopPropagation()}
                   />
                   <Stack sx={{ flex: 1 }}>

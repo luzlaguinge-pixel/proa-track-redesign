@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { DISPATCHED_NOTIFS_KEY } from '../../../../hooks/useDispatchedNotifications';
 
 import { useAuth } from '../../../../providers/AuthContext';
 import {
@@ -57,7 +58,31 @@ export const usePersonMutations = (
         autor: autorFrom(user),
       });
     },
-    onSuccess: invalidate,
+    onSuccess: () => {
+      invalidate();
+      // Fire in-app notification to the person being assigned the material
+      const recipientEmail = person?.email;
+      if (recipientEmail) {
+        const dispatcherName = autorFrom(user);
+        const dispatcherId =
+          (user as { employeeInternalId?: string } | null)?.employeeInternalId ??
+          String((user as { id?: number } | null)?.id ?? 'admin');
+        fetch('/api/notifications/send-custom', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userIds: [recipientEmail],
+            title: 'Nuevo material asignado',
+            body: 'Se te asignó un material. Revisá "Mis materiales" para confirmar la tenencia.',
+            url: '/my-materials',
+            dispatcherName,
+            dispatcherId,
+          }),
+        })
+          .then(() => queryClient.invalidateQueries({ queryKey: DISPATCHED_NOTIFS_KEY }))
+          .catch(err => console.error('[assignNew] notification dispatch failed:', err));
+      }
+    },
   });
 
   const notifyAll = useMutation({

@@ -3,11 +3,6 @@ import { createClient } from '@supabase/supabase-js';
 
 import { requireUser } from '../_lib/session';
 
-const supabase = createClient(
-  process.env.VITE_SUPABASE_URL!,
-  process.env.VITE_SUPABASE_ANON_KEY!,
-);
-
 /**
  * POST /api/notifications/mark-read
  * Body: { ids?: string[] }
@@ -23,6 +18,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
+  const url = process.env.VITE_SUPABASE_URL;
+  const key = process.env.VITE_SUPABASE_ANON_KEY;
+  if (!url || !key) {
+    console.error('[mark-read] Supabase env vars not configured');
+    return res.status(500).json({ error: 'Supabase not configured' });
+  }
+
+  const supabase = createClient(url, key);
   const userId = user.employeeInternalId || String(user.id);
   const { ids } = (req.body ?? {}) as { ids?: string[] };
 
