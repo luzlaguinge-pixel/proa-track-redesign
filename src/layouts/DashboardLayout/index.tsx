@@ -42,6 +42,7 @@ import {
   getNotificacionesCaptador,
   getNotificacionesLiderAdmin,
 } from '../../pages/Notifications/List/services';
+import { useDispatchedNotifications } from '../../hooks/useDispatchedNotifications';
 import NotificationPermissionBanner from '../../pages/Notifications/components/NotificationPermissionBanner';
 
 const PERFIL_LABEL: Record<Perfil, string> = {
@@ -195,7 +196,8 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const displayName = user ? `${user.firstName} ${user.lastName}`.trim() : '';
   const profileBadge = PERFIL_LABEL[perfil];
 
-  const { data: notifs = [] } = useQuery({
+  // Local workflow alerts (computed from material state)
+  const { data: localNotifs = [] } = useQuery({
     queryKey: ['notificaciones-layout', perfil, displayName],
     queryFn: () =>
       perfil === 'navegante'
@@ -203,7 +205,11 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         : getNotificacionesLiderAdmin([]),
     enabled: !!displayName,
   });
-  const unreadCount = notifs.filter(n => !n.leida).length;
+  // Server-dispatched notifications (real, from DB)
+  const { data: dispatched = [] } = useDispatchedNotifications();
+  const unreadCount =
+    localNotifs.filter((n) => !n.leida).length +
+    dispatched.filter((n) => !n.isRead).length;
 
   const handleOpenNotifications = (
     event: React.MouseEvent<HTMLButtonElement>,

@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 
@@ -18,6 +17,11 @@ import Stack from '@material-hu/mui/Stack';
 import Typography from '@material-hu/mui/Typography';
 
 import { useProfile } from '../../../providers/ProfileContext';
+import { useAuth } from '../../../providers/AuthContext';
+import {
+  useDispatchedNotifications,
+  useMarkNotificationsRead,
+} from '../../../hooks/useDispatchedNotifications';
 import { markAllRead, markRead } from '../store';
 import {
   type Notificacion,
@@ -25,39 +29,25 @@ import {
   getNotificacionesLiderAdmin,
 } from '../List/services';
 
-const DEMO_CAPTADOR_NOMBRE = 'Ana García';
-const DEMO_LIDER_NOMBRE = 'Carlos López';
-const DEMO_TEAM_NOMBRES = [
-  'Ana García',
-  'María Rodríguez',
-  'Luis Martínez',
-  'Pablo Fernández',
-  'Sofía Torres',
-];
-
 const SEVERITY_CONFIG = {
   info: {
     icon: <IconInfoCircle size={18} />,
     color: 'info.main' as const,
-    bgColor: 'info.50',
     label: 'Info',
   },
   warning: {
     icon: <IconAlertTriangle size={18} />,
     color: 'warning.main' as const,
-    bgColor: 'warning.50',
     label: 'Aviso',
   },
   error: {
     icon: <IconX size={18} />,
     color: 'error.main' as const,
-    bgColor: 'error.50',
     label: 'Urgente',
   },
   success: {
     icon: <IconCircleCheck size={18} />,
     color: 'success.main' as const,
-    bgColor: 'success.50',
     label: 'Ok',
   },
 };
@@ -82,12 +72,8 @@ const NotifCardCompact = ({
   const navigate = useNavigate();
 
   const handleClick = () => {
-    if (!notif.leida) {
-      onRead(notif.id);
-    }
-    if (notif.navigationPath) {
-      navigate(notif.navigationPath);
-    }
+    if (!notif.leida) onRead(notif.id);
+    if (notif.navigationPath) navigate(notif.navigationPath);
   };
 
   return (
@@ -100,98 +86,87 @@ const NotifCardCompact = ({
         borderLeftColor: notif.leida ? 'divider' : cfg.color,
         opacity: notif.leida ? 0.65 : 1,
         transition: 'opacity 0.2s',
-        cursor: notif.navigationPath
-          ? 'pointer'
-          : notif.leida
-            ? 'default'
-            : 'pointer',
-        '&:hover':
-          notif.navigationPath || !notif.leida
-            ? { bgcolor: 'action.hover' }
-            : {},
+        cursor: notif.navigationPath || !notif.leida ? 'pointer' : 'default',
+        '&:hover': notif.navigationPath || !notif.leida ? { bgcolor: 'action.hover' } : {},
       }}
       onClick={handleClick}
     >
       <Stack sx={{ flexDirection: 'row', gap: 1, alignItems: 'flex-start' }}>
-        <Stack
-          sx={{
-            color: notif.leida ? 'text.disabled' : cfg.color,
-            mt: '1px',
-            flexShrink: 0,
-          }}
-        >
+        <Stack sx={{ color: notif.leida ? 'text.disabled' : cfg.color, mt: '1px', flexShrink: 0 }}>
           {cfg.icon}
         </Stack>
         <Stack sx={{ flex: 1, gap: 0.25, minWidth: 0 }}>
           <Typography
             variant="caption"
-            sx={{
-              fontWeight: notif.leida ? 400 : 600,
-              color: notif.leida ? 'text.secondary' : 'text.primary',
-            }}
+            sx={{ fontWeight: notif.leida ? 400 : 600, color: notif.leida ? 'text.secondary' : 'text.primary' }}
           >
             {notif.titulo}
           </Typography>
-          <Typography
-            variant="caption"
-            color="text.secondary"
-            sx={{ fontSize: '0.7rem' }}
-          >
+          <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
             {formatFecha(notif.fecha)}
           </Typography>
         </Stack>
         {!notif.leida && (
-          <Stack
-            sx={{
-              width: 6,
-              height: 6,
-              borderRadius: '50%',
-              bgcolor: cfg.color,
-              flexShrink: 0,
-              mt: '5px',
-            }}
-          />
+          <Stack sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: cfg.color, flexShrink: 0, mt: '5px' }} />
         )}
       </Stack>
     </Paper>
   );
 };
 
-export const NotificationsMenu = ({ onClose }: { onClose?: () => void }) => {
+export const NotificationsMenu = ({ onClose: _onClose }: { onClose?: () => void }) => {
   const { perfil } = useProfile();
-  const [tick, setTick] = useState(0);
+  const { user } = useAuth();
+  const displayName = user ? `${user.firstName} ${user.lastName}`.trim() : '';
 
-  const { data: notifs = [] as Notificacion[] } = useQuery({
-    queryKey: ['notificaciones', perfil, tick],
+  // ── Server-dispatched notifications (real, from DB) ──────────────────────
+  const { data: dispatched = [] } = useDispatchedNotifications();
+  const { mutate: markReadApi } = useMarkNotificationsRead();
+
+  const dispatchedNotifs: Notificacion[] = dispatched.map((n) => ({
+    id: n.id,
+    titulo: n.title,
+    descripcion: n.body,
+    fecha: n.createdAt,
+    severity: 'info' as const,
+    leida: n.isRead,
+    navigationPath: n.url !== '/' ? n.url : undefined,
+  }));
+
+  // ── Local workflow alerts (computed from material/solicitud state) ─────────
+  const { data: localNotifs = [] } = useQuery({
+    queryKey: ['notificaciones-local', perfil, displayName],
     queryFn: () =>
       perfil === 'navegante'
-        ? getNotificacionesCaptador(DEMO_CAPTADOR_NOMBRE)
-        : getNotificacionesLiderAdmin(DEMO_TEAM_NOMBRES),
+        ? getNotificacionesCaptador(displayName)
+        : getNotificacionesLiderAdmin([displayName]),
+    enabled: !!displayName,
   });
 
-  const unread = notifs.filter(n => !n.leida);
-  const read = notifs.filter(n => n.leida);
+  // Merge: server-dispatched first, then local workflow alerts
+  const notifs = [...dispatchedNotifs, ...localNotifs];
+  const unread = notifs.filter((n) => !n.leida);
+  const read = notifs.filter((n) => n.leida);
 
   const handleRead = (id: string) => {
-    markRead(id);
-    setTick(t => t + 1);
+    const isServer = dispatched.some((n) => n.id === id);
+    if (isServer) {
+      markReadApi([id]);
+    } else {
+      markRead(id);
+    }
   };
 
   const handleMarkAllRead = () => {
-    markAllRead(notifs.map(n => n.id));
-    setTick(t => t + 1);
+    const serverIds = dispatched.filter((n) => !n.isRead).map((n) => n.id);
+    const localIds = localNotifs.filter((n) => !n.leida).map((n) => n.id);
+    if (serverIds.length > 0) markReadApi(serverIds);
+    if (localIds.length > 0) markAllRead(localIds);
   };
 
   return (
     <Paper
-      sx={{
-        width: 320,
-        maxHeight: 500,
-        display: 'flex',
-        flexDirection: 'column',
-        bgcolor: 'background.paper',
-        borderRadius: 1,
-      }}
+      sx={{ width: 320, maxHeight: 500, display: 'flex', flexDirection: 'column', bgcolor: 'background.paper', borderRadius: 1 }}
       variant="outlined"
     >
       <Stack
@@ -204,10 +179,7 @@ export const NotificationsMenu = ({ onClose }: { onClose?: () => void }) => {
           borderBottomColor: 'divider',
         }}
       >
-        <Typography
-          variant="body2"
-          sx={{ fontWeight: 600 }}
-        >
+        <Typography variant="body2" sx={{ fontWeight: 600 }}>
           Notificaciones
         </Typography>
         {unread.length > 0 && (
@@ -224,23 +196,11 @@ export const NotificationsMenu = ({ onClose }: { onClose?: () => void }) => {
       </Stack>
 
       {notifs.length === 0 ? (
-        <Stack
-          sx={{
-            alignItems: 'center',
-            gap: 1.5,
-            py: 4,
-            px: 2,
-            justifyContent: 'center',
-          }}
-        >
+        <Stack sx={{ alignItems: 'center', gap: 1.5, py: 4, px: 2, justifyContent: 'center' }}>
           <Stack sx={{ color: 'text.disabled' }}>
             <IconBellOff size={32} />
           </Stack>
-          <Typography
-            variant="caption"
-            color="text.disabled"
-            sx={{ textAlign: 'center' }}
-          >
+          <Typography variant="caption" color="text.disabled" sx={{ textAlign: 'center' }}>
             Sin notificaciones
           </Typography>
         </Stack>
@@ -248,32 +208,14 @@ export const NotificationsMenu = ({ onClose }: { onClose?: () => void }) => {
         <Stack sx={{ flex: 1, overflowY: 'auto', gap: 1, p: 2 }}>
           {unread.length > 0 && (
             <Stack sx={{ gap: 1 }}>
-              <Stack
-                sx={{ flexDirection: 'row', gap: 0.5, alignItems: 'center' }}
-              >
-                <Typography
-                  variant="overline"
-                  sx={{
-                    fontWeight: 600,
-                    fontSize: '0.65rem',
-                    color: 'text.secondary',
-                  }}
-                >
+              <Stack sx={{ flexDirection: 'row', gap: 0.5, alignItems: 'center' }}>
+                <Typography variant="overline" sx={{ fontWeight: 600, fontSize: '0.65rem', color: 'text.secondary' }}>
                   Sin leer
                 </Typography>
-                <Chip
-                  label={unread.length}
-                  size="small"
-                  color="primary"
-                  sx={{ height: 16, fontSize: '0.65rem' }}
-                />
+                <Chip label={unread.length} size="small" color="primary" sx={{ height: 16, fontSize: '0.65rem' }} />
               </Stack>
-              {unread.map(n => (
-                <NotifCardCompact
-                  key={`${n.id}-${tick}`}
-                  notif={n}
-                  onRead={handleRead}
-                />
+              {unread.map((n) => (
+                <NotifCardCompact key={n.id} notif={n} onRead={handleRead} />
               ))}
             </Stack>
           )}
@@ -282,29 +224,14 @@ export const NotificationsMenu = ({ onClose }: { onClose?: () => void }) => {
 
           {read.length > 0 && (
             <Stack sx={{ gap: 1 }}>
-              <Typography
-                variant="overline"
-                sx={{
-                  fontWeight: 600,
-                  fontSize: '0.65rem',
-                  color: 'text.disabled',
-                }}
-              >
+              <Typography variant="overline" sx={{ fontWeight: 600, fontSize: '0.65rem', color: 'text.disabled' }}>
                 Leídas
               </Typography>
-              {read.slice(0, 3).map(n => (
-                <NotifCardCompact
-                  key={`${n.id}-${tick}`}
-                  notif={n}
-                  onRead={handleRead}
-                />
+              {read.slice(0, 3).map((n) => (
+                <NotifCardCompact key={n.id} notif={n} onRead={handleRead} />
               ))}
               {read.length > 3 && (
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
-                  sx={{ textAlign: 'center', py: 1 }}
-                >
+                <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'center', py: 1 }}>
                   +{read.length - 3} más
                 </Typography>
               )}

@@ -1,16 +1,11 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import webpush from 'web-push';
 import { createClient } from '@supabase/supabase-js';
 
-webpush.setVapidDetails(
-  process.env.VAPID_SUBJECT || 'mailto:admin@example.com',
-  process.env.VITE_VAPID_PUBLIC_KEY!,
-  process.env.VAPID_PRIVATE_KEY!
-);
+import { dispatchToMany } from '../_lib/dispatchNotification';
 
 const supabase = createClient(
   process.env.VITE_SUPABASE_URL!,
-  process.env.VITE_SUPABASE_ANON_KEY!
+  process.env.VITE_SUPABASE_ANON_KEY!,
 );
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -24,82 +19,69 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(400).json({ error: 'Missing required fields' });
   }
 
-  // Fetch ALL device subscriptions for the target users.
-  // Each user may have multiple rows (one per device/browser).
-  let query = supabase.from('push_subscriptions').select('*');
-  if (userIds.length > 0) {
-    query = query.in('user_id', userIds);
+  // If no specific userIds provided, target ALL users with a push subscription.
+  let targetUserIds: string[] = userIds;
+  if (targetUserIds.length === 0) {
+    const { data: subs } = await supabase
+      .from('push_subscriptions')
+      .select('user_id');
+    const seen = new Set<string>();
+    targetUserIds = (subs ?? [])
+      .filter((s) => { const dup = seen.has(s.user_id); seen.add(s.user_id); return !dup; })
+      .map((s) => s.user_id);
   }
-  const { data: subscriptions, error: fetchError } = await query;
 
-  if (fetchError) {
-    console.error('Error fetching subscriptions:', fetchError);
-    return res.status(500).json({ error: 'Failed to fetch subscriptions' });
-  }
-
-  if (!subscriptions || subscriptions.length === 0) {
-    console.log(`Monthly confirmation: no subscriptions found for userIds=${JSON.stringify(userIds)}`);
+  if (targetUserIds.length === 0) {
+    console.log('[Monthly] No recipients — no push subscriptions found');
     return res.status(200).json({
       success: true,
       sent: 0,
       failed: 0,
-      message: 'No push subscriptions found for selected users',
+      inApp: 0,
+      message: 'No recipients found',
     });
   }
 
-  const payload = JSON.stringify({
+  // Dispatch to BOTH channels for every recipient
+  const results = await dispatchToMany(targetUserIds, {
     title: 'Confirmá tus materiales',
     body: 'Es momento de confirmar la tenencia de tus materiales asignados.',
     url: '/my-materials',
   });
 
-  let sent = 0;
-  let failed = 0;
-  const failedUserIds: string[] = [];
-  const toDelete: string[] = [];
+  const inAppDelivered = results.filter((r) => r.inApp === 'delivered').length;
+  const inAppFailed = results.filter((r) => r.inApp === 'failed').length;
+  const pushSent = results.filter((r) => r.push === 'sent').length;
+  const pushFailed = results.filter((r) => r.push === 'failed').length;
+  const noSub = results.filter((r) => r.push === 'no_subscription').length;
 
-  await Promise.allSettled(
-    subscriptions.map(async (sub) => {
-      try {
-        await webpush.sendNotification(
-          { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
-          payload
-        );
-        sent++;
-        console.log(`Push sent to userId=${sub.user_id} endpoint=${sub.endpoint.slice(0, 60)}...`);
-      } catch (err: any) {
-        console.error(`Push failed for userId=${sub.user_id}: ${err.statusCode} ${err.message}`);
-        failed++;
-        failedUserIds.push(sub.user_id);
-        // 410 Gone or 404 = subscription is no longer valid, clean it up
-        if (err.statusCode === 410 || err.statusCode === 404) {
-          toDelete.push(sub.user_id);
-        }
-      }
-    })
-  );
-
-  // Remove expired subscriptions
-  if (toDelete.length > 0) {
-    await supabase.from('push_subscriptions').delete().in('user_id', toDelete);
-    console.log(`Removed ${toDelete.length} expired subscriptions`);
-  }
-
-  // Record dispatch in history
+  // Record dispatch history with per-channel counts
   await supabase.from('notification_history').insert({
     dispatcher_name: dispatcherName,
     dispatcher_id: dispatcherId,
-    user_count: userIds.length,
-    recipient_count: subscriptions.length,
-    sent_count: sent,
-    failed_count: failed,
+    user_count: targetUserIds.length,
+    recipient_count: results.length,
+    sent_count: pushSent,
+    failed_count: pushFailed,
+    in_app_count: inAppDelivered,
+    in_app_failed_count: inAppFailed,
+    no_subscription_count: noSub,
   });
 
-  console.log(`Monthly confirmation dispatch: sent=${sent} failed=${failed}`);
+  console.log(
+    `[Monthly] dispatch done: inApp=${inAppDelivered}/${targetUserIds.length} push_sent=${pushSent} push_failed=${pushFailed} no_sub=${noSub}`,
+  );
+
   return res.status(200).json({
     success: true,
-    sent,
-    failed,
-    failedUserIds: failed > 0 ? failedUserIds : undefined,
+    inApp: inAppDelivered,
+    sent: pushSent,
+    failed: pushFailed,
+    noSubscription: noSub,
+    results: results.map((r) => ({
+      userId: r.userId,
+      inApp: r.inApp,
+      push: r.push,
+    })),
   });
 }

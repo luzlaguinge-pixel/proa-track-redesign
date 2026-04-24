@@ -2,6 +2,12 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 
+import { useAuth } from '../../../providers/AuthContext';
+import {
+  useDispatchedNotifications,
+  useMarkNotificationsRead,
+} from '../../../hooks/useDispatchedNotifications';
+
 import { useDialogLayer } from '@material-hu/components/layers/Dialogs';
 import {
   IconBell,
@@ -180,6 +186,8 @@ const NotifCard = ({
 
 const NotificationsList = () => {
   const { perfil } = useProfile();
+  const { user } = useAuth();
+  const displayName = user ? `${user.firstName} ${user.lastName}`.trim() : '';
   const [tick, setTick] = useState(0);
   const [sendState, setSendState] = useState<'idle' | 'sending' | 'done' | 'error'>('idle');
   const { openDialog } = useDialogLayer();
@@ -187,25 +195,52 @@ const NotificationsList = () => {
   const { users, recipientCount, userCount, isLoading: usersLoading } =
     useUsersWithMaterials();
 
-  const { data: notifs = [] as Notificacion[] } = useQuery({
-    queryKey: ['notificaciones', perfil, tick],
+  // ── Server-dispatched notifications (real, from DB) ──────────────────────
+  const { data: dispatched = [] } = useDispatchedNotifications();
+  const { mutate: markReadApi } = useMarkNotificationsRead();
+
+  const dispatchedNotifs: Notificacion[] = dispatched.map((n) => ({
+    id: n.id,
+    titulo: n.title,
+    descripcion: n.body,
+    fecha: n.createdAt,
+    severity: 'info' as const,
+    leida: n.isRead,
+    navigationPath: n.url !== '/' ? n.url : undefined,
+  }));
+
+  // ── Local workflow alerts ─────────────────────────────────────────────────
+  const { data: localNotifs = [] as Notificacion[] } = useQuery({
+    queryKey: ['notificaciones-list', perfil, displayName, tick],
     queryFn: () =>
       perfil === 'navegante'
-        ? getNotificacionesCaptador(DEMO_CAPTADOR_NOMBRE)
-        : getNotificacionesLiderAdmin(DEMO_TEAM_NOMBRES),
+        ? getNotificacionesCaptador(displayName)
+        : getNotificacionesLiderAdmin([displayName]),
+    enabled: !!displayName,
   });
 
+  const notifs = [...dispatchedNotifs, ...localNotifs];
   const unread = notifs.filter(n => !n.leida);
   const read = notifs.filter(n => n.leida);
 
   const handleRead = (id: string) => {
-    markRead(id);
-    setTick(t => t + 1);
+    const isServer = dispatched.some((n) => n.id === id);
+    if (isServer) {
+      markReadApi([id]);
+    } else {
+      markRead(id);
+      setTick(t => t + 1);
+    }
   };
 
   const handleMarkAllRead = () => {
-    markAllRead(notifs.map(n => n.id));
-    setTick(t => t + 1);
+    const serverIds = dispatched.filter((n) => !n.isRead).map((n) => n.id);
+    const localIds = localNotifs.filter((n) => !n.leida).map((n) => n.id);
+    if (serverIds.length > 0) markReadApi(serverIds);
+    if (localIds.length > 0) {
+      markAllRead(localIds);
+      setTick(t => t + 1);
+    }
   };
 
   const handleSendMonthlyConfirmation = async () => {
