@@ -20,6 +20,15 @@ function getSupabase() {
  * If userIds is empty, falls back to all users in push_subscriptions.
  */
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  try {
+    return await handleRequest(req, res);
+  } catch (err) {
+    console.error('[send-custom] Unhandled error:', (err as Error).message, (err as Error).stack);
+    return res.status(500).json({ error: `Unhandled: ${(err as Error).message}` });
+  }
+}
+
+async function handleRequest(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -98,4 +107,5 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     failed,
     noSubscription: noSub,
   });
+}
 }
