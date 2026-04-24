@@ -1,5 +1,8 @@
 {
   "alias": ["proatrack.vercel.app"],
+  "rewrites": [
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
+  ],
   "crons": [
     {
       "path": "/api/notifications/cron/monthly-reminder",

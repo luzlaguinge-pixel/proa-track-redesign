@@ -146,3 +146,9 @@ export const initializeStore = async (): Promise<void> => {
     cache = seedMaterials();
   }
 };
+
+// Called by services after a PostgREST read so the in-memory cache stays in
+// sync for mutations that need it (updateMaterial, deleteMaterial, etc.)
+export const setMaterialsCache = (materials: Material[]): void => {
+  cache = materials.map(m => ({ ...m }));
+};

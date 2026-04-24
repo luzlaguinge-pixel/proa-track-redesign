@@ -1,10 +1,24 @@
+import { postgrestQuery } from '../../../services/api';
 import { type HistorialEvento, type Material } from '../List/types';
 import { getMaterialById, updateMaterial } from '../store';
 
 import { type Person } from './types';
 
 export const getMaterial = async (id: string): Promise<Material | null> => {
-  return getMaterialById(id);
+  try {
+    const rows = await postgrestQuery<Material>('materials', {
+      query: { id: `eq.${id}` },
+    });
+    if (rows.length === 0) return null;
+    const m = rows[0];
+    return {
+      ...m,
+      historial: Array.isArray(m.historial) ? m.historial : [],
+      assignedToUserId: m.assignedToUserId ?? null,
+    };
+  } catch {
+    return getMaterialById(id);
+  }
 };
 
 const today = () => new Date().toISOString().slice(0, 10);
