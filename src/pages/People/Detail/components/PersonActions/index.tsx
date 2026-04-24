@@ -1,8 +1,13 @@
+import { useState } from 'react';
+
+import { useQueryClient } from '@tanstack/react-query';
 import {
   IconBell,
   IconCircleCheck,
   IconDotsVertical,
   IconMailbox,
+  IconMoonStars,
+  IconSunHigh,
   IconUserCheck,
   IconUserMinus,
   IconUserPlus,
@@ -21,7 +26,9 @@ import { useAuth } from '../../../../../providers/AuthContext';
 import { type Material } from '../../../../Inventory/List/types';
 import { getAllMaterials } from '../../../../Inventory/store';
 import {
+  isOnLeave,
   isPendingRecovery,
+  setActive,
   setLifecycle,
 } from '../../../lifecycleStore';
 import { usePersonMutations } from '../../hooks/usePersonMutations';
@@ -40,11 +47,19 @@ const PersonActions = ({ person, materials }: PersonActionsProps) => {
   const { openDialog, closeDialog } = useDialogLayer();
   const { openMenu } = useMenuLayer();
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const { assignNew, notifyAll, requestReturnAll, recoverAll, returnAll } =
     usePersonMutations(person);
 
   const hasMaterials = materials.length > 0;
   const isInPendingRecovery = isPendingRecovery(person.id);
+  const isInOnLeave = isOnLeave(person.id);
+
+  /** Invalidate all queries that depend on lifecycle state. */
+  const invalidateLifecycleQueries = () => {
+    queryClient.invalidateQueries({ queryKey: ['persons'] });
+    queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+  };
 
   const openAssign = async () => {
     const available = (await getAllMaterials()).filter(
@@ -66,9 +81,7 @@ const PersonActions = ({ person, materials }: PersonActionsProps) => {
     });
   };
 
-  const openBulk = (
-    kind: 'notificar' | 'devolucion' | 'recuperados',
-  ) => {
+  const openBulk = (kind: 'notificar' | 'devolucion' | 'recuperados') => {
     const configs = {
       notificar: {
         title: 'Notificar al responsable',
@@ -100,7 +113,10 @@ const PersonActions = ({ person, materials }: PersonActionsProps) => {
           : 'Marcar como recuperados',
         primaryColor: 'primary' as const,
         action: () =>
-          recoverAll.mutateAsync(materials).then(() => closeDialog()),
+          recoverAll.mutateAsync(materials).then(() => {
+            invalidateLifecycleQueries();
+            closeDialog();
+          }),
       },
     };
 
@@ -134,10 +150,16 @@ const PersonActions = ({ person, materials }: PersonActionsProps) => {
                 ?.employeeInternalId ??
               String((user as { id?: number } | null)?.id ?? '')
             }
-            onConfirm={() => {
-              setLifecycle(person.id, 'pending_recovery', person.nombre, materials.length);
-              // Fire recovery task notification (best-effort; non-blocking)
-              sendBajaNotification(person.nombre, materials.length);
+            onConfirm={(lastDay?: string) => {
+              setLifecycle(
+                person.id,
+                'pending_recovery',
+                person.nombre,
+                materials.length,
+                lastDay,
+              );
+              sendBajaNotification(person.nombre, materials);
+              invalidateLifecycleQueries();
               closeDialog();
             }}
             onCancel={closeDialog}
@@ -157,6 +179,7 @@ const PersonActions = ({ person, materials }: PersonActionsProps) => {
             onClose={() => closeDialog()}
             onSubmit={() => {
               setLifecycle(person.id, 'terminated', person.nombre, 0);
+              invalidateLifecycleQueries();
               closeDialog();
             }}
           />
@@ -178,11 +201,38 @@ const PersonActions = ({ person, materials }: PersonActionsProps) => {
           onClose={() => closeDialog()}
           onSubmit={() => {
             setLifecycle(person.id, 'terminated', person.nombre, 0);
+            invalidateLifecycleQueries();
             closeDialog();
           }}
         />
       ),
     });
+  };
+
+  /** Toggle on_leave — no material resolution needed, just a temporary flag. */
+  const openSetOnLeave = () => {
+    openDialog({
+      content: (
+        <BulkActionDialog
+          title="Poner en licencia"
+          description={`${person.nombre} aparecerá marcada/o como "en licencia" en todas las vistas pero seguirá siendo visible y podrá tener materiales asignados. Podés revertirlo en cualquier momento.`}
+          primaryLabel="Poner en licencia"
+          primaryColor="primary"
+          materialsCount={0}
+          onClose={() => closeDialog()}
+          onSubmit={() => {
+            setLifecycle(person.id, 'on_leave', person.nombre, 0);
+            invalidateLifecycleQueries();
+            closeDialog();
+          }}
+        />
+      ),
+    });
+  };
+
+  const handleReturnFromLeave = () => {
+    setActive(person.id);
+    invalidateLifecycleQueries();
   };
 
   const handleMoreClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -210,12 +260,27 @@ const PersonActions = ({ person, materials }: PersonActionsProps) => {
     ];
 
     if (!isInPendingRecovery) {
-      items.push({
-        id: 'baja',
-        title: 'Dar de baja',
-        icon: IconUserMinus,
-        onSelect: openBaja,
-      });
+      if (isInOnLeave) {
+        items.push({
+          id: 'return_leave',
+          title: 'Volver de licencia',
+          icon: IconSunHigh,
+          onSelect: handleReturnFromLeave,
+        });
+      } else {
+        items.push({
+          id: 'on_leave',
+          title: 'Poner en licencia',
+          icon: IconMoonStars,
+          onSelect: openSetOnLeave,
+        });
+        items.push({
+          id: 'baja',
+          title: 'Dar de baja',
+          icon: IconUserMinus,
+          onSelect: openBaja,
+        });
+      }
     } else if (!hasMaterials) {
       // pending_recovery with 0 materials → show "Finalizar baja" shortcut
       items.push({
@@ -270,7 +335,7 @@ type BajaConMaterialesDialogProps = {
   person: { nombre: string };
   materialCount: number;
   currentUserId: string;
-  onConfirm: () => void;
+  onConfirm: (lastDay?: string) => void;
   onCancel: () => void;
 };
 
@@ -279,70 +344,119 @@ const BajaConMaterialesDialog = ({
   materialCount,
   onConfirm,
   onCancel,
-}: BajaConMaterialesDialogProps) => (
-  <Stack sx={{ gap: 2.5, p: 0.5 }}>
-    <Stack sx={{ gap: 0.5 }}>
-      <Typography variant="h6" sx={{ fontWeight: 600 }}>
-        Dar de baja — materiales asignados
-      </Typography>
-      <Typography variant="body2" color="text.secondary">
-        {person.nombre} tiene{' '}
-        <strong>
-          {materialCount} {materialCount === 1 ? 'material' : 'materiales'}
-        </strong>{' '}
-        asignados.
-      </Typography>
-    </Stack>
+}: BajaConMaterialesDialogProps) => {
+  const [lastDay, setLastDay] = useState('');
 
-    <Stack
-      sx={{ gap: 1, bgcolor: 'warning.50', p: 2, borderRadius: 1, border: '1px solid', borderColor: 'warning.200' }}
-    >
-      <Typography variant="body2" sx={{ fontWeight: 600 }}>
-        ¿Qué pasará al confirmar?
-      </Typography>
-      <Typography variant="body2">
-        • La persona se ocultará de todas las vistas activas de inmediato.
-      </Typography>
-      <Typography variant="body2">
-        • Sus materiales quedarán pendientes de recuperación física.
-      </Typography>
-      <Typography variant="body2">
-        • Recibirás una notificación con el detalle de materiales a recuperar.
-      </Typography>
-      <Typography variant="body2">
-        • La baja se completará cuando recuperes todos los materiales.
-      </Typography>
-    </Stack>
+  return (
+    <Stack sx={{ gap: 2.5, p: 0.5 }}>
+      <Stack sx={{ gap: 0.5 }}>
+        <Typography variant="h6" sx={{ fontWeight: 600 }}>
+          Dar de baja — materiales asignados
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          {person.nombre} tiene{' '}
+          <strong>
+            {materialCount} {materialCount === 1 ? 'material' : 'materiales'}
+          </strong>{' '}
+          asignados.
+        </Typography>
+      </Stack>
 
-    <Typography variant="caption" color="text.secondary">
-      El historial de esta persona permanecerá siempre accesible para auditoría, con la marca <em>(baja)</em>.
-    </Typography>
-
-    <Stack sx={{ flexDirection: 'row', gap: 1, justifyContent: 'flex-end' }}>
-      <Button variant="text" onClick={onCancel}>
-        Cancelar
-      </Button>
-      <Button
-        variant="secondary"
-        onClick={onConfirm}
-        startIcon={<IconX size={16} />}
+      <Stack
+        sx={{
+          gap: 1,
+          bgcolor: 'warning.50',
+          p: 2,
+          borderRadius: 1,
+          border: '1px solid',
+          borderColor: 'warning.200',
+        }}
       >
-        Iniciar proceso de baja
-      </Button>
+        <Typography variant="body2" sx={{ fontWeight: 600 }}>
+          ¿Qué pasará al confirmar?
+        </Typography>
+        <Typography variant="body2">
+          • La persona se ocultará de todas las vistas activas de inmediato.
+        </Typography>
+        <Typography variant="body2">
+          • Sus materiales quedarán pendientes de recuperación física.
+        </Typography>
+        <Typography variant="body2">
+          • Recibirás una notificación con el detalle de materiales a recuperar.
+        </Typography>
+        <Typography variant="body2">
+          • La baja se completará cuando recuperes todos los materiales.
+        </Typography>
+      </Stack>
+
+      {/* Optional last-day field — triggers escalation alert on dashboard */}
+      <Stack sx={{ gap: 0.75 }}>
+        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+          Último día de trabajo{' '}
+          <Typography component="span" variant="caption" color="text.secondary">
+            (opcional)
+          </Typography>
+        </Typography>
+        <input
+          type="date"
+          value={lastDay}
+          onChange={e => setLastDay(e.target.value)}
+          style={{
+            border: '1px solid #ccc',
+            borderRadius: 6,
+            padding: '8px 12px',
+            fontSize: 14,
+            fontFamily: 'inherit',
+            width: '100%',
+            boxSizing: 'border-box',
+          }}
+        />
+        <Typography variant="caption" color="text.secondary">
+          Si se configura, el dashboard escalará la alerta cuando esta fecha
+          pase con materiales pendientes.
+        </Typography>
+      </Stack>
+
+      <Typography variant="caption" color="text.secondary">
+        El historial de esta persona permanecerá siempre accesible para
+        auditoría, con la marca <em>(baja)</em>.
+      </Typography>
+
+      <Stack
+        sx={{ flexDirection: 'row', gap: 1, justifyContent: 'flex-end' }}
+      >
+        <Button variant="text" onClick={onCancel}>
+          Cancelar
+        </Button>
+        <Button
+          variant="secondary"
+          onClick={() => onConfirm(lastDay || undefined)}
+          startIcon={<IconX size={16} />}
+        >
+          Iniciar proceso de baja
+        </Button>
+      </Stack>
     </Stack>
-  </Stack>
-);
+  );
+};
 
 // ─── Helper: fire recovery notification ──────────────────────────────────────
 
-function sendBajaNotification(nombre: string, materialCount: number): void {
+function sendBajaNotification(nombre: string, materials: Material[]): void {
+  const materialCount = materials.length;
+  const materialList = materials
+    .slice(0, 5)
+    .map(m => m.tipo)
+    .join(', ');
+  const ellipsis = materialCount > 5 ? ` (+${materialCount - 5} más)` : '';
+
   fetch('/api/notifications/send-custom', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       userIds: [], // all admins / subscribed users
       title: `Baja iniciada: ${nombre}`,
-      body: `${nombre} fue dado/a de baja con ${materialCount} ${materialCount === 1 ? 'material' : 'materiales'} pendiente${materialCount === 1 ? '' : 's'} de recuperación.`,
+      body: `${nombre} fue dado/a de baja. Materiales a recuperar (${materialCount}): ${materialList}${ellipsis}.`,
       url: '/people',
       dispatcherName: 'sistema',
       dispatcherId: 'system-baja',

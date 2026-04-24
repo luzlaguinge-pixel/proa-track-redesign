@@ -30,6 +30,8 @@ export const usePersonMutations = (
 
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: materialsKeys.all() });
+    queryClient.invalidateQueries({ queryKey: ['persons'] });
+    queryClient.invalidateQueries({ queryKey: ['dashboard'] });
     if (person) {
       queryClient.invalidateQueries({
         queryKey: personKeys.materials(person.nombre),
@@ -166,7 +168,14 @@ export const usePersonMutations = (
         ),
       );
     },
-    onSuccess: invalidate,
+    onSuccess: () => {
+      // If person was in pending_recovery and all materials are now returned,
+      // auto-transition to terminated (same logic as recoverAll).
+      if (person && isPendingRecovery(person.id)) {
+        resolveTermination(person.id);
+      }
+      invalidate();
+    },
   });
 
   const updateContact = useMutation({

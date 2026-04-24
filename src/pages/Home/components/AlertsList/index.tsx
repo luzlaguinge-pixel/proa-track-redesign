@@ -35,6 +35,11 @@ const ICON_CONFIG: Record<AlertTipo, IconConfig> = {
   linea: { Icon: IconDeviceMobile, bgcolor: 'info.50', color: 'info.main' },
   baja_pendiente: {
     Icon: IconUserMinus,
+    bgcolor: 'warning.50',
+    color: 'warning.main',
+  },
+  baja_escalada: {
+    Icon: IconUserMinus,
     bgcolor: 'error.50',
     color: 'error.main',
   },
@@ -49,7 +54,8 @@ const PILL_TYPE: Record<AlertTipo, PillsProps['type']> = {
   perdido: 'error',
   reparacion: 'warning',
   linea: 'info',
-  baja_pendiente: 'error',
+  baja_pendiente: 'warning',
+  baja_escalada: 'error',
   confirmacion_vencida: 'warning',
 };
 

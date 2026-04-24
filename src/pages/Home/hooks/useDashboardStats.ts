@@ -1,8 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
 
+import db from '../../../../mock/db.json';
 import { TIPO_LABEL } from '../../Inventory/List/constants';
 import { getAllMaterials } from '../../Inventory/store';
-import { getAllPendingRecovery } from '../../People/lifecycleStore';
+import {
+  getAllPendingRecovery,
+  getOverduePendingRecovery,
+  isExcludedFromActiveViews,
+} from '../../People/lifecycleStore';
 
 import { type Country } from './useCountryFilter';
 
@@ -11,6 +16,7 @@ export type AlertTipo =
   | 'reparacion'
   | 'linea'
   | 'baja_pendiente'
+  | 'baja_escalada'
   | 'confirmacion_vencida';
 
 export type AlertItem = {
@@ -30,9 +36,9 @@ export type DashboardStats = {
   sinMovimiento90: number;
   perdidos: number;
   enReparacion: number;
+  personasActivas: number;
+  personasConMateriales: number;
   alertas: AlertItem[];
-  // TODO: trendTotal, trendEnUso, trendPerdidos — requiere GET /stats/monthly-snapshot
-  // TODO: valorInventario, valorPerdidos — requiere campo `value` en Material (GET /materials/economic-summary)
 };
 
 const getDashboardStats = async (country: Country): Promise<DashboardStats> => {
@@ -57,6 +63,22 @@ const getDashboardStats = async (country: Country): Promise<DashboardStats> => {
     return days > 90;
   }).length;
 
+  // ── People metrics ────────────────────────────────────────────────────────
+  // biome-ignore lint/suspicious/noExplicitAny: mock data structure is dynamic
+  const mockPersons: any[] = (db as any).persons ?? [];
+  const personasActivas = mockPersons.filter(
+    p => !isExcludedFromActiveViews(p.id as string),
+  ).length;
+
+  // Unique responsible people who have at least one 'en_uso' material
+  const conMateriales = new Set(
+    materials
+      .filter(m => m.estado === 'en_uso' && !!m.responsableNombre)
+      .map(m => m.responsableNombre as string),
+  );
+  const personasConMateriales = conMateriales.size;
+
+  // ── Alerts ────────────────────────────────────────────────────────────────
   const alertas: AlertItem[] = [];
 
   for (const m of materials) {
@@ -98,18 +120,27 @@ const getDashboardStats = async (country: Country): Promise<DashboardStats> => {
   }
 
   // ── Pending-recovery alerts ───────────────────────────────────────────────
+  const overdue = new Set(getOverduePendingRecovery().map(r => r.id));
+
   for (const record of getAllPendingRecovery()) {
+    const isOverdue = overdue.has(record.id);
     alertas.push({
       id: `baja-${record.id}`,
       label: record.nombre,
-      sublabel: `${record.materialCountAtBaja} ${record.materialCountAtBaja === 1 ? 'material' : 'materiales'} pendiente${record.materialCountAtBaja === 1 ? '' : 's'}`,
-      motivo: 'Baja en proceso',
-      tipo: 'baja_pendiente',
+      sublabel: isOverdue
+        ? `⚠️ Último día: ${record.lastDay} — ${record.materialCountAtBaja} materiales pendientes`
+        : `${record.materialCountAtBaja} ${record.materialCountAtBaja === 1 ? 'material' : 'materiales'} pendiente${record.materialCountAtBaja === 1 ? '' : 's'}`,
+      motivo: isOverdue ? 'Baja vencida — acción urgente' : 'Baja en proceso',
+      tipo: isOverdue ? 'baja_escalada' : 'baja_pendiente',
       linkTo: `/people/${record.id}`,
     });
   }
 
-  // TODO: confirmaciones_vencidas — requiere tabla confirmaciones + GET /confirmations?vencido=true
+  // Sort: escalated alerts first
+  alertas.sort((a, b) => {
+    const priority = { baja_escalada: 0, perdido: 1, reparacion: 2, baja_pendiente: 3, linea: 4, confirmacion_vencida: 5 };
+    return (priority[a.tipo] ?? 99) - (priority[b.tipo] ?? 99);
+  });
 
   return {
     total,
@@ -119,6 +150,8 @@ const getDashboardStats = async (country: Country): Promise<DashboardStats> => {
     sinMovimiento90,
     perdidos,
     enReparacion,
+    personasActivas,
+    personasConMateriales,
     alertas,
   };
 };

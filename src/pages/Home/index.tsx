@@ -142,6 +142,16 @@ export const HomePage = () => {
             color="warning"
             showTrend
           />
+          <StatCard
+            label="Personas activas"
+            value={stats?.personasActivas ?? 0}
+            showTrend
+          />
+          <StatCard
+            label="Con materiales"
+            value={stats?.personasConMateriales ?? 0}
+            subtitle="personas con al menos 1 material"
+          />
         </Stack>
 
         {(stats?.sinMovimiento90 ?? 0) > 0 && (

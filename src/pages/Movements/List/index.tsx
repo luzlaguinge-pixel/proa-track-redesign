@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 
 import { IconDownload, IconInfoCircle } from '@material-hu/icons/tabler';
+import Chip from '@material-hu/mui/Chip';
 import Paper from '@material-hu/mui/Paper';
 import Stack from '@material-hu/mui/Stack';
 import Typography from '@material-hu/mui/Typography';
@@ -20,6 +21,7 @@ import TableRow from '@material-hu/components/design-system/Table/components/Tab
 import Title from '@material-hu/components/design-system/Title';
 
 import { DashboardLayout } from '../../../layouts/DashboardLayout';
+import { getOffboardedNames } from '../../People/lifecycleStore';
 import {
   type HistorialEventoTipo,
   type MaterialPais,
@@ -33,6 +35,7 @@ import { exportMovementsToCSV } from './services';
 const MovementsList = () => {
   const navigate = useNavigate();
   const { movements, isLoading } = useGetMovements();
+  const offboardedNames = getOffboardedNames();
   const {
     filters,
     filtered,
@@ -224,7 +227,20 @@ const MovementsList = () => {
                           />
                         </TableCell>
                         <TableCell>
-                          <Typography variant="body2">{mov.titulo}</Typography>
+                          <Stack
+                            sx={{ flexDirection: 'row', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}
+                          >
+                            <Typography variant="body2">{mov.titulo}</Typography>
+                            {[...offboardedNames].some(n => mov.titulo.includes(n)) && (
+                              <Chip
+                                label="baja"
+                                size="small"
+                                color="warning"
+                                variant="outlined"
+                                sx={{ height: 18, fontSize: 10 }}
+                              />
+                            )}
+                          </Stack>
                           {mov.descripcion && (
                             <Typography
                               variant="caption"

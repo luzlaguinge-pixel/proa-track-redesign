@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import {
   IconAlertTriangle,
   IconArrowLeft,
+  IconMoonStars,
   IconPencil,
   IconUserMinus,
 } from '@material-hu/icons/tabler';
@@ -21,6 +22,7 @@ import { DashboardLayout } from '../../../layouts/DashboardLayout';
 import {
   getLifecycleRecord,
   getLifecycleStatus,
+  isOnLeave,
 } from '../lifecycleStore';
 
 import PersonActions from './components/PersonActions';
@@ -44,6 +46,7 @@ const PeopleDetail = () => {
 
   const lifecycleStatus = id ? getLifecycleStatus(id) : 'active';
   const lifecycleRecord = id ? getLifecycleRecord(id) : null;
+  const onLeave = id ? isOnLeave(id) : false;
 
   if (isLoading)
     return (
@@ -83,6 +86,31 @@ const PeopleDetail = () => {
         </Button>
 
         {/* ── Lifecycle banner ───────────────────────────────────────────── */}
+        {onLeave && (
+          <Stack
+            sx={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 1.5,
+              p: 2,
+              borderRadius: 1,
+              bgcolor: 'info.50',
+              border: '1px solid',
+              borderColor: 'info.200',
+            }}
+          >
+            <IconMoonStars size={20} color="var(--mui-palette-info-main)" />
+            <Stack sx={{ gap: 0.25 }}>
+              <Typography variant="body2" sx={{ fontWeight: 600, color: 'info.dark' }}>
+                Persona en licencia
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                Aparece con la marca "(licencia)" en el listado. Podés revertirlo en cualquier momento desde las acciones.
+              </Typography>
+            </Stack>
+          </Stack>
+        )}
+
         {lifecycleStatus === 'pending_recovery' && (
           <Stack
             sx={{
