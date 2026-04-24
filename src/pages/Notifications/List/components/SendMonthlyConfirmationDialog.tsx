@@ -35,24 +35,34 @@ export function SendMonthlyConfirmationDialog({
     }
   };
 
+  const hasKnownRecipients = userCount > 0;
+
   return (
     <Stack sx={{ gap: 2 }}>
       <Typography variant="body2">
-        Estás a punto de enviar una notificación de confirmación mensual a:{' '}
+        Estás a punto de enviar una notificación de confirmación mensual.
       </Typography>
 
       <Stack sx={{ gap: 1, bgcolor: 'info.50', p: 2, borderRadius: 1 }}>
-        <Typography variant="body2" sx={{ fontWeight: 600 }}>
-          {userCount} usuario{userCount !== 1 ? 's' : ''}
-        </Typography>
-        <Typography variant="caption" color="text.secondary">
-          {recipientCount} material{recipientCount !== 1 ? 'es' : ''} a confirmar
-        </Typography>
+        {hasKnownRecipients ? (
+          <>
+            <Typography variant="body2" sx={{ fontWeight: 600 }}>
+              {userCount} usuario{userCount !== 1 ? 's' : ''} con notificaciones activas
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
+              {recipientCount} material{recipientCount !== 1 ? 'es' : ''} a confirmar
+            </Typography>
+          </>
+        ) : (
+          <Typography variant="body2" sx={{ fontWeight: 600 }}>
+            Todos los usuarios con suscripción activa
+          </Typography>
+        )}
       </Stack>
 
       <Typography variant="caption" color="text.secondary">
-        Los usuarios recibirán una notificación push con el título "Confirmá tus
-        materiales" y podrán acceder directamente a la pantalla de confirmación.
+        Cada destinatario recibirá una notificación push y una notificación en la
+        campana con el título "Confirmá tus materiales".
       </Typography>
 
       {error && (

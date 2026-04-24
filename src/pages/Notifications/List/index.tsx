@@ -311,7 +311,7 @@ const NotificationsList = () => {
               alignItems: 'center',
             }}
           >
-            {perfil !== 'navegante' && userCount > 0 && (
+            {perfil !== 'navegante' && (
               <Button
                 variant="primary"
                 size="small"
@@ -321,7 +321,7 @@ const NotificationsList = () => {
                   <IconBellRinging size={16} />
                 }
                 onClick={handleOpenSendDialog}
-                disabled={usersLoading || sendState === 'sending'}
+                disabled={sendState === 'sending'}
               >
                 {sendState === 'sending' ? 'Enviando...' :
                  sendState === 'done' ? `Enviado a ${userCount} usuario${userCount !== 1 ? 's' : ''}` :
