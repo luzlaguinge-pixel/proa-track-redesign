@@ -75,7 +75,7 @@ const COORDINADOR_NAV_KEYS = new Set([
   'faqs',
   'roles',
 ]);
-const NAVEGANTE_NAV_KEYS = new Set(['my-materials', 'faqs']);
+const NAVEGANTE_NAV_KEYS = new Set(['my-materials', 'my-confirmation', 'faqs']);
 
 const ALL_ITEMS = [
   { key: 'home', title: 'Home', path: '/', icon: <IconHome /> },

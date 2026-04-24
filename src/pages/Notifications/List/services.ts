@@ -54,7 +54,7 @@ export const getNotificacionesCaptador = async (nombre: string): Promise<Notific
         fecha: new Date().toISOString(),
         severity: 'warning',
         leida: isRead(id),
-        navigationPath: `/my-materials`,
+        navigationPath: `/my-confirmation`,
       });
     }
   }

@@ -1,10 +1,16 @@
 import { useNavigate } from 'react-router-dom';
 
-import { IconCircleCheck, IconInfoCircle } from '@material-hu/icons/tabler';
+import {
+  IconCalendarCheck,
+  IconCircleCheck,
+  IconInfoCircle,
+} from '@material-hu/icons/tabler';
+import Alert from '@material-hu/mui/Alert';
 import Stack from '@material-hu/mui/Stack';
 import Typography from '@material-hu/mui/Typography';
 
 import StateCard from '@material-hu/components/composed-components/StateCard';
+import Button from '@material-hu/components/design-system/Buttons/Button';
 import Pills from '@material-hu/components/design-system/Pills';
 import Table from '@material-hu/components/design-system/Table';
 import TableBody from '@material-hu/components/design-system/Table/components/TableBody';
@@ -19,12 +25,12 @@ import { DashboardLayout } from '../../../layouts/DashboardLayout';
 import { ESTADO_CONFIG, TIPO_LABEL } from '../../Inventory/List/constants';
 
 import MaterialRowActions from './components/MaterialRowActions';
-import { useMyMaterials } from './hooks/useMyMaterials';
+import { useMyMaterialsWithConfirmation } from './hooks/useMyMaterialsWithConfirmation';
 
 const MyMaterialsList = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { materials, isLoading } = useMyMaterials();
+  const { materials, pendingCount, isLoading } = useMyMaterialsWithConfirmation();
 
   if (isLoading)
     return (
@@ -47,10 +53,7 @@ const MyMaterialsList = () => {
             variant="L"
           />
           {materials.length > 0 && (
-            <Typography
-              variant="body2"
-              color="text.secondary"
-            >
+            <Typography variant="body2" color="text.secondary">
               {materials.length}{' '}
               {materials.length === 1
                 ? 'material asignado'
@@ -58,6 +61,29 @@ const MyMaterialsList = () => {
             </Typography>
           )}
         </Stack>
+
+        {pendingCount > 0 && (
+          <Alert
+            severity="warning"
+            action={
+              <Button
+                variant="secondary"
+                size="small"
+                startIcon={<IconCalendarCheck size={16} />}
+                onClick={() => navigate('/my-confirmation')}
+              >
+                Confirmar ahora
+              </Button>
+            }
+          >
+            Tenés{' '}
+            <strong>
+              {pendingCount}{' '}
+              {pendingCount === 1 ? 'material' : 'materiales'}
+            </strong>{' '}
+            pendiente{pendingCount === 1 ? '' : 's'} de confirmar este mes.
+          </Alert>
+        )}
 
         {materials.length === 0 ? (
           <StateCard
@@ -72,7 +98,7 @@ const MyMaterialsList = () => {
           />
         ) : (
           <TableContainer sx={{ overflowX: 'auto' }}>
-            <Table sx={{ minWidth: 800 }}>
+            <Table sx={{ minWidth: 860 }}>
               <TableHead>
                 <TableRow headerRow>
                   <TableCell headerCell>Tipo</TableCell>
@@ -80,7 +106,7 @@ const MyMaterialsList = () => {
                   <TableCell headerCell>Estado</TableCell>
                   <TableCell headerCell>OSC</TableCell>
                   <TableCell headerCell>Plaza</TableCell>
-                  <TableCell headerCell>Comodato</TableCell>
+                  <TableCell headerCell>Confirmación</TableCell>
                   <TableCell headerCell />
                 </TableRow>
               </TableHead>
@@ -88,10 +114,7 @@ const MyMaterialsList = () => {
                 {materials.map(material => {
                   const estado = ESTADO_CONFIG[material.estado];
                   return (
-                    <TableRow
-                      key={material.id}
-                      sx={{ cursor: 'default' }}
-                    >
+                    <TableRow key={material.id} sx={{ cursor: 'default' }}>
                       <TableCell
                         onClick={() => navigate(`/inventory/${material.id}`)}
                         sx={{ cursor: 'pointer' }}
@@ -114,7 +137,7 @@ const MyMaterialsList = () => {
                       <TableCell>{material.osc || '—'}</TableCell>
                       <TableCell>{material.plaza}</TableCell>
                       <TableCell>
-                        {material.comodatoFirmado ? (
+                        {material.confirmadaEsteMes ? (
                           <Stack
                             sx={{
                               flexDirection: 'row',
@@ -123,16 +146,26 @@ const MyMaterialsList = () => {
                               color: 'success.main',
                             }}
                           >
-                            <IconCircleCheck size={16} />
-                            <Typography variant="caption">Firmado</Typography>
+                            <IconCircleCheck size={14} />
+                            <Typography variant="caption">
+                              {material.ultimaConfirmacion
+                                ? `Confirmado el ${new Date(
+                                    material.ultimaConfirmacion.fecha,
+                                  ).toLocaleDateString('es-AR', {
+                                    day: '2-digit',
+                                    month: 'short',
+                                  })}`
+                                : 'Confirmado'}
+                            </Typography>
                           </Stack>
                         ) : (
-                          <Typography
-                            variant="caption"
-                            color="text.disabled"
-                          >
-                            Pendiente
-                          </Typography>
+                          <Pills
+                            label="Pendiente"
+                            type="warning"
+                            size="small"
+                            sx={{ cursor: 'pointer' }}
+                            onClick={() => navigate('/my-confirmation')}
+                          />
                         )}
                       </TableCell>
                       <TableCell>
