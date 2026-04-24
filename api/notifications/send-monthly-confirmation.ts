@@ -165,7 +165,7 @@ export default async function handler(
       success: true,
       sent,
       failed,
-      failedUserIds: failedCount > 0 ? failedUserIds : undefined,
+      failedUserIds: failed > 0 ? failedUserIds : undefined,
     });
   } catch (error) {
     console.error('Error sending monthly confirmation notifications:', error);
