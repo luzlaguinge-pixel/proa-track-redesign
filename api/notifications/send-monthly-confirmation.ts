@@ -114,4 +114,3 @@ async function handleRequest(req: VercelRequest, res: VercelResponse) {
     })),
   });
 }
-}

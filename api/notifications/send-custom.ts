@@ -108,4 +108,3 @@ async function handleRequest(req: VercelRequest, res: VercelResponse) {
     noSubscription: noSub,
   });
 }
-}
