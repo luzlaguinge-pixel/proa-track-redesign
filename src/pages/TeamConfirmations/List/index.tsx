@@ -18,14 +18,10 @@ import { useDialogLayer } from '@material-hu/components/layers/Dialogs';
 
 import { DashboardLayout } from '../../../layouts/DashboardLayout';
 import {
-  getAllConfirmaciones,
-  type Confirmacion,
-} from '../../Confirmation/store';
-import {
   getConfirmacionesEquipo,
+  getAllConfirmacionesFromHistorial,
   type ConfirmacionConMaterial,
 } from '../../Confirmation/List/services';
-import { getAllMaterials } from '../../Inventory/store';
 import { getMyTeam } from '../../MyTeam/List/services';
 import { useAuth } from '../../../providers/AuthContext';
 import { useProfile } from '../../../providers/ProfileContext';
@@ -47,20 +43,7 @@ const TeamConfirmationsList = () => {
     queryKey: ['confirmaciones', isAdmin ? 'all' : leaderDni],
     queryFn: async () => {
       if (isAdmin) {
-        const materials = await getAllMaterials();
-        return getAllConfirmaciones()
-          .map(c => {
-            const m = materials.find(mat => mat.id === c.materialId);
-            return {
-              ...c,
-              materialLabel: m
-                ? `${m.tipo} · ${m.detalle || '—'}`
-                : c.materialId,
-            } as ConfirmacionConMaterial;
-          })
-          .sort(
-            (a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime(),
-          );
+        return getAllConfirmacionesFromHistorial();
       }
       return getConfirmacionesEquipo(team.map(t => t.nombre));
     },

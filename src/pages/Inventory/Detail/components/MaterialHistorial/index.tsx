@@ -1,6 +1,7 @@
 import {
   IconAlertTriangle,
   IconBell,
+  IconCalendarCheck,
   IconCircleCheck,
   IconClockHour3,
   IconMailbox,
@@ -30,6 +31,7 @@ const ICONS: Record<HistorialEventoTipo, TablerIcon> = {
   marcado_dañado: IconAlertTriangle,
   enviado_reparacion: IconTool,
   recuperado: IconCircleCheck,
+  confirmacion_tenencia: IconCalendarCheck,
 };
 
 const ICON_BG: Record<HistorialEventoTipo, string> = {
@@ -42,6 +44,7 @@ const ICON_BG: Record<HistorialEventoTipo, string> = {
   marcado_dañado: 'error.50',
   enviado_reparacion: 'warning.50',
   recuperado: 'success.50',
+  confirmacion_tenencia: 'success.50',
 };
 
 const ICON_COLOR: Record<HistorialEventoTipo, string> = {
@@ -54,6 +57,7 @@ const ICON_COLOR: Record<HistorialEventoTipo, string> = {
   marcado_dañado: 'error.main',
   enviado_reparacion: 'warning.main',
   recuperado: 'success.main',
+  confirmacion_tenencia: 'success.main',
 };
 
 const formatDateTime = (iso: string) => {
@@ -196,6 +200,23 @@ const MaterialHistorial = ({ material }: MaterialHistorialProps) => {
                       >
                         {event.descripcion}
                       </Typography>
+                    )}
+                    {event.fotoBase64 && (
+                      <Box
+                        component="img"
+                        src={event.fotoBase64}
+                        alt="foto de confirmación"
+                        sx={{
+                          mt: 0.75,
+                          width: 120,
+                          height: 80,
+                          objectFit: 'cover',
+                          borderRadius: 1,
+                          border: '1px solid',
+                          borderColor: 'divider',
+                          display: 'block',
+                        }}
+                      />
                     )}
                   </Stack>
                 </Stack>

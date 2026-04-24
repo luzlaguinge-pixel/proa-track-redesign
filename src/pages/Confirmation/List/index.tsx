@@ -31,6 +31,31 @@ import db from '../../../../mock/db.json';
 import { confirmarTenencia } from './services';
 import { useConfirmation } from './hooks/useConfirmation';
 
+// ── Photo compression ─────────────────────────────────────────────────────────
+// Resizes and re-encodes to JPEG at max 800px wide / 0.72 quality.
+// A typical mobile camera photo (~3MB) becomes ~80-150KB after compression.
+
+const compressImage = (base64: string): Promise<string> =>
+  new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => {
+      const MAX = 800;
+      const scale = Math.min(1, MAX / Math.max(img.width, img.height));
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.round(img.width * scale);
+      canvas.height = Math.round(img.height * scale);
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        resolve(base64);
+        return;
+      }
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      resolve(canvas.toDataURL('image/jpeg', 0.72));
+    };
+    img.onerror = () => resolve(base64);
+    img.src = base64;
+  });
+
 // ── Person options for "entregué a..." ────────────────────────────────────────
 
 type RawPerson = { id: string; nombre: string; dni?: string };
@@ -184,7 +209,11 @@ const ConfirmationList = () => {
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = ev => setFoto(ev.target?.result as string);
+    reader.onload = async ev => {
+      const raw = ev.target?.result as string;
+      const compressed = await compressImage(raw);
+      setFoto(compressed);
+    };
     reader.readAsDataURL(file);
   };
 

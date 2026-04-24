@@ -28,7 +28,8 @@ export type HistorialEventoTipo =
   | 'marcado_perdido'
   | 'marcado_dañado'
   | 'enviado_reparacion'
-  | 'recuperado';
+  | 'recuperado'
+  | 'confirmacion_tenencia';
 
 export type HistorialEvento = {
   id: string;
@@ -37,6 +38,8 @@ export type HistorialEvento = {
   autor: string;
   titulo: string;
   descripcion?: string;
+  /** Compressed base64 photo — only present on confirmacion_tenencia events. */
+  fotoBase64?: string | null;
 };
 
 export type Material = {

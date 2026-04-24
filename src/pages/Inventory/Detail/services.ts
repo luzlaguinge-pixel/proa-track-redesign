@@ -225,3 +225,37 @@ export const returnMaterial = async (
     ],
   }));
 };
+
+// ─── Confirmación de tenencia ─────────────────────────────────────────────────
+
+export type ConfirmTenenciaInput = {
+  materialId: string;
+  responsableNombre: string;
+  nota: string;
+  /** Compressed base64 photo from the navegante's device camera. */
+  fotoBase64: string | null;
+  autor: string;
+};
+
+/**
+ * Saves a tenencia confirmation as a historial event on the material.
+ * This persists to Supabase (cross-device) instead of an ephemeral in-memory store.
+ */
+export const confirmTenencia = async (
+  input: ConfirmTenenciaInput,
+): Promise<Material | null> => {
+  const { materialId, nota, fotoBase64, autor } = input;
+  return updateMaterial(materialId, current => ({
+    ...current,
+    historial: [
+      newEvent({
+        tipo: 'confirmacion_tenencia',
+        autor,
+        titulo: 'Tenencia confirmada',
+        descripcion: nota.trim() || undefined,
+        fotoBase64: fotoBase64 ?? null,
+      }),
+      ...current.historial,
+    ],
+  }));
+};

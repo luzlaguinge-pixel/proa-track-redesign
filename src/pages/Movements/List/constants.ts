@@ -10,6 +10,7 @@ export const EVENTO_LABEL: Record<HistorialEventoTipo, string> = {
   marcado_dañado: 'Dañado',
   enviado_reparacion: 'En reparación',
   recuperado: 'Recuperado',
+  confirmacion_tenencia: 'Confirmación',
 };
 
 type PillType = 'success' | 'warning' | 'error' | 'neutral' | 'info';
@@ -24,6 +25,7 @@ export const EVENTO_PILL: Record<HistorialEventoTipo, PillType> = {
   marcado_dañado: 'error',
   enviado_reparacion: 'warning',
   recuperado: 'success',
+  confirmacion_tenencia: 'success',
 };
 
 export const PAIS_LABEL: Record<string, string> = {
