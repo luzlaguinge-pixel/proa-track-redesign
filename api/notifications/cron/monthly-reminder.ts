@@ -1,107 +1,97 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import webpush from 'web-push';
-import fs from 'fs';
-import path from 'path';
+import { createClient } from '@supabase/supabase-js';
 
-interface PushSubscription {
-  userId: string;
-  subscription: {
-    endpoint: string;
-    keys: {
-      p256dh: string;
-      auth: string;
-    };
-  };
+import { dispatchToMany } from '../../_lib/dispatchNotification';
+
+function isValidCronRequest(req: VercelRequest): boolean {
+  const auth = req.headers.authorization;
+  return auth === `Bearer ${process.env.CRON_SECRET}`;
 }
 
-const SUBSCRIPTIONS_FILE = path.join(process.cwd(), 'data', 'subscriptions.json');
-
-webpush.setVapidDetails(
-  process.env.VAPID_SUBJECT || 'mailto:admin@example.com',
-  process.env.VITE_VAPID_PUBLIC_KEY || '',
-  process.env.VAPID_PRIVATE_KEY || ''
-);
-
-function getSubscriptions(): PushSubscription[] {
-  try {
-    if (fs.existsSync(SUBSCRIPTIONS_FILE)) {
-      const data = fs.readFileSync(SUBSCRIPTIONS_FILE, 'utf-8');
-      return JSON.parse(data);
-    }
-  } catch (error) {
-    console.error('Error reading subscriptions file:', error);
-  }
-  return [];
-}
-
-function isValidCronRequest(request: VercelRequest): boolean {
-  // Verify Vercel cron authorization header
-  const authHeader = request.headers.authorization;
-  return authHeader === `Bearer ${process.env.CRON_SECRET}`;
-}
-
-export default async function handler(
-  request: VercelRequest,
-  response: VercelResponse
-) {
-  if (request.method !== 'GET') {
-    return response.status(405).json({ error: 'Method not allowed' });
+/**
+ * GET /api/notifications/cron/monthly-reminder
+ * Runs on the 1st of each month at 08:00 UTC (configured in vercel.json).
+ * Dispatches the monthly material-confirmation reminder to every subscribed user
+ * through BOTH channels: in-app record (unconditional) + push (best-effort).
+ */
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+  if (req.method !== 'GET') {
+    return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  // Verify Vercel cron authorization
-  if (!isValidCronRequest(request)) {
-    return response.status(401).json({ error: 'Unauthorized' });
+  if (!isValidCronRequest(req)) {
+    return res.status(401).json({ error: 'Unauthorized' });
   }
 
-  try {
-    const subscriptions = getSubscriptions();
+  const supabase = createClient(
+    process.env.VITE_SUPABASE_URL!,
+    process.env.VITE_SUPABASE_ANON_KEY!,
+  );
 
-    if (subscriptions.length === 0) {
-      return response.status(200).json({
-        success: true,
-        sent: 0,
-        message: 'No subscriptions to send to',
-      });
-    }
+  // Collect every unique user_id that has at least one active push subscription.
+  // dispatchNotification handles the no_subscription case gracefully — in-app is
+  // always created regardless, so even if a subscription disappears between here
+  // and push delivery the user still gets the bell-icon notification.
+  const { data: subs, error: subsError } = await supabase
+    .from('push_subscriptions')
+    .select('user_id');
 
-    const payload = JSON.stringify({
-      title: 'Confirmación de tenencia de materiales',
-      body: 'Es momento de confirmar que tenés los materiales en tu poder. Por favor, accedé a la aplicación para completar la confirmación.',
-      icon: '/logo.png',
-      url: '/my-materials',
-    });
-
-    let sent = 0;
-
-    await Promise.allSettled(
-      subscriptions.map(async (sub) => {
-        try {
-          await webpush.sendNotification(sub.subscription, payload);
-          sent++;
-        } catch (error) {
-          console.error('Error sending monthly reminder:', error);
-
-          // Remove subscription if endpoint is no longer valid
-          if (
-            error instanceof Error &&
-            (error.message.includes('410') || error.message.includes('invalid'))
-          ) {
-            const filtered = subscriptions.filter(
-              (s) => s.subscription.endpoint !== sub.subscription.endpoint
-            );
-            fs.writeFileSync(SUBSCRIPTIONS_FILE, JSON.stringify(filtered, null, 2));
-          }
-        }
-      })
-    );
-
-    return response.status(200).json({
-      success: true,
-      sent,
-      total: subscriptions.length,
-    });
-  } catch (error) {
-    console.error('Error in monthly reminder cron:', error);
-    return response.status(500).json({ error: 'Cron job failed' });
+  if (subsError) {
+    console.error('[Cron] Failed to fetch subscriptions:', subsError.message);
+    return res.status(500).json({ error: 'Failed to fetch subscriptions' });
   }
+
+  const seen = new Set<string>();
+  const userIds = (subs ?? [])
+    .filter((s) => {
+      if (seen.has(s.user_id)) return false;
+      seen.add(s.user_id);
+      return true;
+    })
+    .map((s) => s.user_id);
+
+  if (userIds.length === 0) {
+    console.log('[Cron] No subscriptions — skipping dispatch');
+    return res.status(200).json({ success: true, inApp: 0, sent: 0, message: 'No subscriptions' });
+  }
+
+  // Dispatch through BOTH channels for every user
+  const results = await dispatchToMany(userIds, {
+    title: 'Confirmá tus materiales',
+    body: 'Es momento de confirmar la tenencia de tus materiales asignados.',
+    url: '/my-materials',
+  });
+
+  const inApp = results.filter((r) => r.inApp === 'delivered').length;
+  const inAppFailed = results.filter((r) => r.inApp === 'failed').length;
+  const sent = results.filter((r) => r.push === 'sent').length;
+  const failed = results.filter((r) => r.push === 'failed').length;
+  const noSub = results.filter((r) => r.push === 'no_subscription').length;
+
+  // Record in dispatch history
+  await supabase.from('notification_history').insert({
+    dispatcher_name: 'cron/monthly-reminder',
+    dispatcher_id: 'system',
+    user_count: userIds.length,
+    recipient_count: results.length,
+    sent_count: sent,
+    failed_count: failed,
+    in_app_count: inApp,
+    in_app_failed_count: inAppFailed,
+    no_subscription_count: noSub,
+  });
+
+  console.log(
+    `[Cron] monthly-reminder done: inApp=${inApp}/${userIds.length} push_sent=${sent} push_failed=${failed} no_sub=${noSub}`,
+  );
+
+  return res.status(200).json({
+    success: true,
+    inApp,
+    inAppFailed,
+    sent,
+    failed,
+    noSubscription: noSub,
+    results: results.map((r) => ({ userId: r.userId, inApp: r.inApp, push: r.push })),
+  });
 }

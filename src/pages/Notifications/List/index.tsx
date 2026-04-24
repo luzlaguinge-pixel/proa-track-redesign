@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { useAuth } from '../../../providers/AuthContext';
 import {
+  DISPATCHED_NOTIFS_KEY,
   useDispatchedNotifications,
   useMarkNotificationsRead,
 } from '../../../hooks/useDispatchedNotifications';
@@ -192,6 +193,7 @@ const NotificationsList = () => {
   const [sendState, setSendState] = useState<'idle' | 'sending' | 'done' | 'error'>('idle');
   const { openDialog } = useDialogLayer();
 
+  const qc = useQueryClient();
   const { users, recipientCount, userCount, isLoading: usersLoading } =
     useUsersWithMaterials();
 
@@ -262,6 +264,8 @@ const NotificationsList = () => {
       }
 
       setSendState('done');
+      // Immediately refresh the bell so the admin sees their own notification
+      qc.invalidateQueries({ queryKey: DISPATCHED_NOTIFS_KEY });
       // Reset back to idle after 4 seconds
       setTimeout(() => setSendState('idle'), 4000);
     } catch (e) {
