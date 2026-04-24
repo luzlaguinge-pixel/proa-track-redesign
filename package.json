@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "bun scripts/dev.ts",
-    "build": "tsc -b && vite build",
+    "build": "bash scripts/check-banned-code.sh && tsc -b && vite build",
     "lint": "bun run biome:lint && bun run biome:format",
     "preview": "vite preview",
     "dev:vite": "concurrently \"vite\" \"json-server mock/db.json --port 3001 --delay 100\"",
