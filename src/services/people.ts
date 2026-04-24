@@ -1,3 +1,6 @@
+// Development: import mock data from mock/db.json
+import db from '../../mock/db.json';
+
 import { postgrest } from './postgrest';
 
 export type HumandUser = {
@@ -31,6 +34,23 @@ function mapToPerson(u: HumandUser): Person {
 }
 
 export async function getActivePeople(): Promise<Person[]> {
+  // Development: use mock data from db.json
+  // This provides immediate functionality while postgrest is configured
+  // biome-ignore lint/suspicious/noExplicitAny: mock data has dynamic structure
+  const mockPersons = (db as any).persons || [];
+  if (mockPersons.length > 0) {
+    // biome-ignore lint/suspicious/noExplicitAny: mock data has dynamic structure
+    return mockPersons.map((p: any) => ({
+      id: p.id || String(p.id),
+      nombre: p.nombre || '',
+      dni: p.dni || '',
+      email: p.email || '',
+      telefono: p.telefono || '',
+      bossId: null,
+    }));
+  }
+
+  // Production: use postgrest API
   const result = await postgrest.get<HumandUser>('/users', {
     status: 'eq.ACTIVE',
     select: 'id,firstName,lastName,employeeInternalId,email,bossId',
