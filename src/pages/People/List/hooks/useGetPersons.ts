@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 
-import { getPersons } from '../services';
+import { getBasicPersons } from '../services';
 
 export const personsKeys = {
   all: () => ['persons'] as const,
@@ -10,7 +10,7 @@ export const personsKeys = {
 export const useGetPersons = () => {
   const { data, ...query } = useQuery({
     queryKey: personsKeys.lists(),
-    queryFn: getPersons,
+    queryFn: getBasicPersons,
   });
   return { persons: data ?? [], ...query };
 };

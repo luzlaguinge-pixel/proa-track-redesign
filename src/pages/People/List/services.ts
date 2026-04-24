@@ -1,8 +1,31 @@
-import { getAllMaterials } from '../../Inventory/store';
 import { getActivePeople } from '../../../services/people';
+import { getAllMaterials } from '../../Inventory/store';
 
 import { type PersonRow } from './types';
 
+/**
+ * Get basic persons without material counts - optimized for quick lookups
+ * Use this when you just need person data without the materialesCount field
+ */
+export const getBasicPersons = async (): Promise<PersonRow[]> => {
+  const people = await getActivePeople();
+  return people.map(p => ({
+    id: p.id,
+    nombre: p.nombre,
+    dni: p.dni,
+    email: p.email,
+    telefono: p.telefono,
+    puesto: '',
+    pais: 'AR' as const,
+    jefeDirectoNombre: null,
+    materialesCount: 0, // Not counted in basic query for performance
+  }));
+};
+
+/**
+ * Get full persons with material counts - use when you need assignment statistics
+ * This loads all materials to calculate the count per person
+ */
 export const getPersons = async (): Promise<PersonRow[]> => {
   const [people, materials] = await Promise.all([
     getActivePeople(),
@@ -18,6 +41,7 @@ export const getPersons = async (): Promise<PersonRow[]> => {
     puesto: '',
     pais: 'AR' as const,
     jefeDirectoNombre: null,
-    materialesCount: materials.filter(m => m.responsableNombre === p.nombre).length,
+    materialesCount: materials.filter(m => m.responsableNombre === p.nombre)
+      .length,
   }));
 };

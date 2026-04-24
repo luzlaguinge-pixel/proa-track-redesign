@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import Stack from '@material-hu/mui/Stack';
 import Typography from '@material-hu/mui/Typography';
@@ -42,21 +42,31 @@ const AssignDrawer = ({
   const [personError, setPersonError] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  const allOptions = persons.map(p => ({
-    label: p.nombre,
-    value: p.id,
-    description: p.dni ? `DNI ${p.dni}` : undefined,
-  }));
+  const allOptions = useMemo(
+    () =>
+      persons.map(p => ({
+        label: p.nombre,
+        value: p.id,
+        description: p.dni ? `DNI ${p.dni}` : undefined,
+      })),
+    [persons],
+  );
 
-  const options = inputValue.trim()
-    ? allOptions.filter(o =>
-        o.label.toLowerCase().includes(inputValue.toLowerCase()) ||
-        (o.description ?? '').toLowerCase().includes(inputValue.toLowerCase()),
-      )
-    : allOptions.slice(0, 50);
+  const options = useMemo(() => {
+    if (!inputValue.trim()) return allOptions;
 
-  const selectedOption =
-    allOptions.find(o => o.value === selectedPersonId) ?? null;
+    const searchTerm = inputValue.toLowerCase().trim();
+    return allOptions.filter(
+      o =>
+        o.label.toLowerCase().includes(searchTerm) ||
+        (o.description ?? '').toLowerCase().includes(searchTerm),
+    );
+  }, [allOptions, inputValue]);
+
+  const selectedOption = useMemo(
+    () => allOptions.find(o => o.value === selectedPersonId) ?? null,
+    [allOptions, selectedPersonId],
+  );
 
   const handleSubmit = async () => {
     if (!selectedPersonId) {
@@ -89,12 +99,11 @@ const AssignDrawer = ({
       <Stack sx={{ gap: 3 }}>
         <Autocomplete
           label="Persona"
-          placeholder="Buscar persona..."
+          placeholder="Buscar por nombre o DNI..."
           options={options}
           value={selectedOption}
           inputValue={inputValue}
           onInputChange={(_e, val) => setInputValue(val)}
-          isServerFiltered
           virtualized
           onChange={value => {
             setSelectedPersonId(value ? String(value.value) : null);
