@@ -11,6 +11,8 @@ export const useMyMaterialsWithConfirmation = () => {
     queryKey: ['my-materials-with-confirmation', userName],
     queryFn: () => getMaterialesParaConfirmar(userName),
     enabled: !!userName,
+    refetchOnMount: 'always',
+    staleTime: 0,
   });
 
   const pendingCount = materials.filter(m => !m.confirmadaEsteMes).length;

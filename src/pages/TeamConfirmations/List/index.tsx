@@ -48,6 +48,9 @@ const TeamConfirmationsList = () => {
       return getConfirmacionesEquipo(team.map(t => t.nombre));
     },
     enabled: isAdmin || team.length > 0,
+    // Always go to Supabase when this page mounts — never show stale confirmations.
+    refetchOnMount: 'always',
+    staleTime: 0,
   });
 
   const isLoading = loadingTeam || loadingConf;

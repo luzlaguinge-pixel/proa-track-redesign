@@ -67,17 +67,26 @@ export type ConfirmarInput = {
 /**
  * Confirms tenencia by writing a historial event to the material.
  * This persists to Supabase and is visible across all devices immediately.
+ * Throws a human-readable error if the write fails for any reason.
  */
 export const confirmarTenencia = async (
   input: ConfirmarInput,
 ): Promise<void> => {
-  await confirmTenencia({
+  const result = await confirmTenencia({
     materialId: input.materialId,
     responsableNombre: input.responsableNombre,
     nota: input.nota,
     fotoBase64: input.fotoBase64,
     autor: input.responsableNombre,
   });
+  if (result === null) {
+    // updateMaterial returns null when Supabase UPDATE matches 0 rows —
+    // either the material ID doesn't exist or RLS blocked the write.
+    throw new Error(
+      'No se pudo guardar la confirmación en la base de datos. ' +
+      'Verificá tu conexión y volvé a intentarlo.',
+    );
+  }
 };
 
 export type ConfirmacionConMaterial = Confirmacion & {

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 
 import {
+  IconAlertTriangle,
   IconArrowLeft,
   IconCamera,
   IconCircleCheck,
@@ -104,6 +105,9 @@ const ConfirmationList = () => {
   const [submitting, setSubmitting] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
+  // Error state — shown when a Supabase write fails
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
   // "No lo tengo" sub-flow state
   const [noLoTengo, setNoLoTengo] = useState(false);
   const [noLoTengoReason, setNoLoTengoReason] = useState<NoLoTengoReason>(null);
@@ -146,6 +150,7 @@ const ConfirmationList = () => {
     if (!foto) return;
     const material = pendientes[currentIndex];
     setSubmitting(true);
+    setErrorMsg(null);
     try {
       await confirmarTenencia({
         materialId: material.id,
@@ -154,6 +159,12 @@ const ConfirmationList = () => {
         fotoBase64: foto,
       });
       advance();
+    } catch (err) {
+      setErrorMsg(
+        err instanceof Error
+          ? err.message
+          : 'Error al guardar la confirmación. Revisá tu conexión e intentá de nuevo.',
+      );
     } finally {
       setSubmitting(false);
     }
@@ -163,6 +174,7 @@ const ConfirmationList = () => {
     if (!noLoTengoReason) return;
     const material = pendientes[currentIndex];
     setSubmitting(true);
+    setErrorMsg(null);
     try {
       if (noLoTengoReason === 'perdido') {
         await reportMaterial({
@@ -200,6 +212,12 @@ const ConfirmationList = () => {
         });
       }
       advance();
+    } catch (err) {
+      setErrorMsg(
+        err instanceof Error
+          ? err.message
+          : 'Error al procesar. Revisá tu conexión e intentá de nuevo.',
+      );
     } finally {
       setSubmitting(false);
     }
@@ -459,6 +477,26 @@ const ConfirmationList = () => {
                 />
               )}
 
+              {errorMsg && (
+                <Stack
+                  sx={{
+                    flexDirection: 'row',
+                    gap: 1,
+                    alignItems: 'flex-start',
+                    p: 1.5,
+                    borderRadius: 1.5,
+                    bgcolor: 'error.50',
+                    border: '1px solid',
+                    borderColor: 'error.200',
+                  }}
+                >
+                  <IconAlertTriangle size={16} color="currentColor" style={{ color: '#ef4444', flexShrink: 0, marginTop: 2 }} />
+                  <Typography variant="caption" color="error.main" sx={{ lineHeight: 1.5 }}>
+                    {errorMsg}
+                  </Typography>
+                </Stack>
+              )}
+
               <Stack
                 sx={{ flexDirection: 'row', gap: 1, justifyContent: 'flex-end' }}
               >
@@ -471,6 +509,7 @@ const ConfirmationList = () => {
                     setNoLoTengoMotivo('');
                     setNoLoTengoDestinatarioId(null);
                     setNoLoTengoDestinatarioInput('');
+                    setErrorMsg(null);
                   }}
                   disabled={submitting}
                 >
@@ -572,6 +611,27 @@ const ConfirmationList = () => {
                 onChange={setNota}
                 fullWidth
               />
+
+              {/* Error feedback */}
+              {errorMsg && (
+                <Stack
+                  sx={{
+                    flexDirection: 'row',
+                    gap: 1,
+                    alignItems: 'flex-start',
+                    p: 1.5,
+                    borderRadius: 1.5,
+                    bgcolor: 'error.50',
+                    border: '1px solid',
+                    borderColor: 'error.200',
+                  }}
+                >
+                  <IconAlertTriangle size={16} color="currentColor" style={{ color: '#ef4444', flexShrink: 0, marginTop: 2 }} />
+                  <Typography variant="caption" color="error.main" sx={{ lineHeight: 1.5 }}>
+                    {errorMsg}
+                  </Typography>
+                </Stack>
+              )}
 
               {/* Primary action */}
               <Button

@@ -16,6 +16,10 @@ export const useConfirmation = () => {
     queryKey: ['confirmation-materials', userName],
     queryFn: () => getMaterialesParaConfirmar(userName),
     enabled: !!userName,
+    // Always re-fetch from Supabase when the component mounts so the
+    // wizard never starts with stale "already confirmed" state.
+    refetchOnMount: 'always',
+    staleTime: 0,
   });
 
   const mutation = useMutation({
