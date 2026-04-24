@@ -68,24 +68,22 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
 
-    // Permission already granted — ensure subscription exists and is synced
+    // Permission already granted — check if this device has a browser-side subscription.
+    // If it does, sync it to the server (upsert by endpoint is safe — each device keeps its own row).
+    // If not, show the banner with "Reintentar" so the user can re-subscribe on this device.
     syncedRef.current = true;
     (async () => {
       try {
         const registration = await navigator.serviceWorker.ready;
-        let subscription = await registration.pushManager.getSubscription();
+        const subscription = await registration.pushManager.getSubscription();
 
         if (!subscription) {
-          // Permission granted but no browser subscription — create one
-          const vapidKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
-          if (!vapidKey) return;
-          subscription = await registration.pushManager.subscribe({
-            userVisibleOnly: true,
-            applicationServerKey: urlBase64ToUint8Array(vapidKey) as BufferSource,
-          });
+          // No browser subscription on this device. Let the banner handle re-subscription.
+          setIsSubscribed(false);
+          return;
         }
 
-        // Always POST to server on load — upsert is idempotent, ensures server has latest
+        // Browser subscription exists — sync it to the server for this device
         const userId = getUserId();
         if (!userId) return;
         await fetch('/api/notifications/subscribe', {
@@ -95,10 +93,10 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
         });
 
         setIsSubscribed(true);
-        console.log('[Push] Subscription synced for', userId);
+        console.log('[Push] Subscription synced for', userId, subscription.endpoint.slice(0, 50));
       } catch (err) {
         console.warn('[Push] Auto-sync failed:', err);
-        syncedRef.current = false; // allow retry on next render
+        syncedRef.current = false;
       }
     })();
   }, [isSupported, user, checkSubscription, getUserId]);

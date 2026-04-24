@@ -20,6 +20,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(400).json({ error: 'userId is required' });
   }
 
+  // Upsert by endpoint — each device gets its own row.
+  // A single user_id can have multiple rows (one per device/browser).
   const { error } = await supabase
     .from('push_subscriptions')
     .upsert(
@@ -30,7 +32,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         auth: subscription.keys.auth,
         updated_at: new Date().toISOString(),
       },
-      { onConflict: 'user_id' }
+      { onConflict: 'endpoint' }
     );
 
   if (error) {

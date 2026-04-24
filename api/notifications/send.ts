@@ -24,9 +24,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(400).json({ error: 'Missing required fields' });
   }
 
-  const query = supabase.from('push_subscriptions').select('*');
+  let query = supabase.from('push_subscriptions').select('*');
   if (userIds.length > 0) {
-    query.in('user_id', userIds);
+    query = query.in('user_id', userIds);
   }
   const { data: subscriptions, error: fetchError } = await query;
 

@@ -22,11 +22,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(500).json({ error: 'Failed to fetch subscribers' });
   }
 
-  const users = (subscriptions ?? []).map((sub) => ({
-    userId: sub.user_id,
-    userName: sub.user_id,
-    materialCount: 1, // Each subscriber is counted as 1 recipient
-  }));
+  // Deduplicate by user_id — one user can have subscriptions on multiple devices
+  const seen = new Set<string>();
+  const users = (subscriptions ?? [])
+    .filter((sub) => {
+      if (seen.has(sub.user_id)) return false;
+      seen.add(sub.user_id);
+      return true;
+    })
+    .map((sub) => ({
+      userId: sub.user_id,
+      userName: sub.user_id,
+      materialCount: 1,
+    }));
 
   return res.status(200).json(users);
 }
