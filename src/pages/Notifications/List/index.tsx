@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+import { useDialogLayer } from '@material-hu/components/layers/Dialogs';
 import {
   IconBell,
   IconBellOff,
@@ -9,6 +10,7 @@ import {
   IconInfoCircle,
   IconAlertTriangle,
   IconX,
+  IconBellRinging,
 } from '@material-hu/icons/tabler';
 import Button from '@material-hu/components/design-system/Buttons/Button';
 import Title from '@material-hu/components/design-system/Title';
@@ -26,6 +28,8 @@ import {
   getNotificacionesCaptador,
   getNotificacionesLiderAdmin,
 } from './services';
+import { useUsersWithMaterials } from './hooks/useUsersWithMaterials';
+import { SendMonthlyConfirmationDialog } from './components/SendMonthlyConfirmationDialog';
 
 const DEMO_CAPTADOR_NOMBRE = 'Ana García';
 const DEMO_LIDER_NOMBRE = 'Carlos López';
@@ -176,6 +180,10 @@ const NotifCard = ({
 const NotificationsList = () => {
   const { perfil } = useProfile();
   const [tick, setTick] = useState(0);
+  const { openDialog } = useDialogLayer();
+
+  const { users, recipientCount, userCount, isLoading: usersLoading } =
+    useUsersWithMaterials();
 
   const notifs: Notificacion[] =
     perfil === 'navegante'
@@ -195,6 +203,38 @@ const NotificationsList = () => {
     setTick(t => t + 1);
   };
 
+  const handleSendMonthlyConfirmation = async () => {
+    try {
+      const response = await fetch('/api/notifications/send-monthly-confirmation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          dispatcherName: 'Admin',
+          dispatcherId: 'admin-001',
+          userIds: users.map(u => u.userId),
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to send notifications');
+      }
+    } finally {
+    }
+  };
+
+  const handleOpenSendDialog = () => {
+    openDialog({
+      content: (
+        <SendMonthlyConfirmationDialog
+          recipientCount={recipientCount}
+          userCount={userCount}
+          onConfirm={handleSendMonthlyConfirmation}
+          onCancel={() => {}}
+        />
+      ),
+    });
+  };
+
   return (
     <DashboardLayout>
       <Stack sx={{ gap: 4 }}>
@@ -210,16 +250,35 @@ const NotificationsList = () => {
             description="Mantente al tanto de lo que pasa en tu equipo."
             variant="L"
           />
-          {unread.length > 0 && (
-            <Button
-              variant="text"
-              size="small"
-              startIcon={<IconCheck size={16} />}
-              onClick={handleMarkAllRead}
-            >
-              Marcar todo como leído
-            </Button>
-          )}
+          <Stack
+            sx={{
+              flexDirection: 'row',
+              gap: 1,
+              alignItems: 'center',
+            }}
+          >
+            {perfil !== 'navegante' && userCount > 0 && (
+              <Button
+                variant="primary"
+                size="small"
+                startIcon={<IconBellRinging size={16} />}
+                onClick={handleOpenSendDialog}
+                disabled={usersLoading}
+              >
+                Enviar confirmación mensual
+              </Button>
+            )}
+            {unread.length > 0 && (
+              <Button
+                variant="text"
+                size="small"
+                startIcon={<IconCheck size={16} />}
+                onClick={handleMarkAllRead}
+              >
+                Marcar todo como leído
+              </Button>
+            )}
+          </Stack>
         </Stack>
 
         {notifs.length === 0 ? (
