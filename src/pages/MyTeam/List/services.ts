@@ -23,7 +23,7 @@ export const getMyTeam = async (leaderDni: string): Promise<TeamMember[]> => {
     limit: '500',
   });
 
-  const materials = getAllMaterials();
+  const materials = await getAllMaterials();
 
   return result.data.map(u => {
     const nombre = `${u.firstName} ${u.lastName}`.trim();

@@ -1,5 +1,5 @@
-import { postgrestQuery } from '../../../services/api';
-import { createMaterial, getAllMaterials, setMaterialsCache } from '../store';
+import { supabase } from '../../../services/supabase';
+import { createMaterial } from '../store';
 
 import {
   type Material,
@@ -9,23 +9,17 @@ import {
   type MaterialTipo,
 } from './types';
 
-const normalizeMaterial = (m: Material): Material => ({
-  ...m,
-  historial: Array.isArray(m.historial) ? m.historial : [],
-  assignedToUserId: m.assignedToUserId ?? null,
-});
-
 export const getMaterials = async (): Promise<Material[]> => {
-  try {
-    const rows = await postgrestQuery<Material>('materials');
-    const materials = rows.map(normalizeMaterial);
-    // Keep in-memory cache in sync so mutations (updateMaterial etc.) have current data
-    setMaterialsCache(materials);
-    return materials.map(m => ({ ...m }));
-  } catch {
-    // PostgREST unavailable — fall back to in-memory cache or seed data
-    return getAllMaterials();
-  }
+  const { data, error } = await supabase
+    .from('materials')
+    .select('*')
+    .order('id');
+  if (error) throw error;
+  return (data ?? []).map(m => ({
+    ...m,
+    historial: Array.isArray(m.historial) ? m.historial : [],
+    assignedToUserId: m.assignedToUserId ?? null,
+  }));
 };
 
 export type CreateMaterialInput = {

@@ -5,7 +5,7 @@ import { type MovimientoGlobal } from './types';
 
 /** Aggregates all historial events from every material into a flat, date-sorted list. */
 export const getAllMovements = async (): Promise<MovimientoGlobal[]> => {
-  const materials = getAllMaterials();
+  const materials = await getAllMaterials();
   const movements: MovimientoGlobal[] = [];
 
   for (const m of materials) {

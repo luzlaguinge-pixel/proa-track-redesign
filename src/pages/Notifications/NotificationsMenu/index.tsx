@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 
 import {
   IconCheck,
@@ -160,10 +161,13 @@ export const NotificationsMenu = ({ onClose }: { onClose?: () => void }) => {
   const { perfil } = useProfile();
   const [tick, setTick] = useState(0);
 
-  const notifs: Notificacion[] =
-    perfil === 'navegante'
-      ? getNotificacionesCaptador(DEMO_CAPTADOR_NOMBRE)
-      : getNotificacionesLiderAdmin(DEMO_TEAM_NOMBRES);
+  const { data: notifs = [] as Notificacion[] } = useQuery({
+    queryKey: ['notificaciones', perfil, tick],
+    queryFn: () =>
+      perfil === 'navegante'
+        ? getNotificacionesCaptador(DEMO_CAPTADOR_NOMBRE)
+        : getNotificacionesLiderAdmin(DEMO_TEAM_NOMBRES),
+  });
 
   const unread = notifs.filter(n => !n.leida);
   const read = notifs.filter(n => n.leida);

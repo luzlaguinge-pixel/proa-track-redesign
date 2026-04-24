@@ -32,9 +32,9 @@ const esUltimaSemana = (fecha: string): boolean => {
   return now.getTime() - d.getTime() < 7 * 24 * 60 * 60 * 1000;
 };
 
-export const getNotificacionesCaptador = (nombre: string): Notificacion[] => {
+export const getNotificacionesCaptador = async (nombre: string): Promise<Notificacion[]> => {
   const notifs: Notificacion[] = [];
-  const materials = getAllMaterials().filter(
+  const materials = (await getAllMaterials()).filter(
     m => m.responsableNombre === nombre && m.estado === 'en_uso',
   );
 
@@ -102,9 +102,9 @@ export const getNotificacionesCaptador = (nombre: string): Notificacion[] => {
   );
 };
 
-export const getNotificacionesLiderAdmin = (
+export const getNotificacionesLiderAdmin = async (
   teamNombres: string[],
-): Notificacion[] => {
+): Promise<Notificacion[]> => {
   const notifs: Notificacion[] = [];
 
   const pendientes = getAllSolicitudes().filter(
@@ -123,7 +123,7 @@ export const getNotificacionesLiderAdmin = (
     });
   }
 
-  const materials = getAllMaterials().filter(
+  const materials = (await getAllMaterials()).filter(
     m =>
       m.estado === 'en_uso' &&
       m.responsableNombre &&
@@ -150,7 +150,7 @@ export const getNotificacionesLiderAdmin = (
     });
   }
 
-  const enRiesgo = getAllMaterials().filter(
+  const enRiesgo = (await getAllMaterials()).filter(
     m => m.estado === 'perdida' || m.estado === 'en_reparacion',
   );
   if (enRiesgo.length > 0) {
@@ -172,8 +172,8 @@ export const getNotificacionesLiderAdmin = (
 };
 
 export const getNavegantesConConfirmacionesPendientes =
-  (): NavegantePendiente[] => {
-    const materials = getAllMaterials().filter(
+  async (): Promise<NavegantePendiente[]> => {
+    const materials = (await getAllMaterials()).filter(
       m => m.estado === 'en_uso' && m.responsableNombre,
     );
     const confirmados = new Set(
@@ -199,8 +199,8 @@ export const getNavegantesConConfirmacionesPendientes =
     }));
   };
 
-export const sendBulkReminderNotifications = (): Notificacion[] => {
-  const navegantes = getNavegantesConConfirmacionesPendientes();
+export const sendBulkReminderNotifications = async (): Promise<Notificacion[]> => {
+  const navegantes = await getNavegantesConConfirmacionesPendientes();
   const notificaciones: Notificacion[] = [];
 
   for (const nav of navegantes) {

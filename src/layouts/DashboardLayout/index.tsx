@@ -1,5 +1,6 @@
 import { type ReactNode, useState } from 'react';
 import { useLocation } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 
 import useMediaQuery from '@material-hu/mui/useMediaQuery';
 
@@ -194,10 +195,14 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const displayName = user ? `${user.firstName} ${user.lastName}`.trim() : '';
   const profileBadge = PERFIL_LABEL[perfil];
 
-  const notifs =
-    perfil === 'navegante'
-      ? getNotificacionesCaptador(displayName)
-      : getNotificacionesLiderAdmin([]);
+  const { data: notifs = [] } = useQuery({
+    queryKey: ['notificaciones-layout', perfil, displayName],
+    queryFn: () =>
+      perfil === 'navegante'
+        ? getNotificacionesCaptador(displayName)
+        : getNotificacionesLiderAdmin([]),
+    enabled: !!displayName,
+  });
   const unreadCount = notifs.filter(n => !n.leida).length;
 
   const handleOpenNotifications = (

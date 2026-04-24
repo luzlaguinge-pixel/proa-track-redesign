@@ -45,9 +45,9 @@ const TeamConfirmationsList = () => {
 
   const { data: confirmaciones = [], isLoading: loadingConf } = useQuery({
     queryKey: ['confirmaciones', isAdmin ? 'all' : leaderDni],
-    queryFn: () => {
+    queryFn: async () => {
       if (isAdmin) {
-        const materials = getAllMaterials();
+        const materials = await getAllMaterials();
         return getAllConfirmaciones()
           .map(c => {
             const m = materials.find(mat => mat.id === c.materialId);

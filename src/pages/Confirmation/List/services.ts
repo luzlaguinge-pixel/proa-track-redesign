@@ -21,10 +21,10 @@ const esMismoMes = (fecha: string): boolean => {
   );
 };
 
-export const getMaterialesParaConfirmar = (
+export const getMaterialesParaConfirmar = async (
   responsableNombre: string,
-): MaterialConEstadoConfirmacion[] => {
-  const materials = getAllMaterials().filter(
+): Promise<MaterialConEstadoConfirmacion[]> => {
+  const materials = (await getAllMaterials()).filter(
     m => m.responsableNombre === responsableNombre && m.estado === 'en_uso',
   );
   return materials.map(m => {
@@ -66,10 +66,10 @@ export type ConfirmacionConMaterial = Confirmacion & {
   responsableNombre: string;
 };
 
-export const getConfirmacionesEquipo = (
+export const getConfirmacionesEquipo = async (
   teamNombres: string[],
-): ConfirmacionConMaterial[] => {
-  const materials = getAllMaterials();
+): Promise<ConfirmacionConMaterial[]> => {
+  const materials = await getAllMaterials();
   const all = getAllConfirmaciones();
   return all
     .filter(c => teamNombres.includes(c.responsableNombre))

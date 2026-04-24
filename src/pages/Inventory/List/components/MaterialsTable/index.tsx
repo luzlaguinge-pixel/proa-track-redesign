@@ -131,8 +131,8 @@ const MaterialsTable = ({
             <Button
               variant="primary"
               size="medium"
-              onClick={() => {
-                unassignMaterials(ids);
+              onClick={async () => {
+                await unassignMaterials(ids);
                 invalidate();
                 setSelected(new Set());
                 closeDialog();
@@ -183,8 +183,8 @@ const MaterialsTable = ({
             <Button
               variant="primary"
               size="medium"
-              onClick={() => {
-                deleteMaterials(ids);
+              onClick={async () => {
+                await deleteMaterials(ids);
                 invalidate();
                 setSelected(new Set());
                 closeDialog();

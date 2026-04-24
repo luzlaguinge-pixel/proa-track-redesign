@@ -36,8 +36,8 @@ const PersonActions = ({ person, materials }: PersonActionsProps) => {
 
   const hasMaterials = materials.length > 0;
 
-  const openAssign = () => {
-    const available = getAllMaterials().filter(m => m.estado === 'sin_uso');
+  const openAssign = async () => {
+    const available = (await getAllMaterials()).filter(m => m.estado === 'sin_uso');
     openDrawer({
       wrapperProps: { anchor: 'right' },
       content: (

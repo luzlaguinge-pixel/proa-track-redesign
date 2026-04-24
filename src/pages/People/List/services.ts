@@ -29,7 +29,7 @@ export const getBasicPersons = async (): Promise<PersonRow[]> => {
 export const getPersons = async (): Promise<PersonRow[]> => {
   const [people, materials] = await Promise.all([
     getActivePeople(),
-    Promise.resolve(getAllMaterials()),
+    getAllMaterials(),
   ]);
 
   return people.map(p => ({

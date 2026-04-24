@@ -34,8 +34,8 @@ export type DashboardStats = {
   // TODO: valorInventario, valorPerdidos — requiere campo `value` en Material (GET /materials/economic-summary)
 };
 
-const getDashboardStats = (country: Country): DashboardStats => {
-  const all = getAllMaterials();
+const getDashboardStats = async (country: Country): Promise<DashboardStats> => {
+  const all = await getAllMaterials();
   const materials =
     country === 'todos' ? all : all.filter(m => m.pais === country);
 

@@ -54,8 +54,8 @@ const isWithinDateRange = (
   return true;
 };
 
-export const getMaterialStats = (filters?: ReportFilters): MaterialStats => {
-  let materials = getAllMaterials();
+export const getMaterialStats = async (filters?: ReportFilters): Promise<MaterialStats> => {
+  let materials = await getAllMaterials();
 
   if (filters?.ubicacion) {
     materials = materials.filter(m => m.plaza === filters.ubicacion);
@@ -73,10 +73,10 @@ export const getMaterialStats = (filters?: ReportFilters): MaterialStats => {
   };
 };
 
-export const getConfirmacionStats = (
+export const getConfirmacionStats = async (
   filters?: ReportFilters,
-): ConfirmacionStats => {
-  let enUso = getAllMaterials().filter(m => m.estado === 'en_uso');
+): Promise<ConfirmacionStats> => {
+  let enUso = (await getAllMaterials()).filter(m => m.estado === 'en_uso');
 
   if (filters?.ubicacion) {
     enUso = enUso.filter(m => m.plaza === filters.ubicacion);
@@ -117,8 +117,8 @@ export const getSolicitudStats = (filters?: ReportFilters): SolicitudStats => {
   };
 };
 
-export const getMaterialsByOsc = (filters?: ReportFilters): BreakdownItem[] => {
-  let materials = getAllMaterials().filter(m => m.estado === 'en_uso');
+export const getMaterialsByOsc = async (filters?: ReportFilters): Promise<BreakdownItem[]> => {
+  let materials = (await getAllMaterials()).filter(m => m.estado === 'en_uso');
 
   if (filters?.ubicacion) {
     materials = materials.filter(m => m.plaza === filters.ubicacion);
@@ -135,10 +135,10 @@ export const getMaterialsByOsc = (filters?: ReportFilters): BreakdownItem[] => {
     .slice(0, 10);
 };
 
-export const getMaterialsByPlaza = (
+export const getMaterialsByPlaza = async (
   filters?: ReportFilters,
-): BreakdownItem[] => {
-  let materials = getAllMaterials().filter(m => m.estado === 'en_uso');
+): Promise<BreakdownItem[]> => {
+  let materials = (await getAllMaterials()).filter(m => m.estado === 'en_uso');
 
   if (filters?.estado) {
     materials = materials.filter(m => m.estado === filters.estado);

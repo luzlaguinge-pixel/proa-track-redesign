@@ -60,7 +60,7 @@ export const useMaterialMutations = (materialId: string) => {
   });
 
   const remove = useMutation({
-    mutationFn: () => Promise.resolve(deleteMaterial(materialId)),
+    mutationFn: () => deleteMaterial(materialId),
     onSuccess: invalidate,
   });
 

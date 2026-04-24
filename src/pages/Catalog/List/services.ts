@@ -12,7 +12,7 @@ export type UpdateCatalogInput = Partial<Omit<CatalogItem, 'id'>>;
 
 export const getCatalogItems = async (): Promise<CatalogItemWithUnidades[]> => {
   const all = getAllCatalogItems().filter(i => !i.archivado);
-  const materials = getAllMaterials();
+  const materials = await getAllMaterials();
   return all.map(item => ({
     ...item,
     unidades: materials.filter(m => item.id === `cat_${m.tipo}`).length,

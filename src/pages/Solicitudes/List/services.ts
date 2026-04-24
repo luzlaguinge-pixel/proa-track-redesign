@@ -9,10 +9,10 @@ const rawPersons = (db as { persons: RawPerson[] }).persons;
 
 export type SolicitudConLabel = Solicitud & { materialLabel: string };
 
-export const getSolicitudesPendientes = (
+export const getSolicitudesPendientes = async (
   teamNombres: string[],
-): SolicitudConLabel[] => {
-  const materials = getAllMaterials();
+): Promise<SolicitudConLabel[]> => {
+  const materials = await getAllMaterials();
   return getAllSolicitudes()
     .filter(
       s =>
@@ -28,8 +28,8 @@ export const getSolicitudesPendientes = (
     .sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime());
 };
 
-export const getAllSolicitudesAdmin = (): SolicitudConLabel[] => {
-  const materials = getAllMaterials();
+export const getAllSolicitudesAdmin = async (): Promise<SolicitudConLabel[]> => {
+  const materials = await getAllMaterials();
   return getAllSolicitudes()
     .map(s => {
       const m = materials.find(mat => mat.id === s.materialId);

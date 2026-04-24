@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 
 import { useDialogLayer } from '@material-hu/components/layers/Dialogs';
 import {
@@ -185,10 +186,13 @@ const NotificationsList = () => {
   const { users, recipientCount, userCount, isLoading: usersLoading } =
     useUsersWithMaterials();
 
-  const notifs: Notificacion[] =
-    perfil === 'navegante'
-      ? getNotificacionesCaptador(DEMO_CAPTADOR_NOMBRE)
-      : getNotificacionesLiderAdmin(DEMO_TEAM_NOMBRES);
+  const { data: notifs = [] as Notificacion[] } = useQuery({
+    queryKey: ['notificaciones', perfil, tick],
+    queryFn: () =>
+      perfil === 'navegante'
+        ? getNotificacionesCaptador(DEMO_CAPTADOR_NOMBRE)
+        : getNotificacionesLiderAdmin(DEMO_TEAM_NOMBRES),
+  });
 
   const unread = notifs.filter(n => !n.leida);
   const read = notifs.filter(n => n.leida);

@@ -40,7 +40,7 @@ export const updatePersonContact = async (
 export const getPersonMaterials = async (
   nombre: string,
 ): Promise<Material[]> => {
-  return getAllMaterials().filter(m => m.responsableNombre === nombre);
+  return (await getAllMaterials()).filter(m => m.responsableNombre === nombre);
 };
 
 export type PersonHistorialEvento = HistorialEvento & {
@@ -51,7 +51,7 @@ export type PersonHistorialEvento = HistorialEvento & {
 export const getPersonHistory = async (
   nombre: string,
 ): Promise<PersonHistorialEvento[]> => {
-  const materials = getAllMaterials();
+  const materials = await getAllMaterials();
   const events: PersonHistorialEvento[] = [];
 
   for (const material of materials) {

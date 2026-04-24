@@ -17,7 +17,7 @@ export const useSendReminder = () => {
   const sendReminder = async (): Promise<SendReminderResult> => {
     setIsLoading(true);
     try {
-      const navegantes = getNavegantesConConfirmacionesPendientes();
+      const navegantes = await getNavegantesConConfirmacionesPendientes();
 
       if (navegantes.length === 0) {
         return {
@@ -28,7 +28,7 @@ export const useSendReminder = () => {
       }
 
       // Generate notifications for all navegantes with pending confirmations
-      const notificaciones = sendBulkReminderNotifications();
+      const notificaciones = await sendBulkReminderNotifications();
 
       return {
         success: true,

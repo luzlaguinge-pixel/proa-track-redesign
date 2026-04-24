@@ -26,7 +26,7 @@ export const getTeamMaterials = async (
     result.data.map(u => `${u.firstName} ${u.lastName}`.trim()),
   );
 
-  return getAllMaterials().filter(
+  return (await getAllMaterials()).filter(
     m => m.responsableNombre !== null && teamNames.has(m.responsableNombre),
   );
 };

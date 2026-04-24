@@ -1,49 +1,44 @@
-import db from '../../../mock/db.json';
-
-import {
-  postgrestCreate,
-  postgrestDelete,
-  postgrestQuery,
-  postgrestUpdate,
-} from '../../services/api';
+import { supabase } from '../../services/supabase';
 import { type Material } from './List/types';
 
-let cache: Material[] | null = null;
+// ─── Supabase helpers ─────────────────────────────────────────────────────────
 
-const seedMaterials = (): Material[] =>
-  (
-    db as { materials: Omit<Material, 'historial' | 'assignedToUserId'>[] }
-  ).materials.map(m => ({
-    ...m,
-    historial: [],
-    assignedToUserId: null,
-  })) as Material[];
+const TABLE = 'materials';
 
-export const getAllMaterials = (): Material[] => {
-  return cache ? cache.map(m => ({ ...m })) : seedMaterials();
+export const getAllMaterials = async (): Promise<Material[]> => {
+  const { data, error } = await supabase.from(TABLE).select('*').order('id');
+  if (error) throw error;
+  return (data ?? []).map(normalizeMaterial);
 };
 
-export const getMaterialById = (id: string): Material | null => {
-  const found = cache?.find(m => m.id === id);
-  return found ? { ...found } : null;
+export const getMaterialById = async (id: string): Promise<Material | null> => {
+  const { data, error } = await supabase
+    .from(TABLE)
+    .select('*')
+    .eq('id', id)
+    .maybeSingle();
+  if (error) throw error;
+  return data ? normalizeMaterial(data) : null;
 };
 
-export const updateMaterial = (
+export const updateMaterial = async (
   id: string,
   updater: (current: Material) => Material,
-): Material | null => {
-  if (!cache) return null;
-  const idx = cache.findIndex(m => m.id === id);
-  if (idx === -1) return null;
-  const updated = updater({ ...cache[idx] });
-  cache[idx] = updated;
-  postgrestUpdate<Material>('materials', id, updated).catch(() => {
-    // log silently
-  });
-  return { ...updated };
+): Promise<Material | null> => {
+  const current = await getMaterialById(id);
+  if (!current) return null;
+  const updated = updater(current);
+  const { data, error } = await supabase
+    .from(TABLE)
+    .update(toRow(updated))
+    .eq('id', id)
+    .select()
+    .maybeSingle();
+  if (error) throw error;
+  return data ? normalizeMaterial(data) : null;
 };
 
-export const createMaterial = (
+export const createMaterial = async (
   data: Omit<
     Material,
     | 'id'
@@ -56,8 +51,7 @@ export const createMaterial = (
     | 'historial'
     | 'assignedToUserId'
   >,
-): Material => {
-  if (!cache) cache = seedMaterials();
+): Promise<Material> => {
   const newMaterial: Material = {
     ...data,
     id: `mat_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
@@ -70,85 +64,94 @@ export const createMaterial = (
     historial: [],
     assignedToUserId: null,
   };
-  cache.push(newMaterial);
-  postgrestCreate<Material>('materials', newMaterial).catch(() => {
-    // log silently
-  });
-  return { ...newMaterial };
+  const { data: row, error } = await supabase
+    .from(TABLE)
+    .insert(toRow(newMaterial))
+    .select()
+    .single();
+  if (error) throw error;
+  return normalizeMaterial(row);
 };
 
-export const unassignMaterials = (ids: string[]): void => {
-  if (!cache) return;
+export const unassignMaterials = async (ids: string[]): Promise<void> => {
   const todayStr = new Date().toISOString().slice(0, 10);
-  const idSet = new Set(ids);
-  for (let i = 0; i < cache.length; i++) {
-    if (!idSet.has(cache[i].id)) continue;
-    const updated = {
-      ...cache[i],
+  const { error } = await supabase
+    .from(TABLE)
+    .update({
       responsableNombre: null,
       responsableDni: null,
       responsableTelefono: null,
       comodatoFirmado: false,
-      estado: 'sin_uso' as const,
+      estado: 'sin_uso',
       fechaActualizacion: todayStr,
-    };
-    cache[i] = updated;
-    postgrestUpdate<Material>('materials', cache[i].id, updated).catch(() => {
-      // log silently
-    });
-  }
+    })
+    .in('id', ids);
+  if (error) throw error;
 };
 
-export const deleteMaterials = (ids: string[]): void => {
-  if (!cache) return;
-  const idSet = new Set(ids);
-  for (const id of ids) {
-    postgrestDelete('materials', id).catch(() => {
-      // log silently
-    });
-  }
-  cache = cache.filter(m => !idSet.has(m.id));
+export const deleteMaterials = async (ids: string[]): Promise<void> => {
+  const { error } = await supabase.from(TABLE).delete().in('id', ids);
+  if (error) throw error;
 };
 
-export const deleteMaterial = (id: string): boolean => {
-  if (!cache) return false;
-  const idx = cache.findIndex(m => m.id === id);
-  if (idx === -1) return false;
-  cache.splice(idx, 1);
-  postgrestDelete('materials', id).catch(() => {
-    // log silently
-  });
+export const deleteMaterial = async (id: string): Promise<boolean> => {
+  const { error } = await supabase.from(TABLE).delete().eq('id', id);
+  if (error) throw error;
   return true;
 };
 
-export const resetStore = (): void => {
-  cache = seedMaterials();
-  postgrestQuery<Material>('materials')
-    .then(current => {
-      const ops = current.map(m => postgrestDelete('materials', m.id));
-      return Promise.all(ops);
-    })
-    .then(() => {
-      if (!cache) return;
-      const ops = cache.map(m => postgrestCreate<Material>('materials', m));
-      return Promise.all(ops);
-    })
-    .catch(() => {
-      // log silently
-    });
-};
+// ─── Internal helpers ─────────────────────────────────────────────────────────
 
+// Supabase returns exactly our column names (camelCase with quotes in schema)
+const normalizeMaterial = (row: Record<string, unknown>): Material => ({
+  id: row.id as string,
+  tipo: row.tipo as Material['tipo'],
+  detalle: (row.detalle as string) ?? '',
+  estado: row.estado as Material['estado'],
+  estadoFisico: (row.estadoFisico as Material['estadoFisico']) ?? 'ok',
+  osc: (row.osc as string) ?? '',
+  dueño: (row['dueño'] as Material['dueño']) ?? 'proa',
+  cantidad: (row.cantidad as number) ?? 1,
+  plaza: (row.plaza as string) ?? '',
+  pais: (row.pais as Material['pais']) ?? 'AR',
+  responsableNombre: (row.responsableNombre as string) ?? null,
+  responsableDni: (row.responsableDni as string) ?? null,
+  responsableTelefono: (row.responsableTelefono as string) ?? null,
+  comodatoFirmado: (row.comodatoFirmado as boolean) ?? false,
+  lineaTelefonica: (row.lineaTelefonica as string) ?? null,
+  observaciones: (row.observaciones as string) ?? null,
+  fechaActualizacion: (row.fechaActualizacion as string) ?? '',
+  historial: Array.isArray(row.historial) ? row.historial : [],
+  assignedToUserId: (row.assignedToUserId as string) ?? null,
+});
+
+// Strip Supabase-only columns before writing
+const toRow = (m: Material) => ({
+  id: m.id,
+  tipo: m.tipo,
+  detalle: m.detalle,
+  estado: m.estado,
+  estadoFisico: m.estadoFisico,
+  osc: m.osc,
+  'dueño': m.dueño,
+  cantidad: m.cantidad,
+  plaza: m.plaza,
+  pais: m.pais,
+  responsableNombre: m.responsableNombre,
+  responsableDni: m.responsableDni,
+  responsableTelefono: m.responsableTelefono,
+  comodatoFirmado: m.comodatoFirmado,
+  lineaTelefonica: m.lineaTelefonica,
+  observaciones: m.observaciones,
+  fechaActualizacion: m.fechaActualizacion,
+  historial: m.historial,
+  assignedToUserId: m.assignedToUserId,
+});
+
+// Kept for any code that hasn't migrated yet — now async
+export const setMaterialsCache = (_materials: Material[]): void => {
+  // no-op: Supabase is the source of truth now
+};
 export const initializeStore = async (): Promise<void> => {
-  try {
-    const materials = await postgrestQuery<Material>('materials');
-    cache = materials;
-  } catch {
-    cache = seedMaterials();
-  }
-};
-
-// Called by services after a PostgREST read so the in-memory cache stays in
-// sync for mutations that need it (updateMaterial, deleteMaterial, etc.)
-export const setMaterialsCache = (materials: Material[]): void => {
-  cache = materials.map(m => ({ ...m }));
+  // no-op: Supabase is the source of truth now
 };
