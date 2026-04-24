@@ -17,6 +17,9 @@ import Paper from '@material-hu/mui/Paper';
 import Stack from '@material-hu/mui/Stack';
 import Typography from '@material-hu/mui/Typography';
 
+import Chip from '@material-hu/mui/Chip';
+
+import { getOffboardedNames } from '../../../lifecycleStore';
 import { type HistorialEventoTipo } from '../../../../Inventory/List/types';
 import { type PersonHistorialEvento } from '../../services';
 
@@ -74,6 +77,7 @@ type PersonHistorialProps = {
 
 const PersonHistorial = ({ history }: PersonHistorialProps) => {
   const navigate = useNavigate();
+  const offboardedNames = getOffboardedNames();
 
   return (
     <Paper
@@ -152,14 +156,20 @@ const PersonHistorial = ({ history }: PersonHistorialProps) => {
                         justifyContent: 'space-between',
                         gap: 2,
                         flexWrap: 'wrap',
+                        alignItems: 'flex-start',
                       }}
                     >
-                      <Typography
-                        variant="body1"
-                        sx={{ fontWeight: 500 }}
-                      >
-                        {event.titulo}
-                      </Typography>
+                      <Stack sx={{ flexDirection: 'row', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
+                        <Typography
+                          variant="body1"
+                          sx={{ fontWeight: 500 }}
+                        >
+                          {event.titulo}
+                        </Typography>
+                        {[...offboardedNames].some(n => event.titulo.includes(n)) && (
+                          <Chip label="baja" size="small" color="warning" variant="outlined" sx={{ height: 18, fontSize: 10 }} />
+                        )}
+                      </Stack>
                       <Typography
                         variant="caption"
                         color="text.secondary"

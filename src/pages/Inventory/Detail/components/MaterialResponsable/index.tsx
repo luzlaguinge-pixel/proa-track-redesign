@@ -1,11 +1,13 @@
 import { IconUser, IconUserOff } from '@material-hu/icons/tabler';
 import Box from '@material-hu/mui/Box';
+import Chip from '@material-hu/mui/Chip';
 import Paper from '@material-hu/mui/Paper';
 import Stack from '@material-hu/mui/Stack';
 import Typography from '@material-hu/mui/Typography';
 
 import Pills from '@material-hu/components/design-system/Pills';
 
+import { getOffboardedNames } from '../../../../People/lifecycleStore';
 import { type Material } from '../../../List/types';
 
 type MaterialResponsableProps = {
@@ -19,6 +21,8 @@ const MaterialResponsable = ({ material }: MaterialResponsableProps) => {
     responsableTelefono,
     comodatoFirmado,
   } = material;
+  const offboardedNames = getOffboardedNames();
+  const isOffboarded = !!responsableNombre && offboardedNames.has(responsableNombre);
 
   return (
     <Paper
@@ -86,7 +90,12 @@ const MaterialResponsable = ({ material }: MaterialResponsableProps) => {
                 >
                   Nombre
                 </Typography>
-                <Typography variant="body1">{responsableNombre}</Typography>
+                <Stack sx={{ flexDirection: 'row', alignItems: 'center', gap: 1 }}>
+                  <Typography variant="body1">{responsableNombre}</Typography>
+                  {isOffboarded && (
+                    <Chip label="baja" size="small" color="warning" variant="outlined" sx={{ height: 18, fontSize: 10 }} />
+                  )}
+                </Stack>
               </Stack>
               <Stack sx={{ gap: 0.25 }}>
                 <Typography

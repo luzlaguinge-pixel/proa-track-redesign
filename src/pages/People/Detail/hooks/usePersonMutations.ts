@@ -10,6 +10,10 @@ import {
 import { type Person } from '../../../Inventory/Detail/types';
 import { materialsKeys } from '../../../Inventory/List/hooks/useGetMaterials';
 import { type Material } from '../../../Inventory/List/types';
+import {
+  isPendingRecovery,
+  resolveTermination,
+} from '../../lifecycleStore';
 
 import { updatePersonContact } from '../services';
 import { personKeys } from './useGetPerson';
@@ -94,7 +98,14 @@ export const usePersonMutations = (
         ),
       );
     },
-    onSuccess: invalidate,
+    onSuccess: () => {
+      // If this person was in pending_recovery and all their materials are now
+      // resolved, auto-transition them to fully terminated.
+      if (person && isPendingRecovery(person.id)) {
+        resolveTermination(person.id);
+      }
+      invalidate();
+    },
   });
 
   const returnAll = useMutation({

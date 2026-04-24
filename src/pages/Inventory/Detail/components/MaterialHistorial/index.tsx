@@ -15,6 +15,9 @@ import Paper from '@material-hu/mui/Paper';
 import Stack from '@material-hu/mui/Stack';
 import Typography from '@material-hu/mui/Typography';
 
+import Chip from '@material-hu/mui/Chip';
+
+import { getOffboardedNames } from '../../../../People/lifecycleStore';
 import { type HistorialEventoTipo, type Material } from '../../../List/types';
 
 const ICONS: Record<HistorialEventoTipo, TablerIcon> = {
@@ -71,6 +74,7 @@ type MaterialHistorialProps = {
 
 const MaterialHistorial = ({ material }: MaterialHistorialProps) => {
   const events = material.historial;
+  const offboardedNames = getOffboardedNames();
 
   return (
     <Paper
@@ -158,14 +162,20 @@ const MaterialHistorial = ({ material }: MaterialHistorialProps) => {
                         justifyContent: 'space-between',
                         gap: 2,
                         flexWrap: 'wrap',
+                        alignItems: 'flex-start',
                       }}
                     >
-                      <Typography
-                        variant="body1"
-                        sx={{ fontWeight: 500 }}
-                      >
-                        {event.titulo}
-                      </Typography>
+                      <Stack sx={{ flexDirection: 'row', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
+                        <Typography
+                          variant="body1"
+                          sx={{ fontWeight: 500 }}
+                        >
+                          {event.titulo}
+                        </Typography>
+                        {[...offboardedNames].some(n => event.titulo.includes(n)) && (
+                          <Chip label="baja" size="small" color="warning" variant="outlined" sx={{ height: 18, fontSize: 10 }} />
+                        )}
+                      </Stack>
                       <Typography
                         variant="caption"
                         color="text.secondary"

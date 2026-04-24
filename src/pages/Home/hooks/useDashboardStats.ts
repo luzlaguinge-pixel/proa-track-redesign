@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 
 import { TIPO_LABEL } from '../../Inventory/List/constants';
 import { getAllMaterials } from '../../Inventory/store';
+import { getAllPendingRecovery } from '../../People/lifecycleStore';
 
 import { type Country } from './useCountryFilter';
 
@@ -96,7 +97,18 @@ const getDashboardStats = async (country: Country): Promise<DashboardStats> => {
     }
   }
 
-  // TODO: bajas_pendiente — requiere campo `estado: 'baja'` en Persona + GET /persons?estado=baja&tiene_materiales=true
+  // ── Pending-recovery alerts ───────────────────────────────────────────────
+  for (const record of getAllPendingRecovery()) {
+    alertas.push({
+      id: `baja-${record.id}`,
+      label: record.nombre,
+      sublabel: `${record.materialCountAtBaja} ${record.materialCountAtBaja === 1 ? 'material' : 'materiales'} pendiente${record.materialCountAtBaja === 1 ? '' : 's'}`,
+      motivo: 'Baja en proceso',
+      tipo: 'baja_pendiente',
+      linkTo: `/people/${record.id}`,
+    });
+  }
+
   // TODO: confirmaciones_vencidas — requiere tabla confirmaciones + GET /confirmations?vencido=true
 
   return {

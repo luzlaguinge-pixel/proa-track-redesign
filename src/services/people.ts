@@ -1,6 +1,7 @@
 // Development: import mock data from mock/db.json
 import db from '../../mock/db.json';
 
+import { isExcludedFromActiveViews } from '../pages/People/lifecycleStore';
 import { postgrest } from './postgrest';
 
 export type HumandUser = {
@@ -20,6 +21,7 @@ export type Person = {
   email: string;
   telefono: string;
   bossId: number | null;
+  employeeInternalId: string;
 };
 
 function mapToPerson(u: HumandUser): Person {
@@ -30,6 +32,7 @@ function mapToPerson(u: HumandUser): Person {
     email: u.email ?? '',
     telefono: '',
     bossId: u.bossId ?? null,
+    employeeInternalId: u.employeeInternalId ?? '',
   };
 }
 
@@ -40,24 +43,28 @@ export async function getActivePeople(): Promise<Person[]> {
   const mockPersons = (db as any).persons || [];
   if (mockPersons.length > 0) {
     // biome-ignore lint/suspicious/noExplicitAny: mock data has dynamic structure
-    return mockPersons.map((p: any) => ({
+    const all: Person[] = mockPersons.map((p: any) => ({
       id: p.id || String(p.id),
       nombre: p.nombre || '',
       dni: p.dni || '',
       email: p.email || '',
       telefono: p.telefono || '',
       bossId: null,
+      employeeInternalId: p.employeeInternalId || p.email || '',
     }));
+    // Exclude terminated / pending_recovery people from all active views
+    return all.filter(p => !isExcludedFromActiveViews(p.id));
   }
 
-  // Production: use postgrest API
+  // Production: use postgrest API (DEACTIVATED users already excluded by status filter)
   const result = await postgrest.get<HumandUser>('/users', {
     status: 'eq.ACTIVE',
     select: 'id,firstName,lastName,employeeInternalId,email,bossId',
     order: 'lastName.asc',
     limit: '500',
   });
-  return result.data.map(mapToPerson);
+  const all = result.data.map(mapToPerson);
+  return all.filter(p => !isExcludedFromActiveViews(p.id));
 }
 
 export async function searchPeople(query: string): Promise<Person[]> {

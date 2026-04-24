@@ -5,6 +5,7 @@ import {
   IconAlertTriangle,
   IconArrowLeft,
   IconPencil,
+  IconUserMinus,
 } from '@material-hu/icons/tabler';
 import IconButton from '@material-hu/mui/IconButton';
 import Paper from '@material-hu/mui/Paper';
@@ -17,6 +18,10 @@ import InputClassic from '@material-hu/components/design-system/Inputs/Classic';
 import { useDialogLayer } from '@material-hu/components/layers/Dialogs';
 
 import { DashboardLayout } from '../../../layouts/DashboardLayout';
+import {
+  getLifecycleRecord,
+  getLifecycleStatus,
+} from '../lifecycleStore';
 
 import PersonActions from './components/PersonActions';
 import PersonHistorial from './components/PersonHistorial';
@@ -36,6 +41,9 @@ const PeopleDetail = () => {
   const { history } = useGetPersonHistory(person?.nombre);
   const { updateContact } = usePersonMutations(person ?? null);
   const { openDialog, closeDialog } = useDialogLayer();
+
+  const lifecycleStatus = id ? getLifecycleStatus(id) : 'active';
+  const lifecycleRecord = id ? getLifecycleRecord(id) : null;
 
   if (isLoading)
     return (
@@ -73,6 +81,63 @@ const PeopleDetail = () => {
         >
           Volver a personas
         </Button>
+
+        {/* ── Lifecycle banner ───────────────────────────────────────────── */}
+        {lifecycleStatus === 'pending_recovery' && (
+          <Stack
+            sx={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 1.5,
+              p: 2,
+              borderRadius: 1,
+              bgcolor: 'warning.50',
+              border: '1px solid',
+              borderColor: 'warning.300',
+            }}
+          >
+            <IconUserMinus size={20} color="var(--mui-palette-warning-main)" />
+            <Stack sx={{ gap: 0.25, flex: 1 }}>
+              <Typography variant="body2" sx={{ fontWeight: 600, color: 'warning.dark' }}>
+                Baja en proceso — materiales pendientes de recuperación
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                Esta persona ya no aparece en las vistas activas.
+                {materials.length > 0
+                  ? ` Tiene ${materials.length} ${materials.length === 1 ? 'material' : 'materiales'} por recuperar. Marcalos como recuperados para finalizar la baja.`
+                  : ' Todos los materiales fueron recuperados. Podés finalizar la baja.'}
+              </Typography>
+            </Stack>
+          </Stack>
+        )}
+
+        {lifecycleStatus === 'terminated' && (
+          <Stack
+            sx={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 1.5,
+              p: 2,
+              borderRadius: 1,
+              bgcolor: 'grey.100',
+              border: '1px solid',
+              borderColor: 'divider',
+            }}
+          >
+            <IconUserMinus size={20} color="var(--mui-palette-text-disabled)" />
+            <Stack sx={{ gap: 0.25 }}>
+              <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.secondary' }}>
+                Persona dada de baja
+                {lifecycleRecord?.terminatedAt
+                  ? ` — ${new Date(lifecycleRecord.terminatedAt).toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' })}`
+                  : ''}
+              </Typography>
+              <Typography variant="caption" color="text.disabled">
+                Solo visible para auditoría. No aparece en ninguna vista activa.
+              </Typography>
+            </Stack>
+          </Stack>
+        )}
 
         <Stack
           sx={{
