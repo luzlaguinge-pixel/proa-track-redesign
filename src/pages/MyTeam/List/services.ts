@@ -1,5 +1,6 @@
 import { postgrest } from '../../../services/postgrest';
 import { getAllMaterials } from '../../Inventory/store';
+import { isExcludedFromActiveViews } from '../../People/lifecycleStore';
 import { getTeamForLeader } from '../../../stores/teamStore';
 
 import { type TeamMember } from './types';
@@ -25,18 +26,20 @@ export const getMyTeam = async (leaderDni: string): Promise<TeamMember[]> => {
 
   const materials = await getAllMaterials();
 
-  return result.data.map(u => {
-    const nombre = `${u.firstName} ${u.lastName}`.trim();
-    return {
-      id: String(u.id),
-      nombre,
-      dni: u.employeeInternalId,
-      telefono: '',
-      email: u.email ?? '',
-      puesto: '',
-      pais: 'AR' as const,
-      materialesCount: materials.filter(m => m.responsableNombre === nombre)
-        .length,
-    };
-  });
+  return result.data
+    .filter(u => !isExcludedFromActiveViews(String(u.id)))
+    .map(u => {
+      const nombre = `${u.firstName} ${u.lastName}`.trim();
+      return {
+        id: String(u.id),
+        nombre,
+        dni: u.employeeInternalId,
+        telefono: '',
+        email: u.email ?? '',
+        puesto: '',
+        pais: 'AR' as const,
+        materialesCount: materials.filter(m => m.responsableNombre === nombre)
+          .length,
+      };
+    });
 };

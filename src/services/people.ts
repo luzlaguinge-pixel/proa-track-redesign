@@ -101,5 +101,6 @@ export async function searchPeople(query: string): Promise<Person[]> {
     }
   }
   merged.sort((a, b) => a.lastName.localeCompare(b.lastName));
-  return merged.map(mapToPerson);
+  // Exclude terminated / pending_recovery from search results
+  return merged.map(mapToPerson).filter(p => !isExcludedFromActiveViews(p.id));
 }
