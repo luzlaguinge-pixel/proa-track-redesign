@@ -10,18 +10,39 @@ const NotificationPermissionBanner = () => {
   const { permission, isSupported, subscribe } = useNotificationPermission();
   const [loading, setLoading] = useState(false);
   const [dismissed, setDismissed] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  if (!isSupported || permission !== 'denied' || dismissed) {
+  // Show the banner when the user hasn't been asked yet ('default')
+  // or when permission was explicitly denied ('denied').
+  // Hide if already granted or if the user dismissed the banner this session.
+  if (!isSupported || permission === 'granted' || dismissed) {
     return null;
   }
 
+  const isDenied = permission === 'denied';
+
   const handleEnable = async () => {
+    if (isDenied) {
+      // Can't re-prompt when denied — user must change it in browser settings
+      setError(
+        'Las notificaciones están bloqueadas en tu navegador. Andá a Configuración del sitio para habilitarlas.',
+      );
+      return;
+    }
     setLoading(true);
+    setError(null);
     try {
       await subscribe();
       setDismissed(true);
-    } catch (error) {
-      console.error('Failed to subscribe:', error);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Error desconocido';
+      if (msg.includes('denied')) {
+        setError(
+          'Bloqueaste las notificaciones. Podés habilitarlas desde Configuración del sitio en tu navegador.',
+        );
+      } else {
+        setError(msg);
+      }
     } finally {
       setLoading(false);
     }
@@ -30,21 +51,25 @@ const NotificationPermissionBanner = () => {
   return (
     <Stack sx={{ mb: 2 }}>
       <Alert
-        severity="warning"
+        severity={isDenied ? 'error' : 'info'}
         onClose={() => setDismissed(true)}
         action={
-          <Button
-            variant="tertiary"
-            size="small"
-            onClick={handleEnable}
-            loading={loading}
-          >
-            Habilitar
-          </Button>
+          !isDenied ? (
+            <Button
+              variant="tertiary"
+              size="small"
+              onClick={handleEnable}
+              loading={loading}
+            >
+              Activar
+            </Button>
+          ) : undefined
         }
       >
-        Las notificaciones están deshabilitadas. Actívalas para recibir
-        recordatorios y updates.
+        {error ??
+          (isDenied
+            ? 'Las notificaciones están bloqueadas. Habilitálas desde Configuración de tu navegador para recibir recordatorios.'
+            : 'Activá las notificaciones para recibir recordatorios de confirmación de materiales.')}
       </Alert>
     </Stack>
   );

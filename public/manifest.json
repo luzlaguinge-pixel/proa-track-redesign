@@ -1,0 +1,19 @@
+{
+  "name": "Proa Track",
+  "short_name": "Proa Track",
+  "description": "Gestión de materiales del equipo",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#863bff",
+  "background_color": "#ffffff",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

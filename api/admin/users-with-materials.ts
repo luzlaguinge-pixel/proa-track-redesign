@@ -1,49 +1,32 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { createClient } from '@supabase/supabase-js';
 
-interface UserWithMaterials {
-  userId: string;
-  userName: string;
-  materialCount: number;
-}
+const supabase = createClient(
+  process.env.VITE_SUPABASE_URL!,
+  process.env.VITE_SUPABASE_ANON_KEY!
+);
 
-export default async function handler(
-  request: VercelRequest,
-  response: VercelResponse
-) {
-  if (request.method !== 'GET') {
-    return response.status(405).json({ error: 'Method not allowed' });
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+  if (req.method !== 'GET') {
+    return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  // TODO: Add admin authorization check
-  // For now, returning mock data showing users with assigned materials
+  // Return all users who have an active push subscription.
+  // These are the users who will receive the monthly confirmation push.
+  const { data: subscriptions, error } = await supabase
+    .from('push_subscriptions')
+    .select('user_id, created_at');
 
-  const usersWithMaterials: UserWithMaterials[] = [
-    {
-      userId: 'user-001',
-      userName: 'Ana García',
-      materialCount: 3,
-    },
-    {
-      userId: 'user-002',
-      userName: 'María Rodríguez',
-      materialCount: 2,
-    },
-    {
-      userId: 'user-003',
-      userName: 'Luis Martínez',
-      materialCount: 5,
-    },
-    {
-      userId: 'user-004',
-      userName: 'Pablo Fernández',
-      materialCount: 1,
-    },
-    {
-      userId: 'user-005',
-      userName: 'Sofía Torres',
-      materialCount: 4,
-    },
-  ];
+  if (error) {
+    console.error('Error fetching push subscriptions:', error);
+    return res.status(500).json({ error: 'Failed to fetch subscribers' });
+  }
 
-  return response.status(200).json(usersWithMaterials);
+  const users = (subscriptions ?? []).map((sub) => ({
+    userId: sub.user_id,
+    userName: sub.user_id,
+    materialCount: 1, // Each subscriber is counted as 1 recipient
+  }));
+
+  return res.status(200).json(users);
 }
