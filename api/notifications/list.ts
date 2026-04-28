@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 
-import { requireUser } from '../_lib/session';
+import { requireUser } from '../_lib/session.js';
 
 /**
  * GET /api/notifications/list

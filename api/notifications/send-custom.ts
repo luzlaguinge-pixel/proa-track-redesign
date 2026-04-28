@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 
-import { dispatchToMany } from '../_lib/dispatchNotification';
+import { dispatchToMany } from '../_lib/dispatchNotification.js';
 
 function getSupabase() {
   const url = process.env.VITE_SUPABASE_URL;

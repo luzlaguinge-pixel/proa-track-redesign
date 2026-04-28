@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 
-import { dispatchToMany } from '../../_lib/dispatchNotification';
+import { dispatchToMany } from '../../_lib/dispatchNotification.js';
 
 function isValidCronRequest(req: VercelRequest): boolean {
   const auth = req.headers.authorization;

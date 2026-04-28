@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-import { dispatchToMany } from '../_lib/dispatchNotification';
+import { dispatchToMany } from '../_lib/dispatchNotification.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
