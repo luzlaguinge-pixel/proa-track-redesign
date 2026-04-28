@@ -1,34 +1,24 @@
 import { createClient } from '@supabase/supabase-js';
 
 // ─── Push notification status ──────────────────────────────────────────────
-// TODO: Push notifications (web-push / APNs) are NOT reliably working in this
-// deployment. Multiple root causes were investigated:
-//   1. The web-push module had module-level import issues on Vercel Lambda
-//      (fixed by lazy require() below, but push delivery still unverified)
-//   2. iOS Safari requires the app to be "Added to Home Screen" as a PWA
-//      for Web Push to be delivered — plain Safari browser sessions drop
-//      all push silently
-//   3. We could not confirm end-to-end delivery without Vercel log access
-//      (403 on runtime logs due to SAML scope restrictions on the team)
-//
-// The in-app channel (Supabase INSERT → bell icon) is the PRIMARY channel
-// and MUST work reliably — see the guaranteed Step 1 below.
-// A developer with deeper PWA/push experience should revisit push later.
+// The in-app channel (Supabase INSERT → bell icon) is the PRIMARY channel.
+// Push (VAPID / web-push) is best-effort and isolated from in-app delivery.
+// iOS Safari requires the app added to Home Screen as a PWA for push to work.
 // ─────────────────────────────────────────────────────────────────────────────
 
-// web-push is loaded lazily with require() so that any load-time failure
-// (native crypto bindings, bundler issue, missing key) cannot crash the module
-// or kill the in-app record creation — the two channels are fully independent.
-// biome-ignore lint/suspicious/noExplicitAny: dynamic require with runtime safety
+// web-push is loaded lazily via dynamic import() (works in ESM / "type":"module")
+// so that any load-time failure cannot crash the module or kill in-app delivery.
+// biome-ignore lint/suspicious/noExplicitAny: dynamic import with runtime safety
 let webpushModule: any = null;
 let webpushLoadError: string | null = null;
 
-function loadWebPush() {
+async function loadWebPush(): Promise<any> {
   if (webpushModule !== null) return webpushModule;
   if (webpushLoadError !== null) throw new Error(webpushLoadError);
   try {
-    // biome-ignore lint/security/noCommonJs: intentional lazy require to isolate failures
-    webpushModule = require('web-push');
+    const mod = await import('web-push');
+    // ESM default export vs CJS module object
+    webpushModule = mod.default ?? mod;
     return webpushModule;
   } catch (err) {
     webpushLoadError = `web-push load failed: ${(err as Error).message}`;
@@ -38,9 +28,9 @@ function loadWebPush() {
 }
 
 let vapidInitialised = false;
-function ensureVapid() {
+async function ensureVapid(): Promise<void> {
   if (vapidInitialised) return;
-  const wp = loadWebPush();
+  const wp = await loadWebPush();
   const subject = process.env.VAPID_SUBJECT || 'mailto:admin@example.com';
   const pub = process.env.VITE_VAPID_PUBLIC_KEY;
   const priv = process.env.VAPID_PRIVATE_KEY;
@@ -130,16 +120,16 @@ export async function dispatchNotification(
       .eq('user_id', userId);
 
     if (!subscriptions || subscriptions.length === 0) {
-      await supabase
-        .from('notifications')
-        .update({ push_status: 'no_subscription' })
-        .eq('id', notificationId);
+      // fire-and-forget status update
+      if (notificationId) {
+        supabase.from('notifications').update({ push_status: 'no_subscription' }).eq('id', notificationId).then(() => {}).catch(() => {});
+      }
       console.log(`[Dispatch] No subscription for ${userId} — in-app delivered, push skipped`);
       return { userId, inApp: 'delivered', push: 'no_subscription', pushSent: 0, pushFailed: 0 };
     }
 
-    ensureVapid();
-    const wp = loadWebPush();
+    await ensureVapid();
+    const wp = await loadWebPush();
     const pushPayload = JSON.stringify({ title: payload.title, body: payload.body, icon, url });
     let pushSent = 0;
     let pushFailed = 0;
@@ -171,21 +161,25 @@ export async function dispatchNotification(
     }
 
     const pushStatus = pushSent > 0 ? 'sent' : 'failed';
-    await supabase
-      .from('notifications')
-      .update({ push_status: pushStatus })
-      .eq('id', notificationId);
+    // fire-and-forget
+    if (notificationId) {
+      supabase.from('notifications').update({ push_status: pushStatus }).eq('id', notificationId).then(() => {}).catch(() => {});
+    }
 
     console.log(`[Dispatch] ${userId}: inApp=delivered push=${pushStatus} (sent=${pushSent} failed=${pushFailed})`);
     return { userId, inApp: 'delivered', push: pushStatus, pushSent, pushFailed };
   } catch (pushErr) {
     // Push channel completely failed — but in-app was already written
     console.error(`[Dispatch] Push channel failed for ${userId}:`, (pushErr as Error).message);
-    await supabase
-      .from('notifications')
-      .update({ push_status: 'failed' })
-      .eq('id', notificationId)
-      .catch(() => {});
+    // Fire-and-forget — do NOT await; an await here can itself throw and reject the entire function
+    if (notificationId) {
+      supabase
+        .from('notifications')
+        .update({ push_status: 'failed' })
+        .eq('id', notificationId)
+        .then(() => {})
+        .catch(() => {});
+    }
     return { userId, inApp: 'delivered', push: 'failed', pushSent: 0, pushFailed: 1 };
   }
 }
