@@ -196,7 +196,7 @@ const ConfirmationList = () => {
           return;
         }
         const dest = ALL_PERSON_OPTIONS.find(p => p.value === noLoTengoDestinatarioId);
-        createSolicitud({
+        await createSolicitud({
           materialId: material.id,
           materialLabel: `${TIPO_LABEL[material.tipo]}${material.detalle ? ` · ${material.detalle}` : ''}`,
           solicitanteNombre: userName,

@@ -101,8 +101,8 @@ export const getConfirmacionStats = async (
   };
 };
 
-export const getSolicitudStats = (filters?: ReportFilters): SolicitudStats => {
-  let s = getAllSolicitudes();
+export const getSolicitudStats = async (filters?: ReportFilters): Promise<SolicitudStats> => {
+  let s = await getAllSolicitudes();
 
   if (filters?.dateStart || filters?.dateEnd) {
     s = s.filter(x =>

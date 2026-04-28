@@ -11,6 +11,8 @@ export const useMyMaterials = () => {
     queryKey: ['my-materials', userName],
     queryFn: () => getMyMaterials(userName),
     enabled: !!userName,
+    staleTime: 0,
+    refetchOnMount: 'always',
   });
 
   return { materials, isLoading };

@@ -1,9 +1,4 @@
-import {
-  postgrestCreate,
-  postgrestDelete,
-  postgrestQuery,
-  postgrestUpdate,
-} from '../../services/api';
+import { supabase } from '../../services/supabase';
 
 export type Solicitud = {
   id: string;
@@ -18,19 +13,20 @@ export type Solicitud = {
   fechaResolucion: string | null;
 };
 
-let cache: Solicitud[] | null = null;
+const TABLE = 'solicitudes';
 
-export const getAllSolicitudes = (): Solicitud[] => {
-  return cache ? cache.map(s => ({ ...s })) : [];
+export const getAllSolicitudes = async (): Promise<Solicitud[]> => {
+  const { data, error } = await supabase
+    .from(TABLE)
+    .select('*')
+    .order('fecha', { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as Solicitud[];
 };
 
-export const createSolicitud = (
-  data: Omit<
-    Solicitud,
-    'id' | 'estado' | 'resolverPorNombre' | 'fechaResolucion'
-  >,
-): Solicitud => {
-  if (!cache) cache = [];
+export const createSolicitud = async (
+  data: Omit<Solicitud, 'id' | 'estado' | 'resolverPorNombre' | 'fechaResolucion'>,
+): Promise<Solicitud> => {
   const entry: Solicitud = {
     ...data,
     id: `sol_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
@@ -38,50 +34,40 @@ export const createSolicitud = (
     resolverPorNombre: null,
     fechaResolucion: null,
   };
-  cache.push(entry);
-  postgrestCreate<Solicitud>('solicitudes', entry).catch(() => {
-    // log silently
-  });
-  return { ...entry };
+  const { data: row, error } = await supabase
+    .from(TABLE)
+    .insert(entry)
+    .select()
+    .single();
+  if (error) throw error;
+  return row as Solicitud;
 };
 
-export const resolveSolicitud = (
+export const resolveSolicitud = async (
   id: string,
   estado: 'aprobada' | 'rechazada',
   resolverPorNombre: string,
-): Solicitud | null => {
-  if (!cache) return null;
-  const idx = cache.findIndex(s => s.id === id);
-  if (idx === -1) return null;
+): Promise<Solicitud | null> => {
   const updated = {
-    ...cache[idx],
     estado,
     resolverPorNombre,
     fechaResolucion: new Date().toISOString(),
   };
-  cache[idx] = updated;
-  postgrestUpdate<Solicitud>('solicitudes', id, updated).catch(() => {
-    // log silently
-  });
-  return { ...updated };
+  const { data, error } = await supabase
+    .from(TABLE)
+    .update(updated)
+    .eq('id', id)
+    .select()
+    .maybeSingle();
+  if (error) throw error;
+  return data as Solicitud | null;
 };
 
-export const deleteSolicitud = (id: string): boolean => {
-  if (!cache) return false;
-  const idx = cache.findIndex(s => s.id === id);
-  if (idx === -1) return false;
-  cache.splice(idx, 1);
-  postgrestDelete('solicitudes', id).catch(() => {
-    // log silently
-  });
+export const deleteSolicitud = async (id: string): Promise<boolean> => {
+  const { error } = await supabase.from(TABLE).delete().eq('id', id);
+  if (error) throw error;
   return true;
 };
 
-export const initializeStore = async (): Promise<void> => {
-  try {
-    const solicitudes = await postgrestQuery<Solicitud>('solicitudes');
-    cache = solicitudes;
-  } catch {
-    cache = [];
-  }
-};
+// Legacy no-op kept so any leftover callers don't crash on import
+export const initializeStore = async (): Promise<void> => {};

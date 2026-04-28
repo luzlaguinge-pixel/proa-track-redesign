@@ -57,21 +57,29 @@ const SolicitudesList = () => {
         ? getAllSolicitudesAdmin()
         : getSolicitudesPendientes(team.map(t => t.nombre)),
     enabled: isAdmin || team.length >= 0,
+    staleTime: 0,
+    refetchOnMount: 'always',
   });
 
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ['solicitudes'] });
     queryClient.invalidateQueries({ queryKey: ['my-materials'] });
     queryClient.invalidateQueries({ queryKey: ['confirmation-materials'] });
+    queryClient.invalidateQueries({ queryKey: ['materials'] });
+    queryClient.invalidateQueries({ queryKey: ['my-materials-with-confirmation'] });
   };
 
+  const resolverNombre = user
+    ? `${user.firstName} ${user.lastName}`.trim()
+    : 'Sistema';
+
   const aprobar = useMutation({
-    mutationFn: (id: string) => Promise.resolve(aprobarSolicitud(id, 'Yo')),
+    mutationFn: (id: string) => aprobarSolicitud(id, resolverNombre),
     onSuccess: invalidate,
   });
 
   const rechazar = useMutation({
-    mutationFn: (id: string) => Promise.resolve(rechazarSolicitud(id, 'Yo')),
+    mutationFn: (id: string) => rechazarSolicitud(id, resolverNombre),
     onSuccess: invalidate,
   });
 

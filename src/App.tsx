@@ -13,6 +13,7 @@ import { HomePage } from './pages/Home';
 import { AuthProvider, useAuth } from './providers/AuthContext';
 import { ProfileProvider } from './providers/ProfileContext';
 import { NotificationProvider } from './providers/NotificationContext';
+import { RealtimeProvider } from './providers/RealtimeProvider';
 import './i18n';
 
 const LoginPage = lazy(() => import('./pages/Auth/Login'));
@@ -55,6 +56,7 @@ const queryClient = new QueryClient();
 const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
+      <RealtimeProvider>
       <ThemeProvider theme={theme}>
         <MenuLayerProvider>
           <DialogLayerProvider>
@@ -223,6 +225,7 @@ const App = () => {
           </DialogLayerProvider>
         </MenuLayerProvider>
       </ThemeProvider>
+      </RealtimeProvider>
     </QueryClientProvider>
   );
 };

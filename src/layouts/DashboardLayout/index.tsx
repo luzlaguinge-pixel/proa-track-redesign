@@ -44,6 +44,7 @@ import {
 } from '../../pages/Notifications/List/services';
 import { useDispatchedNotifications } from '../../hooks/useDispatchedNotifications';
 import NotificationPermissionBanner from '../../pages/Notifications/components/NotificationPermissionBanner';
+import { getMyTeam } from '../../pages/MyTeam/List/services';
 
 const PERFIL_LABEL: Record<Perfil, string> = {
   admin: 'Admin',
@@ -196,14 +197,26 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const displayName = user ? `${user.firstName} ${user.lastName}`.trim() : '';
   const profileBadge = PERFIL_LABEL[perfil];
 
+  // For coordinador: fetch team so their notifications include the whole team
+  const leaderDni = user?.employeeInternalId ?? '';
+  const { data: teamForNotifs = [] } = useQuery({
+    queryKey: ['my-team', leaderDni],
+    queryFn: () => getMyTeam(leaderDni),
+    enabled: perfil === 'coordinador' && !!leaderDni,
+    staleTime: 5 * 60 * 1000,
+  });
+
   // Local workflow alerts (computed from material state)
   const { data: localNotifs = [] } = useQuery({
-    queryKey: ['notificaciones-layout', perfil, displayName],
-    queryFn: () =>
-      perfil === 'navegante'
-        ? getNotificacionesCaptador(displayName)
-        : getNotificacionesLiderAdmin([]),
-    enabled: !!displayName,
+    queryKey: ['notificaciones-layout', perfil, displayName, teamForNotifs.map(t => t.nombre).join(',')],
+    queryFn: () => {
+      if (perfil === 'navegante') return getNotificacionesCaptador(displayName);
+      const teamNames = perfil === 'coordinador'
+        ? teamForNotifs.map(t => t.nombre)
+        : [];
+      return getNotificacionesLiderAdmin(teamNames);
+    },
+    enabled: !!displayName && (perfil !== 'coordinador' || teamForNotifs.length > 0),
   });
   // Server-dispatched notifications (real, from DB)
   const { data: dispatched = [] } = useDispatchedNotifications();

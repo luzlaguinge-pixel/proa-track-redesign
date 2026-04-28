@@ -59,7 +59,7 @@ export const getNotificacionesCaptador = async (nombre: string): Promise<Notific
     }
   }
 
-  const solicitudes = getAllSolicitudes().filter(
+  const solicitudes = (await getAllSolicitudes()).filter(
     s => s.solicitanteNombre === nombre,
   );
   for (const s of solicitudes) {
@@ -107,7 +107,7 @@ export const getNotificacionesLiderAdmin = async (
 ): Promise<Notificacion[]> => {
   const notifs: Notificacion[] = [];
 
-  const pendientes = getAllSolicitudes().filter(
+  const pendientes = (await getAllSolicitudes()).filter(
     s => s.estado === 'pendiente' && teamNombres.includes(s.solicitanteNombre),
   );
   if (pendientes.length > 0) {
