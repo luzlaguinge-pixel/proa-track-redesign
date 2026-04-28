@@ -122,7 +122,7 @@ export async function dispatchNotification(
     if (!subscriptions || subscriptions.length === 0) {
       // fire-and-forget status update
       if (notificationId) {
-        supabase.from('notifications').update({ push_status: 'no_subscription' }).eq('id', notificationId).then(() => {}).catch(() => {});
+        supabase.from('notifications').update({ push_status: 'no_subscription' }).eq('id', notificationId).then(() => {}, () => {});
       }
       console.log(`[Dispatch] No subscription for ${userId} — in-app delivered, push skipped`);
       return { userId, inApp: 'delivered', push: 'no_subscription', pushSent: 0, pushFailed: 0 };
@@ -163,7 +163,7 @@ export async function dispatchNotification(
     const pushStatus = pushSent > 0 ? 'sent' : 'failed';
     // fire-and-forget
     if (notificationId) {
-      supabase.from('notifications').update({ push_status: pushStatus }).eq('id', notificationId).then(() => {}).catch(() => {});
+      supabase.from('notifications').update({ push_status: pushStatus }).eq('id', notificationId).then(() => {}, () => {});
     }
 
     console.log(`[Dispatch] ${userId}: inApp=delivered push=${pushStatus} (sent=${pushSent} failed=${pushFailed})`);
@@ -173,12 +173,7 @@ export async function dispatchNotification(
     console.error(`[Dispatch] Push channel failed for ${userId}:`, (pushErr as Error).message);
     // Fire-and-forget — do NOT await; an await here can itself throw and reject the entire function
     if (notificationId) {
-      supabase
-        .from('notifications')
-        .update({ push_status: 'failed' })
-        .eq('id', notificationId)
-        .then(() => {})
-        .catch(() => {});
+      supabase.from('notifications').update({ push_status: 'failed' }).eq('id', notificationId).then(() => {}, () => {});
     }
     return { userId, inApp: 'delivered', push: 'failed', pushSent: 0, pushFailed: 1 };
   }
