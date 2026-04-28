@@ -16,8 +16,8 @@ self.addEventListener('push', (event) => {
   const title = data.title || 'Notificación';
   const options = {
     body: data.body || '',
-    icon: '/favicon.svg',
-    badge: '/favicon.svg',
+    icon: '/icon-192x192.png',
+    badge: '/icon-192x192.png',
     data: {
       url: data.url || '/',
     },
